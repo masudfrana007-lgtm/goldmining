@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import "./GoldMining.css";
-
+import { useNavigate } from "react-router-dom";
 
 /* ---------- helpers ---------- */
 function fmt(n) {
@@ -46,6 +46,9 @@ const ICONS = {
 };
 
 export default function GoldMining() {
+
+  const navigate = useNavigate();
+
   const packages = useMemo(
     () => [
       {
@@ -330,7 +333,13 @@ export default function GoldMining() {
                 key={p.key}
                 type="button"
                 className={`gmMineCard ${p.key === selectedKey ? "active" : ""}`}
-                onClick={() => setSelectedKey(p.key)}
+                onClick={() => {
+                  if (p.key === "starter") {
+                    navigate("/mining/starter-rig");   // go to route
+                  } else {
+                    setSelectedKey(p.key);            // normal preview
+                  }
+                }}
               >
                 <div className="gmMineCardTop">
                   <div className="gmMineCardIcon">{ICONS.chip}</div>
