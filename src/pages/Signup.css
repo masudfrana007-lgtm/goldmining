@@ -1,0 +1,408 @@
+/* =====================================================
+   GoldMiracle Auth Pages (Login + Signup)
+   Premium dark theme + live moving background
+   File: src/pages/Login.css
+   (Signup.css imports this file)
+===================================================== */
+
+.authPage{
+  min-height: 100vh;
+  position: relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 18px;
+  background: #070b12;
+  overflow:hidden;
+}
+
+/* =====================================================
+   Live Animated Background (Premium & Subtle)
+===================================================== */
+.authVignette{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  overflow:hidden;
+  z-index:0;
+
+  background:
+    radial-gradient(900px 600px at 50% -10%, rgba(0,231,156,0.12), transparent 60%),
+    radial-gradient(800px 500px at 15% 25%, rgba(80,140,255,0.12), transparent 60%),
+    radial-gradient(800px 500px at 85% 25%, rgba(255,210,120,0.10), transparent 60%),
+    radial-gradient(1200px 900px at 50% 100%, rgba(0,0,0,0.65), transparent 55%);
+
+  animation: bgMove 18s ease-in-out infinite alternate;
+}
+
+/* Floating glow circles */
+.authVignette::before,
+.authVignette::after{
+  content:"";
+  position:absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: .35;
+  animation: floatBlob 16s ease-in-out infinite alternate;
+}
+
+.authVignette::before{
+  top: -120px;
+  left: -80px;
+  background: rgba(0,231,156,0.45);
+}
+
+.authVignette::after{
+  bottom: -120px;
+  right: -80px;
+  background: rgba(80,140,255,0.45);
+  animation-duration: 22s;
+}
+
+@keyframes bgMove{
+  0%{
+    background-position:
+      50% -10%,
+      15% 25%,
+      85% 25%,
+      50% 100%;
+  }
+  100%{
+    background-position:
+      48% -5%,
+      18% 30%,
+      82% 20%,
+      50% 95%;
+  }
+}
+
+@keyframes floatBlob{
+  0%{ transform: translate(0px,0px) scale(1); }
+  100%{ transform: translate(60px,40px) scale(1.05); }
+}
+
+/* Accessibility: reduce motion */
+@media (prefers-reduced-motion: reduce){
+  .authVignette{ animation: none !important; }
+  .authVignette::before,
+  .authVignette::after{ animation: none !important; }
+}
+
+/* =====================================================
+   Layout Shell
+===================================================== */
+.authShell{
+  width: min(1080px, 100%);
+  display:grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 16px;
+  position:relative;
+  z-index: 2;
+}
+
+/* =====================================================
+   Left Hero Panel
+===================================================== */
+.authHero{
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.07);
+  background: linear-gradient(180deg, rgba(14,20,30,0.92), rgba(10,14,22,0.92));
+  box-shadow: 0 22px 60px rgba(0,0,0,0.45);
+  padding: 22px;
+  overflow:hidden;
+  position:relative;
+}
+
+.authHero::after{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background:
+    radial-gradient(600px 320px at 10% 10%, rgba(0,231,156,0.10), transparent 60%),
+    radial-gradient(520px 300px at 90% 20%, rgba(80,140,255,0.10), transparent 65%);
+  pointer-events:none;
+}
+
+.authBrand{
+  display:flex;
+  gap: 12px;
+  align-items:center;
+  position:relative;
+  z-index:2;
+}
+
+.authLogo{
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: radial-gradient(circle at 35% 30%, rgba(0,231,156,0.95), rgba(0,231,156,0.25));
+  box-shadow: 0 0 22px rgba(0,231,156,0.18);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.authName{
+  color: rgba(231,238,249,0.95);
+  font-weight: 900;
+  letter-spacing: .2px;
+  font-size: 16px;
+}
+
+.authTag{
+  color: rgba(231,238,249,0.55);
+  font-weight: 700;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.authHeadline{
+  margin-top: 18px;
+  color: rgba(231,238,249,0.95);
+  font-weight: 900;
+  font-size: 28px;
+  letter-spacing: .2px;
+  position:relative;
+  z-index:2;
+}
+
+.authSub{
+  margin-top: 10px;
+  color: rgba(231,238,249,0.62);
+  line-height: 1.55;
+  font-weight: 600;
+  max-width: 440px;
+  position:relative;
+  z-index:2;
+}
+
+.authBadges{
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  position:relative;
+  z-index:2;
+}
+
+.authBadge{
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+  color: rgba(231,238,249,0.75);
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.authFootNote{
+  margin-top: 18px;
+  color: rgba(231,238,249,0.48);
+  font-weight: 650;
+  font-size: 12px;
+  position:relative;
+  z-index:2;
+}
+
+/* =====================================================
+   Right Card (Form)
+===================================================== */
+.authCard{
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.07);
+  background: linear-gradient(180deg, rgba(12,18,26,0.92), rgba(8,12,20,0.92));
+  box-shadow: 0 22px 60px rgba(0,0,0,0.45);
+  padding: 18px;
+}
+
+.authCardHead{
+  padding: 6px 6px 12px 6px;
+}
+
+.authTitle{
+  color: rgba(231,238,249,0.95);
+  font-weight: 900;
+  font-size: 18px;
+}
+
+.authMini{
+  margin-top: 6px;
+  color: rgba(231,238,249,0.55);
+  font-weight: 650;
+  font-size: 12px;
+}
+
+.authForm{
+  display:flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.authLabel{
+  color: rgba(231,238,249,0.70);
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.authField{
+  margin-top: 8px;
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+}
+
+.authInput{
+  width: 100%;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: rgba(231,238,249,0.92);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.authInput::placeholder{
+  color: rgba(231,238,249,0.35);
+}
+
+.authGhost{
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.04);
+  color: rgba(231,238,249,0.75);
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 12px;
+  cursor:pointer;
+  user-select:none;
+}
+
+.authGhost.on{
+  border-color: rgba(0,231,156,0.22);
+  box-shadow: 0 0 0 3px rgba(0,231,156,0.10);
+}
+
+.authRow{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 2px;
+}
+
+.authCheck{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  color: rgba(231,238,249,0.65);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.authCheck input{
+  width: 16px;
+  height: 16px;
+  accent-color: rgba(0,231,156,0.95);
+}
+
+.authLinkBtn{
+  background: transparent;
+  border: 0;
+  color: rgba(0,231,156,0.85);
+  font-weight: 850;
+  cursor:pointer;
+  font-size: 12px;
+  padding: 6px 0;
+}
+
+.authBtn{
+  margin-top: 4px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(0,231,156,0.25);
+  background: linear-gradient(180deg, rgba(0,231,156,0.22), rgba(0,231,156,0.10));
+  color: rgba(231,238,249,0.94);
+  font-weight: 900;
+  letter-spacing: .2px;
+  cursor:pointer;
+  box-shadow: 0 16px 30px rgba(0,231,156,0.10);
+  transition: transform .12s ease, box-shadow .18s ease, opacity .15s ease;
+}
+
+.authBtn:hover{
+  box-shadow: 0 18px 36px rgba(0,231,156,0.14);
+  transform: translateY(-1px);
+}
+
+.authBtn:active{
+  transform: translateY(0px);
+}
+
+.authBtn.disabled{
+  opacity: .55;
+  cursor:not-allowed;
+  transform: none;
+}
+
+.authBtn.alt{
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.04);
+  box-shadow: none;
+}
+
+.authDivider{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.authDivider span{
+  height: 1px;
+  background: rgba(255,255,255,0.10);
+  flex:1;
+}
+
+.authDivider p{
+  margin:0;
+  color: rgba(231,238,249,0.45);
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.authBottom{
+  text-align:center;
+  color: rgba(231,238,249,0.58);
+  font-weight: 650;
+  font-size: 12px;
+}
+
+.authLink{
+  color: rgba(0,231,156,0.90);
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.authLink:hover{
+  text-decoration: underline;
+}
+
+/* =====================================================
+   Mobile
+===================================================== */
+@media (max-width: 900px){
+  .authShell{
+    grid-template-columns: 1fr;
+  }
+  .authHero{
+    padding: 18px;
+  }
+  .authHeadline{
+    font-size: 24px;
+  }
+}
