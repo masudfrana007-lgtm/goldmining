@@ -1,0 +1,666 @@
+:root{
+  --bg0:#0b1220;
+  --bg1:#0f172a;
+  --line:rgba(255,255,255,.10);
+
+  --txtDark:#0b1220;
+  --mutedDark:rgba(15,23,42,.72);
+
+  --white:#ffffff;
+
+  --greenA:#16a34a;
+  --greenB:#22c55e;
+
+  --r:18px;
+}
+
+*{ box-sizing:border-box; }
+
+html, body{
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.csPage{
+  min-height: 100vh;
+  padding: 14px;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(34,197,94,.12), transparent 55%),
+    radial-gradient(900px 520px at 95% 0%, rgba(16,185,129,.10), transparent 55%),
+    linear-gradient(180deg, var(--bg0), var(--bg1));
+}
+
+/* ---------- TOP HEADER (NO BLUR, NO SHADOW) ---------- */
+.csTopBar{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 12px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.06);
+  border-radius: calc(var(--r) + 2px);
+  position: sticky;
+  top: 10px;
+  z-index: 5;
+}
+
+.csTopLeft{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.csTopAvatar{
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,.16);
+}
+
+.csTopMeta{ min-width:0; }
+
+.csTitle{
+  color: rgba(255,255,255,.95);
+  font-weight: 900;
+  letter-spacing:.2px;
+  font-size: 16px;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+}
+
+.csSub{
+  margin-top: 2px;
+  color: rgba(255,255,255,.72);
+  font-size: 12.5px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  display:flex;
+  align-items:center;
+  gap: 0;
+}
+
+/* ✅ Online dot + green Online */
+.onlineDot{
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #22c55e;
+  display:inline-block;
+  margin-right: 6px;
+  position: relative;
+  top: -1px;
+}
+.onlineText{
+  color: #22c55e;
+  font-weight: 900;
+}
+.statusSep{
+  margin: 0 6px;
+  color: rgba(255,255,255,.65);
+}
+
+/* Tabs */
+.csTabs{
+  display:flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content:flex-end;
+}
+
+.csTab{
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.90);
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 12.5px;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+}
+
+.csTab.isActive{
+  background: linear-gradient(135deg, rgba(34,197,94,.30), rgba(16,185,129,.22));
+  border-color: rgba(34,197,94,.42);
+}
+
+/* ---------- BODY ---------- */
+.csBodyOne{
+  margin-top: 12px;
+}
+
+/* ---------- CHAT SHELL ---------- */
+.chatShell{
+  width: min(980px, 100%);
+  height: calc(100vh - 140px);
+  min-height: 560px;
+  margin: 0 auto;
+  border-radius: calc(var(--r) + 2px);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.12);
+  display:flex;
+  flex-direction: column;
+  background: rgba(255,255,255,.04);
+}
+
+/* WHITE CHAT AREA */
+.chatList{
+  flex: 1;
+  overflow: auto;
+  padding: 14px 12px;
+  background: var(--white);
+}
+
+/* Day label */
+.chatDay{
+  display:flex;
+  justify-content:center;
+  margin: 6px 0 14px;
+}
+
+.chatDay span{
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(15,23,42,.85);
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,.10);
+  background: rgba(15,23,42,.03);
+}
+
+/* Rows */
+.chatRow{ display:flex; margin: 10px 0; }
+.chatRow.isAgent{ justify-content:flex-start; padding-right: 22px; }
+.chatRow.isMe{ justify-content:flex-end; padding-left: 22px; }
+
+/* Bubble base */
+.bubble{
+  max-width: min(560px, 90%);
+  border-radius: 16px;
+  padding: 10px 10px 8px;
+  border: 1px solid rgba(15,23,42,.10);
+}
+
+/* ✅ WhatsApp style: Agent = light gray */
+.chatRow.isAgent .bubble{
+  background: #f1f5f9;
+  border-color: rgba(15,23,42,.10);
+}
+
+/* ✅ WhatsApp style: Me = green */
+.chatRow.isMe .bubble{
+  background: linear-gradient(180deg, rgba(34,197,94,.30), rgba(34,197,94,.18));
+  border-color: rgba(22,163,74,.25);
+}
+
+/* Sharp text */
+.bubbleText{
+  color: var(--txtDark);
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 600;
+  white-space: pre-wrap;
+  word-break: break-word;
+  text-shadow: none;
+  filter: none;
+}
+
+/* Meta */
+.bubbleMeta{
+  margin-top: 6px;
+  display:flex;
+  gap: 8px;
+  align-items:center;
+  justify-content:flex-end;
+  font-size: 11px;
+  line-height: 1;
+  color: rgba(15,23,42,.72);
+  text-shadow: none;
+  filter: none;
+}
+
+/* receipts */
+.rcpt{
+  font-weight: 900;
+  letter-spacing: -1px;
+  color: rgba(15,23,42,.70);
+}
+.rcpt.seen{
+  color: var(--greenA);
+}
+
+/* image bubble */
+.bubble.isImage{ padding: 8px; }
+.imgWrap{
+  width: 260px;
+  max-width: 72vw;
+  border-radius: 14px;
+  overflow:hidden;
+  border: 1px solid rgba(15,23,42,.12);
+  background: rgba(15,23,42,.04);
+}
+.imgWrap img{ display:block; width: 100%; height: auto; }
+
+/* Typing indicator */
+.typingBubble{
+  background: rgba(15,23,42,.06);
+  border: 1px solid rgba(15,23,42,.10);
+  border-radius: 999px;
+  padding: 10px 12px;
+  display:flex;
+  gap: 6px;
+  align-items:center;
+}
+.typingBubble .dot{
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(15,23,42,.55);
+  animation: bop 1.05s infinite ease-in-out;
+}
+.typingBubble .dot:nth-child(2){ animation-delay: .12s; }
+.typingBubble .dot:nth-child(3){ animation-delay: .24s; }
+
+@keyframes bop{
+  0%, 100%{ transform: translateY(0); opacity: .55; }
+  50%{ transform: translateY(-4px); opacity: 1; }
+}
+
+/* ---------- COMPOSER ---------- */
+.composer{
+  border-top: 1px solid rgba(255,255,255,.12);
+  padding: 10px;
+  background: rgba(255,255,255,.06);
+}
+
+.previewBar{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.10);
+  margin-bottom: 8px;
+}
+
+.previewLeft{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  min-width: 0;
+}
+.previewThumb{
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(255,255,255,.18);
+}
+
+.previewName{
+  font-weight: 800;
+  color: rgba(255,255,255,.95);
+  font-size: 12.5px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  max-width: 50vw;
+}
+.previewHint{
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: rgba(255,255,255,.72);
+  line-height: 1.2;
+}
+.previewRemove{
+  border: 1px solid rgba(255,255,255,.20);
+  background: rgba(0,0,0,.18);
+  color: rgba(255,255,255,.92);
+  font-weight: 800;
+  padding: 7px 10px;
+  border-radius: 12px;
+  cursor:pointer;
+}
+
+.composerRow{
+  display:grid;
+  grid-template-columns: 44px 1fr 92px;
+  gap: 8px;
+  align-items: end;
+}
+
+.fileInput{ display:none; }
+
+.iconBtn{
+  height: 44px;
+  width: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.10);
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  user-select: none;
+}
+.icon{
+  font-weight: 900;
+  font-size: 18px;
+  color: rgba(255,255,255,.95);
+}
+
+/* White input */
+.composerBox{
+  border-radius: 16px;
+  padding: 8px 10px;
+  border: 1px solid rgba(15,23,42,.12);
+  background: #ffffff;
+}
+
+.composerBox textarea{
+  width: 100%;
+  resize: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #0b1220;
+  font-size: 14px;
+  line-height: 1.45;
+  max-height: 120px;
+  font-weight: 600;
+}
+
+.composerBox textarea::placeholder{
+  color: rgba(15,23,42,.55);
+}
+
+.sendBtn{
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.10);
+  color: rgba(255,255,255,.82);
+  font-weight: 900;
+  font-size: 13px;
+  cursor: not-allowed;
+  user-select: none;
+}
+
+.sendBtn.isReady{
+  cursor: pointer;
+  background: linear-gradient(135deg, rgba(34,197,94,.35), rgba(16,185,129,.26));
+  border-color: rgba(34,197,94,.45);
+  color: rgba(255,255,255,.96);
+}
+
+.composerNote{
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.25;
+  color: rgba(255,255,255,.75);
+}
+
+/* ---------- TELEGRAM VIEW ---------- */
+.tgShell{
+  width: min(980px, 100%);
+  height: calc(100vh - 140px);
+  min-height: 560px;
+  margin: 0 auto;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: calc(var(--r) + 2px);
+  background: rgba(255,255,255,.04);
+  display:grid;
+  place-items:center;
+  padding: 18px;
+}
+
+.tgHero{
+  width: min(560px, 100%);
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+}
+
+.tgBadge{
+  display:inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  border: 1px solid rgba(34,197,94,.40);
+  background: rgba(34,197,94,.20);
+  color: rgba(255,255,255,.95);
+}
+
+.tgTitle{
+  margin-top: 10px;
+  font-size: 18px;
+  line-height: 1.2;
+  font-weight: 900;
+  color: rgba(255,255,255,.95);
+}
+
+.tgDesc{
+  margin-top: 8px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: rgba(255,255,255,.75);
+}
+
+.tgCard{
+  margin-top: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.07);
+  padding: 12px;
+}
+
+.tgRow{
+  display:flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 6px;
+  border-bottom: 1px solid rgba(255,255,255,.10);
+}
+.tgRow:last-child{ border-bottom:none; }
+
+.tgLabel{
+  font-size: 12.5px;
+  color: rgba(255,255,255,.70);
+  font-weight: 900;
+}
+.tgValue{
+  font-size: 12.5px;
+  color: rgba(255,255,255,.92);
+  font-weight: 800;
+  text-align:right;
+}
+
+.tgBtn{
+  margin-top: 14px;
+  display:inline-flex;
+  justify-content:center;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(34,197,94,.45);
+  background: linear-gradient(135deg, rgba(34,197,94,.35), rgba(16,185,129,.26));
+  color: rgba(255,255,255,.95);
+  font-weight: 900;
+  font-size: 13px;
+  text-decoration:none;
+}
+
+.tgNote{
+  margin-top: 10px;
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: rgba(255,255,255,.75);
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 720px){
+  .csTopBar{
+    align-items:flex-start;
+    flex-wrap: wrap;
+  }
+  .csTabs{ justify-content:flex-end; }
+
+  .chatShell, .tgShell{
+    height: auto;
+    min-height: calc(100vh - 170px);
+  }
+  .composerRow{
+    grid-template-columns: 44px 1fr 78px;
+  }
+}
+
+@media (max-width: 520px){
+  .csPage{ padding: 10px; }
+  .csTabs{ width: 100%; justify-content:flex-start; }
+  .csTitle{ font-size: 15.5px; }
+  .bubbleText{ font-size: 14px; }
+  .composerBox textarea{ font-size: 14px; }
+}
+
+/* ===============================
+   FIX: page doesn't scroll
+   only chatList scrolls
+   input height matches + and Send
+================================ */
+
+
+/* 2) Make csPage a full-height flex layout */
+.csPage{
+  height: 100vh;            /* ✅ lock to viewport */
+  overflow: hidden;         /* ✅ no page scroll */
+  display: flex;            /* ✅ */
+  flex-direction: column;   /* ✅ */
+}
+
+/* 3) Body area takes remaining space between header and bottom bar */
+.csBodyOne{
+  flex: 1;                  /* ✅ fill leftover space */
+  min-height: 0;            /* ✅ REQUIRED so inner scroll works */
+  overflow: hidden;         /* ✅ prevent body scroll */
+  display: flex;            /* ✅ */
+}
+
+/* 4) Chat shell fills available space (no fixed height) */
+.chatShell, .tgShell{
+  flex: 1;                  /* ✅ fills between header and bottom nav */
+  min-height: 0;            /* ✅ REQUIRED */
+  height: auto !important;  /* ✅ override your vh math */
+}
+
+/* 5) ONLY messages scroll */
+.chatList{
+  flex: 1;
+  min-height: 0;            /* ✅ REQUIRED */
+  overflow-y: auto;         /* ✅ only scroll here */
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 6) Input height exactly like buttons */
+.composerRow{
+  align-items: center;      /* ✅ instead of end */
+}
+
+.composerBox{
+  height: 44px;             /* ✅ same as buttons */
+  padding: 0 10px;          /* ✅ remove vertical padding */
+  display: flex;
+  align-items: center;
+}
+
+.composerBox textarea{
+  height: 44px;
+  padding: 0;
+  line-height: 44px;        /* ✅ vertical center */
+  max-height: 44px;         /* ✅ prevent growth */
+  overflow: hidden;
+}
+
+/* allow width to work (cancel flex-grow) */
+.chatShell{
+  flex: 0 0 auto;           /* ✅ stop stretching full width */
+  width: min(900px, 100%);  /* ✅ change 900px to what you want */
+  margin: 0 auto;           /* ✅ keep centered */
+}
+
+/* 🔒 strictly confine textarea inside composerBox */
+.composerBox textarea{
+  box-sizing: border-box;
+  height: 100%;
+  max-height: 100%;
+  min-height: 100%;
+
+  padding: 0;
+  margin: 0;
+
+  line-height: 44px;   /* vertical centering */
+  overflow: hidden;
+
+  display: block;      /* IMPORTANT */
+}
+
+/* ===============================
+   Customer Service page only
+   lock page scroll, chat scrolls
+================================ */
+
+/* lock only the CS page */
+.csPage{
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* body area between header and bottom nav */
+.csBodyOne{
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+}
+
+/* chat shell fills available space */
+.chatShell, .tgShell{
+  flex: 1;
+  min-height: 0;
+}
+
+/* ONLY message list scrolls */
+.chatList{
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ✅ keep chatShell centered + custom width */
+.chatShell{
+  flex: 0 0 auto;              /* stop stretching width */
+  width: min(900px, 100%);     /* change 900px as you want */
+  margin: 0 auto;              /* centered */
+}
+
+/* ✅ if csBodyOne is a flex row, force center + allow width to work */
+.csBodyOne{
+  justify-content: center;
+}

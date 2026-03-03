@@ -1,0 +1,63 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import HomeGoldMiracle from "./pages/HomeGoldMiracle.jsx";
+import GoldMining from "./pages/GoldMining.jsx";
+import TradingPro from "./pages/TradingPro.jsx";
+import Login from "./pages/Login.jsx";
+import Signup from "./pages/Signup.jsx";
+import MiningPackages from "./pages/MiningPackages.jsx";
+import StarterRig from "./pages/StarterRig.jsx";
+import SilverMiner from "./pages/SilverMiner.jsx";
+import GoldCore from "./pages/GoldCore.jsx";
+import PlatinumArray from "./pages/PlatinumArray.jsx"; // ✅ ADD
+import TradingDashboardGoldMiracle from "./pages/TradingDashboardGoldMiracle.jsx";
+import DashboardGoldMiracle from "./pages/DashboardGoldMiracle.jsx";
+
+import CustomerService from "./pages/CustomerService.jsx";
+import MemberDeposit from "./pages/MemberDeposit.jsx";
+import MemberDepositCrypto from "./pages/MemberDepositCrypto.jsx";
+import MemberDepositBank from "./pages/MemberDepositBank.jsx";
+import TitanVaultRig from "./pages/TitanVaultRig.jsx";
+import HowItWorks from "./pages/HowItWorks";
+import BronzeMiner from "./pages/BronzeMiner.jsx";
+import Disclaimer from "./pages/Disclaimer.jsx";
+import Privacy from "./pages/Privacy.jsx";
+import Terms from "./pages/Terms.jsx";
+
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomeGoldMiracle />} />
+
+        <Route path="/mining" element={<GoldMining />} />
+        <Route path="/trading" element={<TradingPro />} />
+
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+
+        <Route path="/mining-packages" element={<MiningPackages />} />
+        <Route path="/mining/starter-rig" element={<StarterRig />} />
+        <Route path="/mining/silver-miner" element={<SilverMiner />} />
+        <Route path="/mining/gold-core" element={<GoldCore />} />
+        <Route path="/mining/platinum-array" element={<PlatinumArray />} /> {/* ✅ ADD */}
+
+        <Route path="/dashboard" element={<DashboardGoldMiracle />} />
+        <Route path="/member/dashboard" element={<DashboardGoldMiracle />} />
+        <Route path="/member/trading-dashboard" element={<TradingDashboardGoldMiracle />} />
+
+        <Route path="/customer-service" element={<CustomerService />} />
+        <Route path="/member/deposit" element={<MemberDeposit />} />
+        <Route path="/member/deposit/crypto" element={<MemberDepositCrypto />} />
+        <Route path="/member/deposit/bank" element={<MemberDepositBank />} />
+        <Route path="/mining/titan-vault-rig" element={<TitanVaultRig />} />
+        <Route path="/member/how-it-works" element={<HowItWorks />} />
+      <Route path="/disclaimer" element={<Disclaimer />} />
+<Route path="/privacy" element={<Privacy />} />
+<Route path="/terms" element={<Terms />} />
+        <Route path="/member/mining/bronze-miner" element={<BronzeMiner />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}

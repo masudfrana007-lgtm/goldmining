@@ -1,0 +1,1394 @@
+/* TradingPro.css */
+
+/* =========================================
+   TRADINGPRO ONLY (SCOPED)
+   NOTHING GLOBAL LEAKS OUTSIDE .tpPage
+========================================= */
+
+.tpPage{
+  /* vars scoped ONLY to this page */
+  --bg:#0b0f16;
+  --bg2:#0a0d13;
+
+  --panel: rgba(17,24,35,.72);
+  --panelManual: rgba(12,18,26,.95);
+
+  --line: rgba(255,255,255,.08);
+  --line2: rgba(255,255,255,.12);
+
+  --txt: #e7eef9;
+  --mut: rgba(231,238,249,.65);
+
+  --green:#00e79c;
+  --greenSoft: rgba(0,231,156,.12);
+  --greenLine: rgba(0,231,156,.25);
+
+  --red:#ff4d4f;
+  --redSoft: rgba(255,77,79,.12);
+  --redLine: rgba(255,77,79,.25);
+
+  --shadowSoft: 0 10px 40px rgba(0,0,0,.35);
+  --r: 18px;
+
+  --fs-11: clamp(10px, .85vw, 11px);
+  --fs-12: clamp(11px, .95vw, 12px);
+  --fs-13: clamp(12px, 1.05vw, 13px);
+  --fs-14: clamp(13px, 1.15vw, 14px);
+  --fs-16: clamp(14px, 1.25vw, 16px);
+  --fs-18: clamp(16px, 1.5vw, 18px);
+  --fs-22: clamp(18px, 1.9vw, 22px);
+  --fs-28: clamp(22px, 2.4vw, 28px);
+
+  min-height:100vh;
+  width:100%;
+
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  background:
+    radial-gradient(1000px 600px at 60% 0%, rgba(0,231,156,.06), transparent 60%),
+    linear-gradient(180deg, var(--bg), var(--bg2));
+
+  color: var(--txt);
+  padding: clamp(10px, 2vw, 16px);
+}
+
+.tpPage,
+.tpPage *{
+  box-sizing: border-box;
+}
+
+/* prevent random global styles from other pages */
+.tpPage button,
+.tpPage input,
+.tpPage select{
+  font: inherit;
+  color: inherit;
+}
+
+/* Center header and shell with a max width */
+.tpPage .tpTop,
+.tpPage .tpShell{
+  max-width: 1480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* TOP BAR */
+.tpPage .tpTop{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 8px 14px !important;
+  min-height: 60px !important;
+  border-radius: 18px !important;
+
+  background:
+    linear-gradient(180deg, rgba(10,16,26,0.98), rgba(8,13,22,0.98)) !important;
+
+  border: 1px solid rgba(255,255,255,0.06) !important;
+
+  box-shadow:
+    0 6px 24px rgba(0,0,0,0.35),
+    0 1px 0 rgba(0,231,156,0.05) inset !important;
+
+  backdrop-filter: blur(10px);
+}
+
+.tpPage .tpBurger{
+  width: 40px !important;
+  height: 40px !important;
+  border-radius:14px;
+  border:1px solid var(--line2);
+  background:rgba(255,255,255,.03);
+  display:grid;
+  place-content:center;
+  gap:4px;
+  cursor:pointer;
+  flex: 0 0 auto;
+}
+.tpPage .tpBurger span{
+  width: 16px !important;
+  height:2px;
+  background:var(--txt);
+  display:block;
+  opacity:.9;
+}
+
+.tpPage .tpBrand{ display:flex; align-items:center; gap: 10px !important; min-width: 0; }
+.tpPage .tpMark{
+  width: 28px !important;
+  height: 28px !important;
+  border-radius:12px;
+  background: radial-gradient(circle at 30% 30%, var(--green), rgba(0,231,156,.15));
+  box-shadow:0 0 20px rgba(0,231,156,.25);
+  flex: 0 0 auto;
+}
+.tpPage .tpBrandText{ min-width:0; }
+.tpPage .tpName{ font-weight:950; font-size: 14px !important; letter-spacing:.2px; }
+.tpPage .tpHint{ font-size: 11px !important; color:var(--mut); margin-top:2px; }
+
+.tpPage .tpTopRight{ display:flex; align-items:center; gap:10px; flex: 0 0 auto; }
+.tpPage .tpWallet{
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.03);
+  border-radius:14px !important;
+  padding: 8px 12px !important;
+  text-align:right;
+}
+.tpPage .tpWL{ font-size: 10px !important; color:var(--mut); }
+.tpPage .tpWV{ font-size: 14px !important; font-weight:950; }
+.tpPage .tpWV span{ color: rgba(0,231,156,.95); font-size: var(--fs-11); margin-left:6px; }
+
+/* LAYOUT */
+.tpPage .tpShell{
+  margin-top: clamp(10px, 2vw, 14px);
+  display:grid !important;
+  grid-template-columns: 320px minmax(0, 1fr) 360px !important;
+  gap: 16px !important;
+  align-items:start;
+
+  position: relative;
+}
+
+/* SIDEBAR */
+.tpPage .tpSide{
+  border:1px solid var(--line);
+  background:var(--panel);
+  border-radius:var(--r);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  height: calc(100vh - 140px);
+  position: sticky;
+  top: 14px;
+}
+.tpPage .tpSideTop{
+  padding: 14px 14px 12px;
+  display:flex;
+  justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  font-weight:950;
+}
+.tpPage .tpSideTitle{ font-size: var(--fs-13); letter-spacing:.2px; }
+.tpPage .tpClose{
+  display:none;
+  border:1px solid var(--line2);
+  background:rgba(255,255,255,.03);
+  color:var(--txt);
+  border-radius:12px;
+  padding:8px 10px;
+  cursor:pointer;
+}
+
+.tpPage .tpSearch{ padding: 12px 14px; }
+.tpPage .tpSearch input{
+  width:100%;
+  padding: 11px 12px;
+  border-radius:14px;
+  border:1px solid var(--line2);
+  background:rgba(255,255,255,.03);
+  outline:none;
+  font-size: var(--fs-13);
+}
+.tpPage .tpSearch input:focus{
+  border-color: var(--greenLine);
+  box-shadow: 0 0 0 4px rgba(0,231,156,.08);
+}
+
+.tpPage .tpSideMeta{
+  padding: 0 14px 12px;
+  display:flex; gap:8px; flex-wrap:wrap;
+}
+.tpPage .tpPill{
+  font-size: var(--fs-12);
+  font-weight:950;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.03);
+}
+.tpPage .tpPill.ok{ border-color:var(--greenLine); background:var(--greenSoft); color:var(--green); }
+.tpPage .tpPill.warn{ border-color:var(--redLine); background:var(--redSoft); color:var(--red); }
+
+.tpPage .tpCoinList{
+  padding: 0 14px 14px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  overflow:auto;
+}
+.tpPage .tpCoin{
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.02);
+  padding: 10px 12px;
+  display:grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap:10px;
+  align-items:center;
+  cursor:pointer;
+  transition:.15s;
+}
+.tpPage .tpCoin:hover{ border-color:rgba(255,255,255,.18); transform:translateY(-1px); }
+.tpPage .tpCoin.active{ border-color:var(--greenLine); background:rgba(0,231,156,.08); }
+
+.tpPage .tpCoinL{ display:flex; align-items:baseline; gap:7px; min-width:0; }
+.tpPage .tpCoinSym{ font-weight:950; font-size: var(--fs-13); }
+.tpPage .tpCoinSub{ font-size: var(--fs-12); color:var(--mut); }
+.tpPage .tpCoinM{ text-align:right; min-width:0; }
+.tpPage .tpCoinPrice{ font-weight:950; font-size: var(--fs-13); }
+.tpPage .tpCoinVol{ font-size: var(--fs-11); color:var(--mut); margin-top:3px; }
+
+.tpPage .tpCoinR{
+  font-size: var(--fs-12);
+  font-weight:950;
+  padding:6px 9px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.02);
+}
+.tpPage .tpCoinR.up{ background:var(--greenSoft); color:var(--green); border-color:var(--greenLine); }
+.tpPage .tpCoinR.down{ background:var(--redSoft); color:var(--red); border-color:var(--redLine); }
+
+.tpPage .tpSideFoot{
+  margin-top:auto;
+  padding: 10px 14px 14px;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+.tpPage .tpNote{ color:var(--mut); font-size: var(--fs-12); }
+
+/* MAIN */
+.tpPage .tpMain{ min-width:0 !important; display:flex; flex-direction:column; gap: clamp(10px, 2vw, 14px); }
+
+/* TOP STATS */
+.tpPage .tpMainTop.tpMainTop--compact{
+  display: grid !important;
+  grid-template-columns: auto auto 1fr !important;
+  align-items: center !important;
+  gap: 16px !important;
+  padding: 8px 12px !important;
+}
+
+.tpPage .tpPairBlock{ display:flex; flex-direction:column; gap:6px; }
+.tpPage .tpPairSym{
+  font-size: clamp(16px, 1.6vw, 18px) !important;
+  line-height: 1.05 !important;
+  font-weight:980;
+  letter-spacing:.2px;
+}
+.tpPage .tpPairChg{
+  margin-top: 6px !important;
+  padding: 5px 9px !important;
+  font-size: 11px !important;
+  font-weight:980;
+  border-radius:999px;
+  display:inline-block;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.02);
+}
+.tpPage .tpPairChg.up{ background:var(--greenSoft); color:var(--green); border-color:var(--greenLine); }
+.tpPage .tpPairChg.down{ background:var(--redSoft); color:var(--red); border-color:var(--redLine); }
+
+.tpPage .tpPriceBlock{
+  text-align:right;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:6px;
+  min-width:220px;
+}
+.tpPage .tpPriceLabel{ font-size: 10px !important; color:var(--mut); line-height: 1.1 !important; }
+.tpPage .tpPriceVal{
+  margin-top: 2px !important;
+  line-height:1.05 !important;
+  font-size: clamp(20px,2.2vw,26px) !important;
+  font-weight: 990;
+  letter-spacing: .2px;
+}
+
+.tpPage .tpMiniBA{
+  margin-top: 4px !important;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding: 5px 10px !important;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.02);
+  font-size: 10px !important;
+  color:var(--mut);
+}
+.tpPage .tpMiniBA b{ font-weight:980; }
+.tpPage .tpMiniBA .g{ color:var(--green); }
+.tpPage .tpMiniBA .r{ color:var(--red); }
+.tpPage .tpMiniBA .sep{ width:1px; height:12px !important; background:rgba(255,255,255,.12); display:inline-block; }
+
+.tpPage .tpStatGrid{
+  display:grid !important;
+  grid-template-columns: repeat(4, minmax(120px,1fr)) !important;
+  gap: 10px !important;
+}
+.tpPage .tpStatBox{
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.02);
+  border-radius: 13px !important;
+  padding: 8px 9px !important;
+  text-align:right;
+}
+.tpPage .tpStatBox .k{ font-size: 9.5px !important; color:var(--mut); line-height:1.1 !important; }
+.tpPage .tpStatBox .v{ font-size: 12px !important; font-weight:980; margin-top:3px !important; line-height:1.1 !important; }
+.tpPage .upTxt{ color:var(--green); }
+.tpPage .downTxt{ color:var(--red); }
+
+/* PANELS */
+.tpPage .tpPanel{
+  border:1px solid var(--line);
+  background:var(--panel);
+  border-radius:var(--r);
+  overflow:hidden;
+}
+.tpPage .tpPanelHead{
+  padding: 14px 16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  gap: 10px;
+}
+.tpPage .tpPanelTitle{ font-weight:980; font-size: var(--fs-13); letter-spacing:.2px; }
+
+.tpPage .tpTfRow{ display:flex; gap:8px; }
+.tpPage .tpTf{
+  border-radius:14px;
+  padding: 9px 12px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.02);
+  font-weight:950;
+  font-size: var(--fs-12);
+  cursor:pointer;
+}
+.tpPage .tpTf.active{ background:var(--greenSoft); border-color:var(--greenLine); color:var(--green); }
+
+.tpPage .tpChartBox{
+  height: clamp(240px, 34vh, 360px);
+  background:linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.06));
+}
+.tpPage .tpCanvas{ width:100%; height:100%; display:block; }
+
+/* BLINK */
+.tpPage .blink{ animation: tpBlink .32s ease; }
+@keyframes tpBlink{
+  0%{ transform: translateY(0); }
+  30%{ transform: translateY(-1px); }
+  100%{ transform: translateY(0); }
+}
+.tpPage .blink.up{ text-shadow: 0 0 22px rgba(0,231,156,.18); }
+.tpPage .blink.down{ text-shadow: 0 0 22px rgba(255,77,79,.18); }
+
+/* ORDER BOOK */
+.tpPage .tpOBMeta{ display:flex; gap:10px; flex-wrap:wrap; }
+.tpPage .tpOBMeta .m{ font-size: var(--fs-12); color:var(--mut); font-weight:900; }
+.tpPage .tpOBMeta b{ color:var(--txt); font-weight:980; }
+
+.tpPage .tpDepth{
+  padding: 12px 16px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.tpPage .tpDepthTop{
+  display:flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+.tpPage .tpDepthLbl{ font-weight:980; font-size: var(--fs-12); }
+.tpPage .tpDepthLbl span{ color: var(--mut); font-weight:900; margin-left:6px; }
+.tpPage .tpDepthVal{ font-size: var(--fs-12); font-weight:980; }
+.tpPage .tpDepthVal .g{ color:var(--green); }
+.tpPage .tpDepthVal .r{ color:var(--red); }
+.tpPage .tpDepthVal .mut{ color:var(--mut); }
+
+.tpPage .tpDepthBar{
+  margin-top:10px;
+  height: 12px;
+  border-radius: 999px;
+  overflow:hidden;
+  display:flex;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.02);
+}
+.tpPage .tpDepthBid{ background: linear-gradient(90deg, rgba(0,231,156,.42), rgba(0,231,156,.18)); }
+.tpPage .tpDepthAsk{ background: linear-gradient(90deg, rgba(255,77,79,.18), rgba(255,77,79,.42)); }
+.tpPage .tpDepthFoot{
+  margin-top:8px;
+  display:flex;
+  justify-content: space-between;
+  font-size: var(--fs-12);
+  font-weight:950;
+}
+.tpPage .tpDepthFoot .g{ color:var(--green); }
+.tpPage .tpDepthFoot .r{ color:var(--red); }
+
+.tpPage .tpOBGrid{
+  display:grid;
+  grid-template-columns: 1fr 140px 1fr;
+  gap: 12px;
+  padding: 12px 16px 16px;
+}
+.tpPage .tpOBMid{ display:flex; align-items:center; justify-content:center; }
+.tpPage .tpOBMidPrice{
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.02);
+  border-radius: 16px;
+  padding: 12px 10px;
+  text-align:center;
+  width:100%;
+}
+.tpPage .tpOBMidPrice .mk{ display:block; margin-top:8px; font-weight:990; font-size: var(--fs-14); }
+.tpPage .tpOBMidPrice .g{ color:var(--green); }
+.tpPage .tpOBMidPrice .r{ color:var(--red); }
+
+.tpPage .tpOBHead{
+  display:flex;
+  justify-content: space-between;
+  padding: 9px 10px;
+  border:1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.02);
+  border-radius: 14px;
+  font-size: var(--fs-12);
+  font-weight: 980;
+  color: var(--mut);
+}
+.tpPage .tpOBList{
+  margin-top: 10px;
+  display:flex;
+  flex-direction:column;
+  gap: 7px;
+}
+.tpPage .tpOBRow{
+  position:relative;
+  display:flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.015);
+  overflow:hidden;
+  font-size: var(--fs-12);
+  font-weight: 950;
+}
+.tpPage .tpOBRow .bar{
+  position:absolute;
+  top:0; bottom:0;
+  opacity:.65;
+}
+.tpPage .tpOBRow.bid .bar{
+  left:0;
+  background: linear-gradient(90deg, rgba(0,231,156,.22), rgba(0,231,156,.06));
+}
+.tpPage .tpOBRow.ask .bar{
+  right:0;
+  background: linear-gradient(270deg, rgba(255,77,79,.22), rgba(255,77,79,.06));
+}
+.tpPage .tpOBRow .price{ position:relative; z-index:1; }
+.tpPage .tpOBRow .qty{ position:relative; z-index:1; color: rgba(231,238,249,.78); }
+.tpPage .tpOBRow.bid .price{ color: var(--green); }
+.tpPage .tpOBRow.ask .price{ color: var(--red); }
+
+/* RIGHT PANEL */
+.tpPage .tpRight{
+  position: sticky;
+  top: 14px;
+  height: calc(100vh - 140px);
+  display:flex;
+  flex-direction:column;
+  gap: clamp(10px, 2vw, 14px);
+}
+
+/* Highlight Manual Trade Panel */
+.tpPage .tpOrderPanel{
+  background: linear-gradient(180deg, rgba(6,16,26,0.98), rgba(4,12,20,0.98)) !important;
+  border: 1px solid rgba(0,231,156,0.12) !important;
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(0,231,156,0.05) inset,
+    0 0 40px rgba(0,231,156,0.06);
+  border-radius: 20px !important;
+}
+.tpPage .tpOrderPanel .tpPanelHead{ border-bottom: 1px solid rgba(0,231,156,0.08) !important; }
+.tpPage .tpOrderPanel .tpPanelTitle{
+  color: rgba(0,231,156,0.9) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.4px;
+}
+
+/* ✅ Coin picker inside Manual Trade */
+.tpPage .tpCoinPick{
+  padding: 12px 14px 0;
+}
+.tpPage .tpCoinPickTop{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:8px;
+}
+.tpPage .tpCoinPickLabel{
+  font-size: var(--fs-12);
+  color: var(--mut);
+  font-weight:900;
+}
+.tpPage .tpCoinPickNow{
+  font-size: var(--fs-12);
+  color: rgba(231,238,249,.85);
+}
+.tpPage .tpCoinPickNow b{ color: var(--txt); font-weight:980; }
+.tpPage .tpCoinPickNow span{ color: var(--mut); margin-left:6px; }
+
+.tpPage .tpCoinPickRow{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:10px;
+}
+.tpPage .tpCoinPickSearch{
+  width:100%;
+  padding: 11px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,0.28);
+  outline:none;
+  font-size: var(--fs-13);
+}
+.tpPage .tpCoinPickSearch:focus{
+  border-color: var(--greenLine);
+  box-shadow: 0 0 0 4px rgba(0,231,156,.08);
+}
+.tpPage .tpCoinPickSelect{
+  width:100%;
+  padding: 11px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,0.28);
+  outline:none;
+  font-size: var(--fs-13);
+}
+
+/* Controls */
+.tpPage .tpModePills{ display:flex; gap:8px; }
+.tpPage .tpMode{
+  border-radius:14px;
+  padding: 9px 12px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.02);
+  font-weight:950;
+  font-size: var(--fs-12);
+  cursor:pointer;
+}
+.tpPage .tpMode.active{ background:var(--greenSoft); border-color:var(--greenLine); color:var(--green); }
+
+.tpPage .tpSideBtns{ display:flex; gap:10px; padding: 12px 14px; }
+.tpPage .tpSideBtn{
+  flex:1;
+  padding: 13px 12px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.02);
+  font-weight:980;
+  font-size: var(--fs-13);
+  cursor:pointer;
+  letter-spacing:.6px;
+}
+.tpPage .tpSideBtn.active.long{ background:var(--greenSoft); border-color:var(--greenLine); color:var(--green); }
+.tpPage .tpSideBtn.active.short{ background:var(--redSoft); border-color:var(--redLine); color:var(--red); }
+
+.tpPage .tpField{ padding:0 14px 12px; }
+.tpPage .tpFieldLabel{ font-size: var(--fs-12); color:var(--mut); margin-bottom:6px; font-weight:900; }
+.tpPage .tpInput{
+  width:100%;
+  padding: 12px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,0.28);
+  outline:none;
+  font-size: var(--fs-13);
+}
+.tpPage .tpInput:focus{
+  border-color: var(--greenLine);
+  box-shadow: 0 0 0 4px rgba(0,231,156,.08);
+}
+
+.tpPage .tpLevRow{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.tpPage .tpLevBtn{
+  width:42px; height:42px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.02);
+  font-weight:980;
+  cursor:pointer;
+}
+.tpPage .tpLevVal{ font-weight:990; color:var(--green); font-size: var(--fs-16); }
+.tpPage .tpRange{ width:100%; margin-top:10px; }
+
+.tpPage .tpInfo{
+  margin: 0 14px 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.02);
+  font-size: var(--fs-13);
+  color: rgba(231,238,249,.9);
+  font-weight: 900;
+}
+
+.tpPage .tpSummary{
+  margin: 0 14px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.02);
+  padding: 10px 12px;
+}
+.tpPage .tpSummary .r{
+  display:flex;
+  justify-content:space-between;
+  padding:8px 0;
+  font-size: var(--fs-13);
+}
+.tpPage .tpSummary .r span{ color:var(--mut); font-weight:900; }
+.tpPage .tpSummary .r b{ font-weight:980; }
+.tpPage .tpSummary .r.total{ border-top:1px solid rgba(255,255,255,.06); margin-top:6px; padding-top:10px; }
+
+.tpPage .tpSubmit{
+  margin: 14px;
+  padding: 13px 12px;
+  border-radius: 16px;
+  font-weight: 980;
+  font-size: var(--fs-14);
+  cursor:pointer;
+  border:none;
+  color:#07110c;
+  background:linear-gradient(180deg, var(--green), rgba(0,231,156,.82));
+}
+.tpPage .tpSubmit.short{ background:linear-gradient(180deg, var(--red), rgba(255,77,79,.82)); color:#1a0b0b; }
+.tpPage .tpSubmit.disabled{ opacity:.5; cursor:not-allowed; }
+
+.tpPage .tpWarn{ padding:0 14px 12px; color:var(--mut); font-size: var(--fs-12); }
+.tpPage .tpFine{ padding:0 14px 12px; color:rgba(231,238,249,.55); font-size: var(--fs-12); line-height: 1.45; }
+
+/* ACTIVITY */
+.tpPage .tpTabs{ display:flex; gap:10px; }
+.tpPage .tpTab{
+  border-radius:14px;
+  padding: 9px 12px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.02);
+  font-weight:950;
+  font-size: var(--fs-12);
+  cursor:pointer;
+}
+.tpPage .tpTab.active{ background:var(--greenSoft); border-color:var(--greenLine); color:var(--green); }
+.tpPage .tpSmallHint{ color:var(--mut); font-size: var(--fs-12); font-weight:950; }
+
+.tpPage .tpCards{ padding: 12px 16px 16px; display:flex; flex-direction:column; gap:10px; }
+.tpPage .tpCard{
+  border-radius: 16px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.02);
+  padding: 12px;
+}
+.tpPage .tpCardRow{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.tpPage .tpCardTitle{ font-weight:980; font-size: var(--fs-13); }
+.tpPage .tpBadge{
+  font-weight:980;
+  font-size: var(--fs-11);
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.02);
+}
+.tpPage .tpBadge.up{ border-color:var(--greenLine); background:var(--greenSoft); color:var(--green); }
+.tpPage .tpBadge.down{ border-color:var(--redLine); background:var(--redSoft); color:var(--red); }
+
+.tpPage .tpKV{ display:flex; flex-direction:column; gap:4px; min-width: 90px; }
+.tpPage .tpKV span{ color:var(--mut); font-size: var(--fs-11); font-weight:900; }
+.tpPage .tpKV b{ font-weight:980; font-size: var(--fs-13); }
+.tpPage .tpStatus{ color:var(--mut); font-weight:950; font-size: var(--fs-12); }
+.tpPage .tpStatus.ok{ color:var(--green); }
+.tpPage .tpMuted{ color:var(--mut); font-size: var(--fs-12); font-weight:900; }
+
+.tpPage .tpCancel{
+  border-radius:14px;
+  border:1px solid var(--redLine);
+  background:var(--redSoft);
+  color:var(--red);
+  font-weight:980;
+  padding:9px 12px;
+  cursor:pointer;
+}
+.tpPage .tpEmpty{ padding:18px 12px; text-align:center; color:var(--mut); font-weight:950; }
+
+/* Mobile bar / Backdrop */
+.tpPage .tpMobileBar{ display:none; }
+.tpPage .tpBackdrop{ display:none; }
+
+.tpPage .tpMobileTrade{ display:none; }
+@media(max-width:980px){
+  .tpPage .tpRight{ display:none; }
+  .tpPage .tpMobileTrade{ display:block; }
+}
+
+/* ✅ RESPONSIVE */
+@media (max-width: 1100px){
+  .tpPage .tpShell{ grid-template-columns: 280px minmax(0, 1fr) 330px !important; }
+}
+
+@media (max-width: 980px){
+  .tpPage .tpTop{
+    padding: 6px 10px !important;
+    min-height: 54px !important;
+  }
+  .tpPage .tpWallet{ display:none !important; }
+
+  .tpPage .tpShell{ grid-template-columns: 1fr !important; }
+
+  .tpPage .tpSide{
+    position: fixed;
+    left: 14px;
+    top: 14px;
+    bottom: 14px;
+    width: min(380px, calc(100% - 28px));
+    transform: translateX(-120%);
+    transition: transform .18s ease;
+    z-index: 200;
+    background: rgba(12,18,26,.96);
+    height: auto;
+  }
+  .tpPage .tpSide.open{ transform: translateX(0); }
+  .tpPage .tpClose{ display:inline-flex; }
+
+  .tpPage .tpBackdrop{
+    display:block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    z-index: 150;
+  }
+
+  .tpPage .tpOBGrid{ grid-template-columns: 1fr; }
+  .tpPage .tpOBMid{ display:none; }
+
+  .tpPage .tpMainTop.tpMainTop--compact{
+    grid-template-columns: 1fr auto !important;
+    gap: 10px !important;
+  }
+
+  .tpPage .tpPriceBlock{
+    text-align: right !important;
+    align-items: flex-end !important;
+    min-width: 170px !important;
+  }
+
+  .tpPage .tpStatGrid{
+    grid-column: 1 / -1 !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    margin-top: 6px !important;
+  }
+
+  .tpPage .tpCoinPickRow{
+    grid-template-columns: 1fr;
+  }
+
+  .tpPage .tpMobileBar{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 10px;
+    border: 1px solid rgba(255,255,255,.10);
+    background: rgba(17,24,35,.78);
+    backdrop-filter: blur(10px);
+    border-radius: var(--r);
+    box-shadow: var(--shadowSoft);
+    padding: 10px 12px;
+  }
+  .tpPage .tpMBPair{ font-weight:980; font-size: var(--fs-13); }
+  .tpPage .tpMBChg{ font-weight:980; font-size: var(--fs-12); margin-top:4px; }
+  .tpPage .tpMBChg.up{ color: var(--green); }
+  .tpPage .tpMBChg.down{ color: var(--red); }
+
+  .tpPage .tpMBPrice{ font-weight:990; font-size: var(--fs-14); }
+
+  .tpPage .tpMBBtns{ display:flex; gap:8px; }
+  .tpPage .tpMB{
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.02);
+    font-weight: 980;
+    padding: 10px 12px;
+    cursor:pointer;
+    letter-spacing: .5px;
+    font-size: var(--fs-12);
+  }
+  .tpPage .tpMB.long{ border-color: var(--greenLine); background: rgba(0,231,156,.12); color: var(--green); }
+  .tpPage .tpMB.short{ border-color: var(--redLine); background: rgba(255,77,79,.12); color: var(--red); }
+}
+
+/* Premium Vertical Divider Glow (Desktop Only) */
+@media (min-width: 981px){
+  .tpPage .tpShell::after{
+    content: "";
+    position: absolute;
+    top: 20px;
+    bottom: 20px;
+    right: 360px;
+    width: 1px;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      rgba(0,231,156,0.25),
+      rgba(0,231,156,0.35),
+      rgba(0,231,156,0.25),
+      transparent
+    );
+    box-shadow:
+      0 0 12px rgba(0,231,156,0.25),
+      0 0 24px rgba(0,231,156,0.12);
+    pointer-events: none;
+  }
+}
+
+/* =========================
+   ✅ My Dashboard button (Top)
+========================= */
+.tpPage .tpDashBtn{
+  border: 1px solid rgba(131, 108, 255, 0.28);
+  background: linear-gradient(180deg, rgba(131,108,255,.95), rgba(72, 50, 200, .85));
+  color: #f2f1ff;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-weight: 980;
+  font-size: var(--fs-12);
+  cursor: pointer;
+  box-shadow:
+    0 10px 24px rgba(0,0,0,.28),
+    0 0 0 1px rgba(255,255,255,.08) inset;
+  transition: transform .15s ease, filter .15s ease;
+}
+.tpPage .tpDashBtn:hover{ transform: translateY(-1px); filter: brightness(1.05); }
+.tpPage .tpDashBtn:active{ transform: translateY(0); filter: brightness(0.98); }
+
+/* =========================
+   ✅ Manual Trade Time Picker
+========================= */
+.tpPage .tpTimeRow{
+  margin: 0 14px 12px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.02);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+}
+.tpPage .tpTimeLeft{ display:flex; flex-direction:column; gap:4px; }
+.tpPage .tpTimeLabel{ font-size: var(--fs-12); color: var(--mut); font-weight: 900; }
+.tpPage .tpTimeVal{ font-size: var(--fs-13); font-weight: 980; color: rgba(231,238,249,.92); }
+
+.tpPage .tpTimeRight{ position:relative; }
+.tpPage .tpTimeBtn{
+  border-radius: 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,0.28);
+  font-weight: 980;
+  font-size: var(--fs-12);
+  cursor:pointer;
+}
+.tpPage .tpTimeBtn:hover{ border-color: rgba(255,255,255,.22); }
+
+.tpPage .tpTimeMenu{
+  position:absolute;
+  right:0;
+  top: calc(100% + 8px);
+  width: 180px;
+  padding: 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(12,18,26,.96);
+  box-shadow: 0 18px 44px rgba(0,0,0,.55);
+  display:grid;
+  gap: 8px;
+  z-index: 40;
+}
+.tpPage .tpTimeOpt{
+  width:100%;
+  text-align:left;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.02);
+  font-weight: 980;
+  font-size: var(--fs-12);
+  cursor:pointer;
+}
+.tpPage .tpTimeOpt:hover{ border-color: rgba(255,255,255,.20); transform: translateY(-1px); }
+.tpPage .tpTimeOpt.active{
+  border-color: rgba(0,231,156,.30);
+  background: rgba(0,231,156,.10);
+  color: rgba(0,231,156,.95);
+}
+
+/* =========================
+   ✅ Trade Popup (Timer + Profit)
+========================= */
+.tpPage .tpPopWrap{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.62);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index: 999;
+  padding: 16px;
+}
+.tpPage .tpPop{
+  width: min(520px, 100%);
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: linear-gradient(180deg, rgba(12,18,26,.98), rgba(8,13,22,.98));
+  box-shadow: 0 30px 80px rgba(0,0,0,.65);
+  overflow:hidden;
+}
+.tpPage .tpPopTop{
+  padding: 14px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.tpPage .tpPopTitle{
+  font-weight: 980;
+  letter-spacing: .2px;
+  font-size: var(--fs-13);
+}
+.tpPage .tpPopClose{
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.03);
+  border-radius: 12px;
+  width: 38px;
+  height: 38px;
+  cursor:pointer;
+}
+.tpPage .tpPopBody{
+  padding: 18px 16px 16px;
+  text-align:center;
+}
+.tpPage .tpPopK{
+  color: var(--mut);
+  font-weight: 900;
+  font-size: var(--fs-12);
+}
+.tpPage .tpPopTimer{
+  margin-top: 10px;
+  font-weight: 990;
+  font-size: clamp(34px, 4vw, 48px);
+  letter-spacing: .5px;
+}
+.tpPage .tpPopHint{
+  margin-top: 8px;
+  color: rgba(231,238,249,.78);
+  font-size: var(--fs-12);
+  font-weight: 850;
+}
+.tpPage .tpPopBar{
+  margin-top: 14px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.02);
+  overflow:hidden;
+}
+.tpPage .tpPopBarFill{
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, rgba(0,231,156,.65), rgba(0,231,156,.25));
+  transition: width .25s ease;
+}
+
+.tpPage .tpPopCongrats{
+  font-weight: 990;
+  font-size: clamp(18px, 2vw, 22px);
+}
+.tpPage .tpPopMsg{
+  margin-top: 8px;
+  color: rgba(231,238,249,.78);
+  font-size: var(--fs-13);
+  font-weight: 850;
+}
+.tpPage .tpPopProfit{
+  margin-top: 14px;
+  display:flex;
+  align-items:baseline;
+  justify-content:center;
+  gap: 6px;
+  padding: 12px 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(0,231,156,.22);
+  background: rgba(0,231,156,.08);
+}
+.tpPage .tpPopPlus{
+  color: rgba(0,231,156,.95);
+  font-weight: 990;
+  font-size: 18px;
+}
+.tpPage .tpPopAmt{
+  color: rgba(0,231,156,.98);
+  font-weight: 990;
+  font-size: clamp(20px, 2.4vw, 26px);
+}
+.tpPage .tpPopPct{
+  color: rgba(231,238,249,.70);
+  font-weight: 900;
+  font-size: var(--fs-12);
+}
+
+.tpPage .tpPopDone{
+  margin-top: 14px;
+  width: 100%;
+  border: none;
+  border-radius: 16px;
+  padding: 12px 12px;
+  cursor:pointer;
+  font-weight: 980;
+  font-size: var(--fs-13);
+  color:#07110c;
+  background: linear-gradient(180deg, var(--green), rgba(0,231,156,.82));
+}
+
+
+/* ✅ ADD / REPLACE ONLY these parts in TradingPro.css (no other changes) */
+
+/* 1) Manual Trade border = GOLDEN glow with shadow (replace your current .tpOrderPanel block) */
+.tpPage .tpOrderPanel{
+  background: linear-gradient(180deg, rgba(6,16,26,0.98), rgba(4,12,20,0.98)) !important;
+
+  /* ✅ golden border glow */
+  border: 1px solid rgba(255, 196, 61, 0.28) !important;
+
+  /* ✅ premium golden glow + depth shadow */
+  box-shadow:
+    0 14px 44px rgba(0,0,0,0.55),
+    0 0 0 1px rgba(255, 196, 61, 0.10) inset,
+    0 0 34px rgba(255, 196, 61, 0.14),
+    0 0 64px rgba(255, 196, 61, 0.08);
+  border-radius: 20px !important;
+}
+
+/* Keep your head/title style but make title slightly gold-tinted (optional but pro) */
+.tpPage .tpOrderPanel .tpPanelHead{ border-bottom: 1px solid rgba(255, 196, 61, 0.12) !important; }
+.tpPage .tpOrderPanel .tpPanelTitle{
+  color: rgba(255, 217, 115, 0.92) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.4px;
+}
+
+
+/* 2) Place Order button color:
+      - Buy/Long => Binance yellow
+      - Sell/Short => keep current red
+   (replace ONLY these .tpSubmit rules) */
+.tpPage .tpSubmit{
+  margin: 14px;
+  padding: 13px 12px;
+  border-radius: 16px;
+  font-weight: 980;
+  font-size: var(--fs-14);
+  cursor:pointer;
+  border:none;
+
+  /* ✅ Binance yellow for BUY */
+  color:#1a1403;
+  background: linear-gradient(180deg, #fcd535, #f0b90b);
+  box-shadow:
+    0 10px 28px rgba(0,0,0,0.35),
+    0 0 0 1px rgba(255,255,255,0.06) inset;
+}
+.tpPage .tpSubmit.short{
+  /* ✅ keep your current SELL color */
+  background:linear-gradient(180deg, var(--red), rgba(255,77,79,.82));
+  color:#1a0b0b;
+  box-shadow:
+    0 10px 28px rgba(0,0,0,0.35),
+    0 0 0 1px rgba(255,255,255,0.06) inset;
+}
+.tpPage .tpSubmit.disabled{ opacity:.5; cursor:not-allowed; }
+
+
+/* 3) Time options not fully visible:
+      Make dropdown fit + scroll + better shape
+   (ADD these overrides; don’t remove your existing time CSS) */
+.tpPage .tpTimeMenu{
+  width: 200px;                 /* a bit wider */
+  max-height: 220px;            /* prevents overflow */
+  overflow: auto;               /* scroll if needed */
+  padding: 10px;
+  border-radius: 18px;
+}
+
+/* stack options cleanly with consistent sizing */
+.tpPage .tpTimeOpt{
+  padding: 11px 12px;
+  border-radius: 14px;
+}
+
+/* mobile safety: dropdown should not go outside screen */
+@media (max-width: 980px){
+  .tpPage .tpTimeMenu{
+    right: 0;
+    left: auto;
+    width: min(220px, 90vw);
+  }
+}
+/* =========================
+   ✅ LIGHT Manual Trade (white)
+   Adjusted for better text visibility
+========================= */
+
+.tpPage .tpOrderPanel.tpOrderPanel--light{
+  background: linear-gradient(180deg, #ffffff, #fbfcff) !important;
+  border: 2px solid rgba(240, 180, 40, 0.75) !important;
+  box-shadow:
+    0 18px 55px rgba(15, 23, 42, 0.12),
+    0 0 0 1px rgba(240, 180, 40, 0.12) inset,
+    0 0 28px rgba(240, 180, 40, 0.18),
+    0 0 60px rgba(240, 180, 40, 0.10);
+  border-radius: 24px !important;
+}
+
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpPanelHead{
+  border-bottom: 1px solid rgba(15, 23, 42, 0.10) !important;
+}
+
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpPanelTitle{
+  color: #0d1117 !important; /* darker for visibility */
+  font-weight: 980 !important;
+}
+
+/* text colors inside block */
+.tpPage .tpOrderPanel.tpOrderPanel--light,
+.tpPage .tpOrderPanel.tpOrderPanel--light *{
+  color: #1a1f29; /* slightly darker neutral */
+}
+
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpCoinPickLabel,
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpFieldLabel,
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpTimeLabel,
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpWarn,
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpFine{
+  color: rgba(17, 24, 39, 0.85) !important; /* increased opacity for readability */
+}
+
+/* inputs look clean on white */
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpInput,
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpCoinPickSearch,
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpCoinPickSelect,
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpTimeBtn,
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpLevBtn{
+  background: #f8fafc !important;
+  border: 1px solid rgba(15, 23, 42, 0.18) !important;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06) inset;
+}
+
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpInput:focus,
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpCoinPickSearch:focus{
+  border-color: rgba(240, 180, 40, 0.65) !important;
+  box-shadow: 0 0 0 4px rgba(240, 180, 40, 0.22) !important;
+}
+
+/* info + summary blocks */
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpInfo,
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpSummary,
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpTimeRow{
+  background: #f8fafc !important;
+  border: 1px solid rgba(5, 8, 17, 0.12) !important;
+}
+
+/* buy/sell selector buttons */
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpSideBtn{
+  background: #f8fafc !important;
+  border: 1px solid rgba(15, 23, 42, 0.14) !important;
+}
+
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpSideBtn.active.long{
+  background: rgba(0, 150, 110, 0.12) !important;
+  border-color: rgba(0, 150, 110, 0.45) !important;
+  color: rgb(0, 120, 95) !important; /* darker green */
+}
+
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpSideBtn.active.short{
+  background: rgba(255, 77, 79, 0.12) !important;
+  border-color: rgba(255, 77, 79, 0.40) !important;
+  color: rgb(190, 40, 45) !important; /* darker red */
+}
+
+/* ✅ Place Order button refined */
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpSubmit {
+  display: block;
+  width: 100%;              /* full width for consistency */
+  max-width: 240px;         /* matches demo proportions */
+  margin: 20px auto 0;      /* centered with spacing above */
+  padding: 14px 0;          /* balanced vertical padding */
+  font-size: 16px;          /* readable size */
+  font-weight: 700;         /* bold for emphasis */
+  border-radius: 12px;      /* rounded corners like demo */
+  text-align: center;
+  color: #1a1403 !important;
+  background: linear-gradient(180deg, #fcd535, #f0b90b) !important;
+  box-shadow:
+    0 14px 30px rgba(15, 23, 42, 0.18),
+    0 0 0 1px rgba(255,255,255,0.40) inset;
+  cursor: pointer;
+}
+
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpSubmit.short {
+  background: linear-gradient(180deg, var(--red), rgba(255,77,79,.85)) !important;
+  color: #1a0b0b !important;
+}
+
+
+/* ✅ Time dropdown fit + scroll */
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpTimeMenu{
+  width: 210px;
+  max-height: 220px;
+  overflow: auto;
+  border-radius: 18px;
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.16) !important;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.18) !important;
+}
+
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpTimeOpt{
+  background: #f8fafc !important;
+  border: 1px solid rgba(15, 23, 42, 0.14) !important;
+  color: #1a1f29 !important; /* darker text */
+}
+
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpTimeOpt.active{
+  border-color: rgba(240, 180, 40, 0.65) !important;
+  background: rgba(240, 180, 40, 0.18) !important;
+  color: #6a4600 !important; /* deeper golden brown */
+}
+/* =========================
+   ✅ Manual Trade: Set Time POPUP (modal)
+   (ADD ONLY - no other changes)
+========================= */
+.tpPage .tpTimePopWrap{
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(0,0,0,.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.tpPage .tpTimePop{
+  width: min(420px, 92vw);
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  background: #ffffff;
+  box-shadow: 0 26px 70px rgba(15, 23, 42, 0.28);
+}
+
+.tpPage .tpTimePopTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.10);
+}
+
+.tpPage .tpTimePopTitle{
+  font-weight: 980;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.tpPage .tpTimePopClose{
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  background: #f8fafc;
+  cursor: pointer;
+  color: #0f172a;
+  font-weight: 900;
+}
+
+.tpPage .tpTimePopBody{
+  padding: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.tpPage .tpTimePopOpt{
+  border-radius: 14px;
+  padding: 12px 12px;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  background: #f8fafc;
+  cursor: pointer;
+  font-weight: 980;
+  color: #0f172a;
+}
+
+.tpPage .tpTimePopOpt:hover{
+  border-color: rgba(15, 23, 42, 0.22);
+  transform: translateY(-1px);
+}
+
+.tpPage .tpTimePopOpt.active{
+  border-color: rgba(240, 180, 40, 0.70);
+  background: rgba(240, 180, 40, 0.18);
+  color: #6a4600;
+}
+
+/* Mobile: make it single column if needed */
+@media (max-width: 420px){
+  .tpPage .tpTimePopBody{ grid-template-columns: 1fr; }
+}
+
+/* =========================
+   ✅ Manual Trade Summary: shorter + readable labels (white panel)
+========================= */
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpSummary{
+  padding: 8px 12px !important;          /* less padding */
+  border-radius: 14px !important;
+}
+
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpSummary .r{
+  padding: 6px 0 !important;             /* less row height */
+  font-size: 13px !important;
+}
+
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpSummary .r span{
+  color: rgba(15, 23, 42, 0.78) !important;  /* ✅ visible (not too muted) */
+  font-weight: 900 !important;
+}
+
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpSummary .r b{
+  color: #0f172a !important;             /* ✅ strong value text */
+  font-weight: 980 !important;
+}
+
+.tpPage .tpOrderPanel.tpOrderPanel--light .tpSummary .r.total{
+  margin-top: 4px !important;
+  padding-top: 8px !important;
+  border-top: 1px solid rgba(15, 23, 42, 0.10) !important;
+}
