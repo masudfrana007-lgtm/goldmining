@@ -46,9 +46,10 @@ const PLATINUM_ARRAY = {
   dailyPct: 1.5,
   durationDays: 30,
 
-  // ✅ FIXED RANGE
-  min: 1200,
-  max: 1999,
+  // ✅ FIXED RANGE: 10001-20000
+  min: 10001,
+  max: 20000,
+  durations: [7, 15, 30], // Available duration options in days
 
   settlement: "Daily accrual",
   riskNote: "Market conditions apply",
@@ -126,6 +127,7 @@ export default function PlatinumArray() {
   // ✅ keep string (allows empty input)
   const [amount, setAmount] = useState(String(PLATINUM_ARRAY.min));
   const [roiErr, setRoiErr] = useState("");
+  const [selectedDuration, setSelectedDuration] = useState(PLATINUM_ARRAY.durations[0]); // ✅ Duration selector
 
   /** ✅ Subscribe flow states */
   const [subOpen, setSubOpen] = useState(false);
@@ -163,12 +165,12 @@ export default function PlatinumArray() {
       amount !== "" && safeAmount >= PLATINUM_ARRAY.min && safeAmount <= PLATINUM_ARRAY.max;
 
     const dailyProfit = safeAmount * (PLATINUM_ARRAY.dailyPct / 100);
-    const totalProfit = dailyProfit * PLATINUM_ARRAY.durationDays;
+    const totalProfit = dailyProfit * selectedDuration; // ✅ Use selected duration
     const totalReturn = safeAmount + totalProfit;
     const roiPct = safeAmount > 0 ? (totalProfit / safeAmount) * 100 : 0;
 
     return { inRange, dailyProfit, totalProfit, totalReturn, roiPct };
-  }, [amount, amountNum]);
+  }, [amount, amountNum, selectedDuration]); // ✅ Add selectedDuration dependency
 
   const totalReturnPct = useMemo(() => PLATINUM_ARRAY.dailyPct * PLATINUM_ARRAY.durationDays, []);
 
@@ -496,6 +498,32 @@ export default function PlatinumArray() {
                 </div>
               </label>
 
+              {/* ✅ Duration Selector */}
+              <label className="field">
+                <span className="label">Package Duration</span>
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+                  {PLATINUM_ARRAY.durations.map((days) => (
+                    <button
+                      key={days}
+                      type="button"
+                      onClick={() => setSelectedDuration(days)}
+                      style={{
+                        padding: "0.5rem 1rem",
+                        background: selectedDuration === days ? "#e5e4e2" : "#1e293b",
+                        border: `1px solid ${selectedDuration === days ? "#e5e4e2" : "#334155"}`,
+                        borderRadius: "0.5rem",
+                        color: selectedDuration === days ? "#0f172a" : "#f1f5f9",
+                        cursor: "pointer",
+                        fontSize: "0.875rem",
+                        fontWeight: selectedDuration === days ? "600" : "400",
+                      }}
+                    >
+                      {days} {days === 1 ? "day" : "days"}
+                    </button>
+                  ))}
+                </div>
+              </label>
+
               <div className="calcGrid">
                 <div className="calcCard">
                   <div className="calcLabel">Est. Daily Profit</div>
@@ -506,7 +534,7 @@ export default function PlatinumArray() {
                 <div className="calcCard">
                   <div className="calcLabel">Est. Total Profit</div>
                   <div className="calcValue">${money(calc.totalProfit)}</div>
-                  <div className="calcMeta">{PLATINUM_ARRAY.durationDays} days</div>
+                  <div className="paCalcMeta">{selectedDuration} {selectedDuration === 1 ? "day" : "days"}</div>
                 </div>
 
                 <div className="calcCard">

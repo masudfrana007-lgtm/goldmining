@@ -1,0 +1,2031 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
+
+/* =========================================================
+   GoldMiracle AI Dashboard (STRICTLY SCOPED)
+   File: GoldMiracleAIDashboard.css
+   Guarantees:
+   ✅ No styles leak outside .gmAI
+   ✅ Removes class collision: .gmGrid (layout) vs SVG grid lines
+========================================================= */
+
+/* =========================
+   0) Root scope + tokens
+========================= */
+
+.gmAI{
+  /* Theme */
+  --navy:#071827;
+  --navy2:#0b2337;
+  --ink:#0b1220;
+
+  /* Glass */
+  --panel: rgba(255,255,255,.06);
+  --panel2: rgba(255,255,255,.08);
+  --stroke: rgba(255,255,255,.10);
+  --stroke2: rgba(255,255,255,.16);
+
+  /* Text */
+  --txt:#f5f7fb;
+  --mut: rgba(245,247,251,.72);
+  --mut2: rgba(245,247,251,.56);
+
+  /* Status */
+  --emerald:#19c37d;
+  --emerald2:#12a86a;
+  --red:#ff4d6d;
+  --amber:#ffce5b;
+
+  /* Binance yellow */
+  --binance:#f0b90b;
+  --binanceText:#1a1300;
+
+  /* Shadows */
+  --shadow: 0 18px 50px rgba(0,0,0,.45);
+  --shadow2: 0 10px 26px rgba(0,0,0,.34);
+
+  /* Layout spacing scale */
+  --g8: 8px;
+  --g10: 10px;
+  --g12: 12px;
+  --g14: 14px;
+  --g16: 16px;
+  --g18: 18px;
+  --g20: 20px;
+
+  /* Radius */
+  --r12: 12px;
+  --r14: 14px;
+  --r16: 16px;
+  --r18: 18px;
+
+  min-height: 100vh;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  color: var(--txt);
+
+  background:
+    radial-gradient(1200px 900px at 20% 10%, rgba(25,195,125,.12), transparent 55%),
+    radial-gradient(900px 700px at 80% 10%, rgba(91,178,255,.10), transparent 60%),
+    linear-gradient(180deg, var(--navy), #060b12 70%, #05080d);
+
+  position: relative;
+  overflow: hidden;
+  display:flex;
+}
+
+/* Make all children sizing stable (scoped) */
+.gmAI, .gmAI *{ box-sizing: border-box; }
+
+/* Ambient layers */
+.gmAI .gmAmbient{
+  position:absolute;
+  inset:-30%;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(25,195,125,.14), transparent 52%),
+    radial-gradient(circle at 82% 28%, rgba(80,160,255,.10), transparent 56%),
+    conic-gradient(from 220deg at 55% 40%, rgba(255,255,255,.05), transparent 40%, rgba(25,195,125,.06), transparent 78%);
+  filter: blur(14px);
+  opacity: .8;
+  pointer-events: none;
+  animation: gmFloat 12s ease-in-out infinite;
+  z-index: 0;
+}
+@keyframes gmFloat{
+  0%,100%{ transform: translate3d(0,0,0) scale(1); }
+  50%{ transform: translate3d(-1.5%, 1%, 0) scale(1.02); }
+}
+
+.gmAI .gmNoise{
+  position:absolute;
+  inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23n)' opacity='.12'/%3E%3C/svg%3E");
+  opacity: .35;
+  mix-blend-mode: overlay;
+  pointer-events:none;
+  z-index: 0;
+}
+
+/* Helpers (scoped, no leaks) */
+.gmAI .pos{ color: var(--emerald); }
+.gmAI .neg{ color: var(--red); }
+
+.gmAI .dot{ width: 8px; height: 8px; border-radius: 999px; display:inline-block; }
+.gmAI .dot.ok{ background: var(--emerald); box-shadow: 0 0 14px rgba(25,195,125,.45); }
+.gmAI .dot.warn{ background: var(--amber); box-shadow: 0 0 14px rgba(255,206,91,.35); }
+.gmAI .dot.bad{ background: var(--red); box-shadow: 0 0 14px rgba(255,77,109,.35); }
+
+/* =========================
+   1) Sidebar
+========================= */
+.gmAI .gmSide{
+  width: 280px;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+
+  background: linear-gradient(180deg, rgba(12,17,23,.78), rgba(8,12,18,.66));
+  border-right: 1px solid var(--stroke);
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  padding: var(--g18) var(--g14);
+  z-index: 3;
+}
+
+.gmAI .gmSideOverlay{
+  display:none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 2;
+}
+
+/* Brand */
+.gmAI .gmBrand{
+  display:flex;
+  align-items:center;
+  gap: var(--g12);
+  padding: var(--g10);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: var(--r16);
+  background: rgba(255,255,255,.04);
+  box-shadow: var(--shadow2);
+}
+
+.gmAI .gmLogo{
+  width: 40px; height: 40px;
+  border-radius: var(--r12);
+  background: radial-gradient(circle at 30% 30%, rgba(25,195,125,.28), rgba(255,255,255,.06));
+  border: 1px solid rgba(255,255,255,.14);
+  position: relative;
+  overflow:hidden;
+}
+.gmAI .gmLogoDot{
+  position:absolute;
+  width: 10px; height: 10px;
+  border-radius: 999px;
+  background: var(--emerald);
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  box-shadow: 0 0 0 10px rgba(25,195,125,.12), 0 0 22px rgba(25,195,125,.45);
+}
+.gmAI .gmBrandTxt .gmBrandTop{
+  font-weight: 800;
+  letter-spacing: .2px;
+  font-size: 14px;
+}
+.gmAI .gmBrandTxt .gmBrandSub{
+  color: var(--mut);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+/* Nav */
+.gmAI .gmNav{
+  margin-top: var(--g14);
+  display:flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.gmAI .gmNavItem{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: var(--r12);
+  color: rgba(245,247,251,.88);
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: transform .15s ease, background .15s ease, border-color .15s ease;
+  cursor: pointer;
+  background: transparent;
+  font-size: 14px;
+  font-family: inherit;
+  text-align: left;
+  width: 100%;
+}
+.gmAI .gmNavItem .ic{
+  width: 22px;
+  display:inline-flex;
+  justify-content:center;
+  color: rgba(245,247,251,.72);
+}
+.gmAI .gmNavItem:hover{
+  background: rgba(255,255,255,.05);
+  border-color: rgba(255,255,255,.10);
+  transform: translateY(-1px);
+}
+.gmAI .gmNavItem.active{
+  background: linear-gradient(135deg, rgba(25,195,125,.16), rgba(255,255,255,.04));
+  border-color: rgba(25,195,125,.26);
+}
+.gmAI .gmNavSep{
+  height: 1px;
+  background: rgba(255,255,255,.10);
+  margin: 10px 8px;
+}
+
+/* Sidebar footer card */
+.gmAI .gmSideFoot{ margin-top: var(--g14); }
+.gmAI .gmMiniCard{
+  border-radius: var(--r16);
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  padding: 12px 12px;
+}
+.gmAI .gmMiniTitle{ font-weight: 800; font-size: 13px; margin-bottom: 8px; }
+.gmAI .gmMiniRow{ display:flex; align-items:center; gap: 8px; color: var(--mut); font-size: 13px; margin: 6px 0; }
+.gmAI .gmMiniHint{ margin-top: 8px; color: var(--mut2); font-size: 12px; }
+
+/* =========================
+   2) Main container
+========================= */
+.gmAI .gmMain{
+  flex: 1;
+  min-width: 0;
+  padding: var(--g18);
+  z-index: 2;
+
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* =========================
+   3) Topbar
+========================= */
+.gmAI .gmTop{
+  display:flex;
+  align-items:flex-start;
+  justify-content: space-between;
+  gap: var(--g14);
+  padding: 12px 6px 28px;
+  margin-bottom: 32px;
+  position: relative;
+  z-index: 15;
+  background: linear-gradient(180deg, rgba(7, 24, 39, 0.9), rgba(7, 24, 39, 0.5));
+  backdrop-filter: blur(10px);
+  border-radius: var(--r16);
+}
+
+.gmAI .gmTopRow{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  position: relative;
+  z-index: 16;
+}
+
+.gmAI .gmTopLeft{
+  flex: 1;
+  position: relative;
+  z-index: 15;
+}
+
+.gmAI .gmBurger{
+  display:none;
+  cursor:pointer;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: rgba(245,247,251,.92);
+  border-radius: var(--r12);
+  padding: 9px 10px;
+  line-height: 1;
+}
+
+.gmAI .gmBackBtn{
+  cursor:pointer;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: rgba(245,247,251,.92);
+  border-radius: var(--r12);
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  line-height: 1;
+  transition: transform .15s ease, background .15s ease, border-color .15s ease;
+  white-space: nowrap;
+}
+.gmAI .gmBackBtn:hover{
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.22);
+  transform: translateY(-1px);
+}
+
+.gmAI .gmPageTitle{
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: .2px;
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  color: var(--txt);
+  position: relative;
+  z-index: 16;
+}
+.gmAI .gmBadge{
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(255,255,255,.88);
+  padding: 5px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.05);
+  position: relative;
+  z-index: 17;
+}
+
+.gmAI .gmPageSub{
+  margin-top: 8px;
+  color: var(--mut);
+  font-size: 13px;
+  max-width: 860px;
+  line-height: 1.45;
+  position: relative;
+  z-index: 16;
+}
+
+.gmAI .gmTopRight{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  margin-top: 2px;
+  position: relative;
+  z-index: 16;
+}
+
+.gmAI .gmSearch{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--r14);
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.05);
+  min-width: 320px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.gmAI .gmSearchIc{ color: rgba(245,247,251,.70); }
+.gmAI .gmSearch input{
+  width: 100%;
+  outline: none;
+  border: none;
+  background: transparent;
+  color: var(--txt);
+  font-size: 13px;
+}
+.gmAI .gmSearch input::placeholder{ color: rgba(245,247,251,.55); }
+
+.gmAI .gmUser{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--r14);
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.05);
+}
+.gmAI .gmUserMeta{ text-align:right; line-height: 1.15; }
+.gmAI .gmUserName{ font-weight: 800; font-size: 13px; }
+.gmAI .gmUserRole{ color: var(--mut2); font-size: 12px; margin-top: 3px; }
+
+.gmAI .gmAvatar{
+  width: 36px; height: 36px;
+  border-radius: var(--r12);
+  border: 1px solid rgba(255,255,255,.14);
+  background: radial-gradient(circle at 30% 20%, rgba(25,195,125,.22), rgba(255,255,255,.06));
+  position: relative;
+  overflow:hidden;
+}
+.gmAI .gmAvatar span{
+  position:absolute; inset:-30%;
+  background: conic-gradient(from 120deg, rgba(25,195,125,.22), rgba(255,255,255,.05), rgba(80,160,255,.10), rgba(25,195,125,.18));
+  filter: blur(10px);
+  animation: gmSpin 10s linear infinite;
+}
+@keyframes gmSpin{ to { transform: rotate(360deg); } }
+
+/* =========================
+   4) Tickers
+========================= */
+.gmAI .gmTickers{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--g12);
+  margin-top: 0;
+  align-items: stretch;
+  position: relative;
+  z-index: 1;
+}
+
+.gmAI .gmTicker{
+  border-radius: var(--r16);
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+  padding: 12px 12px;
+  box-shadow: var(--shadow2);
+
+  display:flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 96px;
+}
+
+.gmAI .gmTickerTop{ display:flex; align-items:center; justify-content: space-between; gap: 10px; }
+.gmAI .gmTickerSym{ font-weight: 900; letter-spacing: .25px; }
+.gmAI .gmChg{
+  font-weight: 900;
+  font-size: 12px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+}
+.gmAI .gmChg.pos{ color: var(--emerald); border-color: rgba(25,195,125,.22); }
+.gmAI .gmChg.neg{ color: var(--red); border-color: rgba(255,77,109,.22); }
+
+.gmAI .gmTickerPx{ font-size: 20px; font-weight: 900; margin-top: 8px; }
+.gmAI .gmTickerName{ color: var(--mut); font-size: 12px; margin-top: 6px; }
+
+.gmAI .gmTickerWide{
+  grid-column: 1 / -1;
+  padding: 14px 14px;
+  min-height: auto;
+}
+.gmAI .gmPill{
+  font-size: 12px;
+  color: rgba(245,247,251,.92);
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: linear-gradient(135deg, rgba(25,195,125,.14), rgba(255,255,255,.03));
+}
+.gmAI .gmWideText{
+  margin-top: 10px;
+  color: var(--mut);
+  line-height: 1.55;
+  font-size: 13px;
+  max-width: 980px;
+}
+.gmAI .gmWideChips{ margin-top: 10px; display:flex; flex-wrap: wrap; gap: 8px; }
+.gmAI .chip{
+  font-size: 12px;
+  color: rgba(245,247,251,.88);
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+}
+
+/* =========================
+   5) Main Grid (layout)
+========================= */
+.gmAI .gmGrid{
+  margin-top: var(--g12);
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--g12);
+  align-items: stretch;
+
+  /* pack to avoid holes */
+  grid-auto-flow: dense;
+
+  /* fills remaining height so footer can stick bottom */
+  flex: 1;
+}
+
+.gmAI .gmPanel{
+  border-radius: var(--r18);
+  border: 1px solid rgba(255,255,255,.10);
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.035));
+  box-shadow: var(--shadow);
+  overflow: hidden;
+
+  display:flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.gmAI .gmPanel.span2{ grid-column: span 2; }
+.gmAI .gmPanel.span4{ grid-column: 1 / -1; }
+
+/* Portfolio full width on desktop */
+@media (min-width: 901px){
+  .gmAI .gmPanel#portfolio{ grid-column: 1 / -1 !important; }
+}
+@media (max-width: 900px){
+  .gmAI .gmPanel#portfolio{ grid-column: auto !important; }
+}
+
+.gmAI .gmPanelHead{
+  display:flex;
+  align-items:flex-start;
+  justify-content: space-between;
+  gap: var(--g12);
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.gmAI .gmH{ font-weight: 900; letter-spacing: .2px; font-size: 14px; }
+.gmAI .gmS{ margin-top: 6px; color: var(--mut); font-size: 13px; line-height: 1.45; }
+
+.gmAI .gmHeadRight{ display:flex; gap: 10px; align-items:flex-start; }
+.gmAI .gmStat{
+  text-align:right;
+  padding: 8px 10px;
+  border-radius: var(--r14);
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.12);
+  min-width: 120px;
+}
+.gmAI .gmStat .k{ color: var(--mut2); font-size: 11px; }
+.gmAI .gmStat .v{ margin-top: 4px; font-weight: 900; font-size: 13px; }
+
+.gmAI .gmRiskTag{
+  padding: 8px 10px;
+  border-radius: var(--r14);
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.12);
+  color: rgba(245,247,251,.88);
+  font-size: 12px;
+}
+.gmAI .gmRiskTag.ok{ border-color: rgba(25,195,125,.24); }
+.gmAI .gmRiskTag.warn{ border-color: rgba(255,206,91,.24); }
+.gmAI .gmRiskTag.bad{ border-color: rgba(255,77,109,.24); }
+
+/* =========================
+   6) Charts
+========================= */
+.gmAI .gmChart{
+  padding: 10px 14px 14px;
+  flex: 1;
+  min-height: 0;
+}
+
+.gmAI .gmSvg{
+  width: 100%;
+  height: auto;
+  display:block;
+  border-radius: var(--r14);
+  border: 1px solid rgba(255,255,255,.10);
+  background:
+    radial-gradient(900px 500px at 20% 20%, rgba(25,195,125,.08), transparent 55%),
+    radial-gradient(700px 450px at 80% 10%, rgba(80,160,255,.08), transparent 60%),
+    rgba(0,0,0,.14);
+}
+
+/* ✅ IMPORTANT: SVG grid lines class is now .gmSvgGrid (not .gmGrid) */
+.gmAI .gmSvgGrid line{ stroke: rgba(255,255,255,.08); stroke-width: 1; }
+
+.gmAI .gmArea{ fill: rgba(25,195,125,.12); }
+.gmAI .gmLine{
+  fill: none;
+  stroke: rgba(25,195,125,.95);
+  stroke-width: 2.4;
+  filter: drop-shadow(0 8px 18px rgba(25,195,125,.18));
+}
+.gmAI .gmDot{ fill: rgba(25,195,125,.95); filter: drop-shadow(0 8px 16px rgba(25,195,125,.25)); }
+
+.gmAI .gmCandle .gmWick{ stroke-width: 1.4; stroke: rgba(245,247,251,.70); opacity: .7; }
+.gmAI .gmCandle.up .gmBody{ fill: rgba(25,195,125,.92); }
+.gmAI .gmCandle.down .gmBody{ fill: rgba(255,77,109,.90); }
+.gmAI .gmCandle.up .gmWick{ stroke: rgba(25,195,125,.70); }
+.gmAI .gmCandle.down .gmWick{ stroke: rgba(255,77,109,.70); }
+
+.gmAI .gmChartMeta{
+  margin-top: 10px;
+  display:flex;
+  align-items:baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.gmAI .gmChartLabel{ color: rgba(245,247,251,.90); font-weight: 800; font-size: 13px; }
+.gmAI .gmChartValue{ font-weight: 900; letter-spacing: .2px; font-size: 16px; }
+.gmAI .gmChartSub{ width: 100%; color: var(--mut2); font-size: 12px; margin-top: 4px; }
+
+/* =========================
+   7) WHITE AI Trading Panel
+========================= */
+.gmAI .gmWhitePanel{
+  background: #ffffff !important;
+  border-color: rgba(0,0,0,.08) !important;
+}
+.gmAI .gmWhiteHead{
+  border-bottom: 1px solid rgba(0,0,0,.08) !important;
+}
+.gmAI .gmWhiteBody{ background: #ffffff; }
+.gmAI .gmWhiteCard{
+  border: 1px solid rgba(0,0,0,.10) !important;
+  background: rgba(0,0,0,.03) !important;
+}
+.gmAI .gmDarkText{ color: #0b1220 !important; }
+.gmAI .gmDarkSub{ color: rgba(11,18,32,.70) !important; }
+.gmAI .gmDarkHint{ color: rgba(11,18,32,.62) !important; }
+.gmAI .gmRiskTagWhite{
+  background: rgba(0,0,0,.03) !important;
+  border-color: rgba(0,0,0,.12) !important;
+  color: rgba(11,18,32,.92) !important;
+}
+
+/* Controls */
+.gmAI .gmControls{ padding: 12px 14px 14px; }
+.gmAI .gmControlBlock{
+  padding: 12px;
+  border-radius: var(--r16);
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.12);
+}
+
+.gmAI .gmLabel{ font-size: 12px; font-weight: 900; margin-bottom: 10px; }
+.gmAI .gmHint{ margin-top: 10px; font-size: 12px; line-height: 1.45; }
+
+.gmAI .gmControlRow{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--g12);
+  margin-top: var(--g12);
+}
+.gmAI .gmField{
+  padding: 12px;
+  border-radius: var(--r16);
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.12);
+  min-width: 0;
+}
+
+/* Select */
+.gmAI .gmSelect{ margin-top: 8px; position: relative; }
+.gmAI .gmSelect select{
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  color: rgba(245,247,251,.92);
+  border-radius: var(--r12);
+  padding: 10px 34px 10px 12px;
+  font-size: 13px;
+}
+.gmAI .gmSelectWhite select{
+  border-color: rgba(0,0,0,.12) !important;
+  background: rgba(255,255,255,.92) !important;
+  color: #0b1220 !important;
+}
+.gmAI .gmSelect .caret{
+  position:absolute; right: 12px; top: 50%;
+  transform: translateY(-50%);
+  color: rgba(245,247,251,.55);
+  pointer-events:none;
+}
+.gmAI .gmSelectWhite .caret{ color: rgba(11,18,32,.55) !important; }
+
+/* Mode cards */
+.gmAI .gmMode{
+  margin-top: 8px;
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.gmAI .gmModeCard{
+  border-radius: var(--r14);
+  border: 1px solid rgba(0,0,0,.10);
+  background: rgba(255,255,255,.65);
+  padding: 10px 10px;
+  color: #0b1220;
+}
+.gmAI .gmModeCard.on{
+  background: linear-gradient(135deg, rgba(240,185,11,.20), rgba(255,255,255,.80));
+  border-color: rgba(240,185,11,.45);
+}
+.gmAI .gmModeCard .t{ font-weight: 900; font-size: 13px; }
+.gmAI .gmModeCard .s{ margin-top: 4px; color: rgba(11,18,32,.62); font-size: 12px; line-height: 1.35; }
+
+.gmAI .gmLabelRow{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+/* Toggles */
+.gmAI .gmToggle{ display:inline-flex; align-items:center; cursor:pointer; }
+.gmAI .gmToggle input{ display:none; }
+.gmAI .gmToggle span{
+  width: 44px; height: 24px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  position: relative;
+  transition: background .15s ease, border-color .15s ease;
+}
+.gmAI .gmToggle span::after{
+  content:"";
+  position:absolute;
+  top: 50%; left: 4px;
+  width: 18px; height: 18px;
+  border-radius: 999px;
+  transform: translateY(-50%);
+  background: rgba(245,247,251,.82);
+  transition: left .15s ease, background .15s ease;
+}
+.gmAI .gmToggle input:checked + span{
+  background: rgba(25,195,125,.20);
+  border-color: rgba(25,195,125,.35);
+}
+.gmAI .gmToggle input:checked + span::after{
+  left: 22px;
+  background: rgba(25,195,125,.92);
+}
+
+/* White toggle */
+.gmAI .gmToggleWhite span{
+  border-color: rgba(0,0,0,.16) !important;
+  background: rgba(0,0,0,.04) !important;
+}
+.gmAI .gmToggleWhite span::after{ background: rgba(11,18,32,.55) !important; }
+.gmAI .gmToggleWhite input:checked + span{
+  background: rgba(240,185,11,.22) !important;
+  border-color: rgba(240,185,11,.55) !important;
+}
+.gmAI .gmToggleWhite input:checked + span::after{ background: var(--binance) !important; }
+
+/* Sliders */
+.gmAI .gmSliderWrap{
+  margin-top: 10px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.03);
+  border-radius: var(--r14);
+  padding: 10px 10px 8px;
+}
+.gmAI .gmSliderWhite{
+  border-color: rgba(0,0,0,.12) !important;
+  background: rgba(255,255,255,.85) !important;
+}
+.gmAI .gmSliderWrap.disabled{ opacity: .55; }
+.gmAI .gmSliderWrap input[type="range"]{ width: 100%; }
+.gmAI .gmSliderMeta{
+  margin-top: 8px;
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+.gmAI .gmSliderMeta b{ font-weight: 900; }
+
+/* Inputs */
+.gmAI .gmInput{
+  margin-top: 8px;
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  border-radius: var(--r12);
+  padding: 10px 12px;
+}
+.gmAI .gmInputWhite{
+  border-color: rgba(0,0,0,.12) !important;
+  background: rgba(255,255,255,.92) !important;
+}
+.gmAI .gmInput .pre{ font-weight: 900; }
+.gmAI .gmInputWhite .pre{ color: rgba(11,18,32,.55) !important; }
+.gmAI .gmInput input{
+  width: 100%;
+  outline:none;
+  border:none;
+  background: transparent;
+  color: rgba(245,247,251,.92);
+  font-size: 13px;
+}
+.gmAI .gmInputWhite input{ color: #0b1220 !important; }
+
+/* Actions */
+.gmAI .gmActions{
+  margin-top: 12px;
+  display:flex;
+  justify-content:flex-end;
+  gap: 10px;
+}
+.gmAI .gmActionsWhite{
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.gmAI .gmBtn{
+  position: relative;
+  cursor:pointer;
+  border: 1px solid rgba(25,195,125,.34);
+  background: linear-gradient(135deg, rgba(25,195,125,.26), rgba(255,255,255,.04));
+  color: rgba(245,247,251,.92);
+  border-radius: var(--r14);
+  padding: 11px 14px;
+  font-weight: 900;
+  letter-spacing: .2px;
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+  overflow:hidden;
+}
+.gmAI .gmBtn:hover{ transform: translateY(-1px); box-shadow: 0 14px 28px rgba(0,0,0,.18); }
+
+.gmAI .gmBtn.ghost{
+  border: 1px solid rgba(0,0,0,.16);
+  background: rgba(255,255,255,.85);
+  color: #0b1220;
+  font-weight: 900;
+}
+
+.gmAI .gmBtnBinance{
+  border: 1px solid rgba(240,185,11,.60) !important;
+  background: linear-gradient(180deg, rgba(240,185,11,1), rgba(240,185,11,.86)) !important;
+  color: var(--binanceText) !important;
+}
+.gmAI .gmBtnBinance:hover{
+  border-color: rgba(240,185,11,.78) !important;
+  box-shadow: 0 16px 34px rgba(240,185,11,.18);
+}
+
+.gmAI .gmBtn .shine{
+  position:absolute;
+  inset:-40%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+  transform: rotate(25deg) translateX(-60%);
+  animation: gmShine 2.8s ease-in-out infinite;
+}
+@keyframes gmShine{
+  0%,60%{ transform: rotate(25deg) translateX(-60%); opacity: .0; }
+  80%{ opacity: .75; }
+  100%{ transform: rotate(25deg) translateX(60%); opacity: 0; }
+}
+
+/* Picker Button */
+.gmAI .gmPickerBtn{
+  width: 100%;
+  cursor:pointer;
+  border-radius: var(--r14);
+  border: 1px solid rgba(0,0,0,.12);
+  background: rgba(255,255,255,.92);
+  padding: 12px 12px;
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+}
+.gmAI .gmPickerBtn:hover{
+  transform: translateY(-1px);
+  border-color: rgba(0,0,0,.18);
+  box-shadow: 0 10px 22px rgba(0,0,0,.10);
+}
+.gmAI .gmPickerBtn .title{
+  color: rgba(11,18,32,.55);
+  font-weight: 900;
+  font-size: 11px;
+}
+.gmAI .gmPickerBtn .value{
+  margin-top: 4px;
+  color: #0b1220;
+  font-weight: 900;
+  font-size: 13px;
+}
+.gmAI .gmPickerBtn .right{ display:flex; align-items:center; gap: 10px; }
+.gmAI .gmSysBadge{
+  font-size: 11px;
+  font-weight: 900;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.12);
+  background: rgba(0,0,0,.04);
+  color: rgba(11,18,32,.78);
+}
+.gmAI .gmSysBadge.on{
+  border-color: rgba(240,185,11,.55);
+  background: rgba(240,185,11,.18);
+  color: #1a1300;
+}
+.gmAI .gmPickerBtn .chev{ color: rgba(11,18,32,.55); font-weight: 900; }
+
+/* =========================
+   8) Insights / Table
+========================= */
+.gmAI .gmInsights{
+  padding: 12px 14px 14px;
+  display:flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.gmAI .gmInsight{
+  border-radius: var(--r16);
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.12);
+  padding: 12px;
+}
+.gmAI .gmInsight .tag{
+  display:inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  font-weight: 900;
+  font-size: 12px;
+}
+.gmAI .gmInsight .txt{
+  margin-top: 10px;
+  color: rgba(245,247,251,.90);
+  line-height: 1.55;
+  font-size: 13px;
+}
+.gmAI .gmInsight .meta{ margin-top: 8px; color: var(--mut2); font-size: 12px; }
+
+.gmAI .gmInsightNote{
+  border-radius: var(--r16);
+  border: 1px solid rgba(25,195,125,.20);
+  background: linear-gradient(135deg, rgba(25,195,125,.12), rgba(0,0,0,.12));
+  padding: 12px;
+}
+.gmAI .gmInsightNote .t{ font-weight: 900; margin-bottom: 8px; }
+.gmAI .gmInsightNote ul{ margin: 0; padding-left: 18px; color: rgba(245,247,251,.86); line-height: 1.55; font-size: 13px; }
+.gmAI .gmInsightNote li{ margin: 6px 0; }
+
+/* Table */
+.gmAI .gmTableWrap{ padding: 12px 14px 14px; }
+.gmAI .gmTableScroll{
+  width: 100%;
+  overflow:auto;
+  border-radius: var(--r14);
+}
+.gmAI .gmTable{
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  border-radius: var(--r14);
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.12);
+}
+.gmAI .gmTable th, .gmAI .gmTable td{
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  font-size: 13px;
+  white-space: nowrap;
+}
+.gmAI .gmTable th{
+  text-align:left;
+  color: rgba(245,247,251,.80);
+  font-weight: 900;
+  background: rgba(255,255,255,.04);
+}
+.gmAI .gmTable td{ color: rgba(245,247,251,.90); }
+.gmAI .gmTable tr:hover td{ background: rgba(255,255,255,.03); }
+.gmAI .gmTable .r{ text-align:right; }
+.gmAI .gmTable .mut{ color: var(--mut); }
+.gmAI .gmAsset{
+  display:inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  font-weight: 900;
+}
+.gmAI .gmTableHint{ margin-top: 10px; color: var(--mut2); font-size: 12px; }
+
+/* =========================
+   9) Footer
+========================= */
+.gmAI .gmFooter{
+  margin-top: auto;
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 6px 0;
+  color: rgba(245,247,251,.62);
+  font-size: 12px;
+}
+.gmAI .gmFooter .sep{ margin: 0 8px; opacity: .8; }
+
+/* =========================
+   10) Modal (Coins)
+========================= */
+.gmAI .gmModalWrap{
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 16px;
+}
+.gmAI .gmModalBackdrop{
+  position:absolute;
+  inset:0;
+  background: rgba(0,0,0,.55);
+}
+.gmAI .gmModal{
+  position: relative;
+  width: min(760px, 96vw);
+  max-height: min(82vh, 760px);
+  overflow: hidden;
+  border-radius: var(--r18);
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,.10);
+  box-shadow: 0 26px 70px rgba(0,0,0,.35);
+  display:flex;
+  flex-direction: column;
+}
+.gmAI .gmModalHead{
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  display:flex;
+  align-items:flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.gmAI .gmModalTitle{ font-weight: 900; color: #0b1220; letter-spacing: .2px; }
+.gmAI .gmModalSub{
+  margin-top: 6px;
+  color: rgba(11,18,32,.68);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.gmAI .gmIconBtn{
+  cursor:pointer;
+  border-radius: var(--r12);
+  border: 1px solid rgba(0,0,0,.12);
+  background: rgba(0,0,0,.04);
+  color: #0b1220;
+  padding: 8px 10px;
+  font-weight: 900;
+}
+.gmAI .gmIconBtn:hover{ background: rgba(0,0,0,.06); }
+
+.gmAI .gmModalTopRow{
+  padding: 12px 14px;
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  flex-wrap: wrap;
+}
+.gmAI .gmSysPick{ display:flex; align-items:center; gap: 10px; cursor:pointer; user-select:none; }
+.gmAI .gmSysPick input{ display:none; }
+.gmAI .gmSysPick .box{
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,.16);
+  background: rgba(0,0,0,.03);
+  position: relative;
+}
+.gmAI .gmSysPick input:checked + .box{
+  border-color: rgba(240,185,11,.65);
+  background: rgba(240,185,11,.20);
+}
+.gmAI .gmSysPick input:checked + .box::after{
+  content:"✓";
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color: #1a1300;
+  font-weight: 900;
+  font-size: 14px;
+}
+.gmAI .gmSysPick .txt{ color: #0b1220; font-size: 13px; }
+.gmAI .gmSysPick .mut{ color: rgba(11,18,32,.60); font-weight: 600; }
+
+.gmAI .gmModalSearch{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  border: 1px solid rgba(0,0,0,.12);
+  background: rgba(0,0,0,.03);
+  padding: 10px 12px;
+  border-radius: var(--r14);
+  min-width: 260px;
+  flex: 1;
+}
+.gmAI .gmModalSearch .ic{ color: rgba(11,18,32,.55); }
+.gmAI .gmModalSearch input{
+  border:none;
+  outline:none;
+  background: transparent;
+  width: 100%;
+  color: #0b1220;
+  font-size: 13px;
+}
+.gmAI .gmModalSearch input::placeholder{ color: rgba(11,18,32,.45); }
+
+.gmAI .gmModalList{
+  padding: 10px 14px 14px;
+  overflow:auto;
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.gmAI .gmCoinRow{
+  cursor:pointer;
+  border-radius: var(--r14);
+  border: 1px solid rgba(0,0,0,.10);
+  background: rgba(0,0,0,.03);
+  padding: 10px 10px;
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #0b1220;
+}
+.gmAI .gmCoinRow:hover{ background: rgba(0,0,0,.05); }
+.gmAI .gmCoinRow.disabled{ opacity: .55; cursor: not-allowed; }
+.gmAI .gmCoinRow .cb{
+  width: 18px; height: 18px;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,.18);
+  background: rgba(255,255,255,.85);
+}
+.gmAI .gmCoinRow .cb.on{
+  border-color: rgba(240,185,11,.70);
+  background: rgba(240,185,11,.20);
+  position: relative;
+}
+.gmAI .gmCoinRow .cb.on::after{
+  content:"✓";
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color: #1a1300;
+  font-weight: 900;
+  font-size: 12px;
+}
+.gmAI .gmCoinRow .coin{ font-weight: 900; font-size: 13px; }
+.gmAI .gmCoinRow .tag{
+  font-size: 11px;
+  font-weight: 900;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.10);
+  background: rgba(255,255,255,.75);
+  color: rgba(11,18,32,.78);
+}
+
+.gmAI .gmModalFoot{
+  border-top: 1px solid rgba(0,0,0,.08);
+  padding: 12px 14px;
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.gmAI .gmModalFootLeft{ display:flex; align-items:center; gap: 10px; flex-wrap: wrap; }
+.gmAI .gmTextBtn{
+  cursor:pointer;
+  border:none;
+  background: transparent;
+  color: rgba(11,18,32,.75);
+  font-weight: 900;
+  padding: 8px 8px;
+}
+.gmAI .gmTextBtn:disabled{ opacity: .45; cursor: not-allowed; }
+.gmAI .gmCount{ color: rgba(11,18,32,.65); font-size: 12px; }
+.gmAI .gmBtnLight{
+  cursor:pointer;
+  border-radius: var(--r14);
+  padding: 10px 14px;
+  border: 1px solid rgba(240,185,11,.55);
+  background: rgba(240,185,11,.18);
+  color: #1a1300;
+  font-weight: 900;
+}
+.gmAI .gmBtnLight:hover{ background: rgba(240,185,11,.24); }
+
+/* =========================
+   11) Responsive (scoped)
+========================= */
+@media (max-width: 1180px){
+  .gmAI .gmTickers{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gmAI .gmGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gmAI .gmPanel.span2{ grid-column: span 2; }
+  .gmAI .gmSearch{ min-width: 260px; }
+}
+
+@media (max-width: 900px){
+  .gmAI .gmBurger{ display:inline-flex; }
+
+  .gmAI .gmSide{
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    transform: translateX(-105%);
+    transition: transform .18s ease;
+    width: 280px;
+  }
+  .gmAI.sidebarOpen .gmSide{ transform: translateX(0); }
+
+  .gmAI .gmSideOverlay{
+    display:block;
+    opacity: 0;
+    pointer-events:none;
+    transition: opacity .18s ease;
+  }
+  .gmAI.sidebarOpen .gmSideOverlay{
+    opacity: 1;
+    pointer-events:auto;
+  }
+
+  .gmAI .gmSearch{ display:none; }
+  .gmAI .gmMain{ padding: 14px 12px 20px; }
+  .gmAI .gmTop{ padding: 8px 2px 14px; }
+  .gmAI .gmHeadRight{ display:none; }
+
+  .gmAI .gmModalList{ grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px){
+  .gmAI .gmTickers{ grid-template-columns: 1fr; }
+  .gmAI .gmGrid{ grid-template-columns: 1fr; }
+  .gmAI .gmPanel.span2{ grid-column: auto; }
+
+  .gmAI .gmControlRow{ grid-template-columns: 1fr; }
+
+  .gmAI .gmPageTitle{ font-size: 18px; }
+  .gmAI .gmBadge{ display:none; }
+  .gmAI .gmUserMeta{ display:none; }
+
+  .gmAI .gmFooter{
+    flex-direction: column;
+    align-items:flex-start;
+    gap: 6px;
+  }
+
+  .gmAI .gmPanelHead{ padding: 12px 12px 10px; }
+  .gmAI .gmChart{ padding: 10px 12px 12px; }
+  .gmAI .gmInsights, .gmAI .gmTableWrap, .gmAI .gmControls{ padding: 12px; }
+
+  .gmAI .gmModal{ max-height: 86vh; }
+}
+
+/* MOBILE: ticker cards 2 columns */
+@media (max-width: 640px){
+  .gmAI .gmTickers{
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+  .gmAI .gmTicker{ min-height: 92px; padding: 12px 12px; }
+  .gmAI .gmTickerWide{ grid-column: 1 / -1 !important; }
+  .gmAI .gmTickerPx{ font-size: 18px; }
+  .gmAI .gmTickerName{ font-size: 11px; }
+  .gmAI .gmChg{ font-size: 11px; padding: 4px 8px; }
+}
+
+/* =========================================================
+   ✅ NEW: AI Start Flow Modal (SCOPED)
+   Add at the END of GoldMiracleAIDashboard.css
+========================================================= */
+
+.gmAI .aiFlowOverlay{
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 16px;
+}
+
+.gmAI .aiFlowBackdrop{
+  position:absolute;
+  inset:0;
+  background: rgba(0,0,0,.62);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.gmAI .aiFlowModal{
+  position: relative;
+  width: min(880px, 96vw);
+  max-height: min(84vh, 860px);
+  overflow: hidden;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(8,12,18,.92), rgba(6,10,15,.90));
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 30px 90px rgba(0,0,0,.55);
+  color: rgba(245,247,251,.92);
+}
+
+.gmAI .aiFlowTop{
+  padding: 14px 14px 10px;
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255,255,255,.10);
+  background:
+    radial-gradient(900px 240px at 20% 0%, rgba(25,195,125,.18), transparent 55%),
+    radial-gradient(700px 220px at 80% 0%, rgba(240,185,11,.12), transparent 55%);
+}
+
+.gmAI .aiFlowTitle{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  font-weight: 900;
+  letter-spacing: .2px;
+}
+
+.gmAI .aiFlowDot{
+  width: 10px; height: 10px;
+  border-radius: 999px;
+  background: rgba(25,195,125,.95);
+  box-shadow: 0 0 0 10px rgba(25,195,125,.12), 0 0 26px rgba(25,195,125,.40);
+}
+
+.gmAI .aiFlowClose{
+  cursor:pointer;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: rgba(245,247,251,.90);
+  padding: 8px 10px;
+  font-weight: 900;
+}
+.gmAI .aiFlowClose:hover{ background: rgba(255,255,255,.10); }
+
+.gmAI .aiFlowStepper{
+  padding: 12px 14px;
+  display:flex;
+  align-items:center;
+  gap: 10px;
+}
+.gmAI .aiFlowStepper .b{
+  width: 28px; height: 28px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 900;
+  color: rgba(245,247,251,.70);
+}
+.gmAI .aiFlowStepper .b.on{
+  border-color: rgba(25,195,125,.34);
+  background: rgba(25,195,125,.14);
+  color: rgba(245,247,251,.92);
+}
+.gmAI .aiFlowStepper .l{
+  flex: 1;
+  height: 2px;
+  background: rgba(255,255,255,.10);
+  border-radius: 999px;
+}
+.gmAI .aiFlowStepper .l.on{
+  background: linear-gradient(90deg, rgba(25,195,125,.55), rgba(240,185,11,.40));
+}
+
+.gmAI .aiFlowBody{
+  padding: 0 14px 14px;
+}
+
+.gmAI .aiFlowCard{
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+  padding: 14px;
+  overflow:hidden;
+}
+
+.gmAI .aiFlowCard.pulse{
+  position: relative;
+}
+.gmAI .aiFlowCard.pulse::before{
+  content:"";
+  position:absolute;
+  inset:-60%;
+  background: conic-gradient(from 180deg, rgba(25,195,125,.18), rgba(240,185,11,.14), rgba(80,160,255,.10), rgba(25,195,125,.18));
+  filter: blur(24px);
+  opacity: .55;
+  animation: aiPulse 4.2s ease-in-out infinite;
+}
+@keyframes aiPulse{
+  0%,100%{ transform: rotate(0deg) scale(1); }
+  50%{ transform: rotate(20deg) scale(1.05); }
+}
+.gmAI .aiFlowCard.pulse > *{ position: relative; z-index: 1; }
+
+.gmAI .aiFlowHead .h{
+  font-weight: 900;
+  font-size: 15px;
+}
+.gmAI .aiFlowHead .s{
+  margin-top: 6px;
+  color: rgba(245,247,251,.70);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.gmAI .aiFlowStats{
+  margin-top: 12px;
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 10px;
+}
+.gmAI .aiFlowStats .st{
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+  padding: 10px 10px;
+}
+.gmAI .aiFlowStats .k{
+  color: rgba(245,247,251,.62);
+  font-weight: 800;
+  font-size: 12px;
+}
+.gmAI .aiFlowStats .v{
+  margin-top: 6px;
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.gmAI .aiFlowField{
+  margin-top: 12px;
+}
+.gmAI .aiFlowField label{
+  display:block;
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(245,247,251,.86);
+  margin-bottom: 8px;
+}
+
+.gmAI .aiFlowInput{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  padding: 10px 12px;
+}
+.gmAI .aiFlowInput .p{
+  color: rgba(245,247,251,.60);
+  font-weight: 900;
+}
+.gmAI .aiFlowInput input{
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: rgba(245,247,251,.92);
+  font-size: 14px;
+  font-weight: 800;
+}
+.gmAI .aiFlowMax{
+  cursor:pointer;
+  border-radius: 999px;
+  border: 1px solid rgba(240,185,11,.55);
+  background: rgba(240,185,11,.14);
+  color: rgba(245,247,251,.92);
+  font-weight: 900;
+  padding: 7px 10px;
+}
+.gmAI .aiFlowMax:hover{ background: rgba(240,185,11,.20); }
+
+.gmAI .aiFlowErr{
+  margin-top: 8px;
+  color: rgba(255,77,109,.95);
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.gmAI .aiFlowActions{
+  margin-top: 14px;
+  display:flex;
+  justify-content:flex-end;
+  gap: 10px;
+}
+
+.gmAI .aiFlowBtn{
+  cursor:pointer;
+  border-radius: 14px;
+  border: 1px solid rgba(25,195,125,.34);
+  background: linear-gradient(135deg, rgba(25,195,125,.22), rgba(255,255,255,.06));
+  color: rgba(245,247,251,.92);
+  font-weight: 900;
+  padding: 10px 14px;
+}
+.gmAI .aiFlowBtn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(0,0,0,.25);
+}
+.gmAI .aiFlowBtn.ghost{
+  border-color: rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+}
+.gmAI .aiFlowBtn.gold{
+  border-color: rgba(240,185,11,.60);
+  background: linear-gradient(180deg, rgba(240,185,11,.95), rgba(240,185,11,.75));
+  color: #1a1300;
+}
+
+.gmAI .aiFlowConfirm{
+  margin-top: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+  padding: 12px;
+}
+.gmAI .aiFlowConfirm .r{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(255,255,255,.10);
+}
+.gmAI .aiFlowConfirm .r:last-child{ border-bottom:none; }
+.gmAI .aiFlowConfirm .k{ color: rgba(245,247,251,.62); font-weight: 800; font-size: 12px; }
+.gmAI .aiFlowConfirm .v{ font-weight: 900; font-size: 14px; }
+.gmAI .aiFlowConfirm .v.gold{ color: rgba(240,185,11,.98); }
+
+.gmAI .aiFlowProgress{
+  margin-top: 12px;
+  display:grid;
+  grid-template-columns: 240px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.gmAI .aiFlowRing{
+  height: 220px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background:
+    radial-gradient(120px 120px at 50% 50%, rgba(25,195,125,.18), transparent 60%),
+    radial-gradient(180px 120px at 70% 30%, rgba(240,185,11,.10), transparent 65%),
+    rgba(0,0,0,.18);
+  position: relative;
+  overflow:hidden;
+}
+.gmAI .aiFlowRing .r1,
+.gmAI .aiFlowRing .r2,
+.gmAI .aiFlowRing .r3{
+  position:absolute;
+  inset: 22px;
+  border-radius: 999px;
+  border: 2px solid rgba(25,195,125,.22);
+  filter: drop-shadow(0 10px 18px rgba(25,195,125,.12));
+  animation: aiSpin 2.8s linear infinite;
+}
+.gmAI .aiFlowRing .r2{
+  inset: 46px;
+  border-color: rgba(240,185,11,.22);
+  animation-duration: 3.7s;
+  animation-direction: reverse;
+}
+.gmAI .aiFlowRing .r3{
+  inset: 70px;
+  border-color: rgba(80,160,255,.18);
+  animation-duration: 4.6s;
+}
+@keyframes aiSpin{
+  to{ transform: rotate(360deg); }
+}
+
+.gmAI .aiFlowSteps{
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+  padding: 10px;
+}
+
+.gmAI .aiFlowStep{
+  display:flex;
+  align-items:flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+  margin-bottom: 10px;
+}
+.gmAI .aiFlowStep:last-child{ margin-bottom: 0; }
+
+.gmAI .aiFlowStep .dot{
+  width: 10px; height: 10px;
+  border-radius: 999px;
+  margin-top: 5px;
+  background: rgba(245,247,251,.30);
+  box-shadow: 0 0 0 6px rgba(255,255,255,.06);
+  flex: 0 0 auto;
+}
+.gmAI .aiFlowStep .txt{ flex: 1; min-width: 0; }
+.gmAI .aiFlowStep .t{ font-weight: 900; font-size: 13px; }
+.gmAI .aiFlowStep .d{ margin-top: 4px; color: rgba(245,247,251,.62); font-size: 12px; line-height: 1.35; }
+.gmAI .aiFlowStep .st{
+  flex: 0 0 auto;
+  font-weight: 900;
+  font-size: 12px;
+  color: rgba(245,247,251,.62);
+}
+.gmAI .aiFlowStep.on{
+  border-color: rgba(25,195,125,.28);
+  background: linear-gradient(135deg, rgba(25,195,125,.10), rgba(255,255,255,.03));
+}
+.gmAI .aiFlowStep.on .dot{
+  background: rgba(25,195,125,.92);
+  box-shadow: 0 0 0 8px rgba(25,195,125,.12), 0 0 22px rgba(25,195,125,.25);
+}
+.gmAI .aiFlowStep.on .st{ color: rgba(25,195,125,.90); }
+
+.gmAI .aiFlowStep.done{
+  opacity: .92;
+  border-color: rgba(240,185,11,.22);
+}
+.gmAI .aiFlowStep.done .dot{
+  background: rgba(240,185,11,.95);
+  box-shadow: 0 0 0 8px rgba(240,185,11,.10), 0 0 22px rgba(240,185,11,.22);
+}
+.gmAI .aiFlowStep.done .st{ color: rgba(240,185,11,.92); }
+
+.gmAI .aiFlowHint{
+  margin-top: 12px;
+  color: rgba(245,247,251,.70);
+  font-size: 12px;
+}
+
+.gmAI .aiFlowCard.done{
+  border-color: rgba(25,195,125,.22);
+  background: linear-gradient(135deg, rgba(25,195,125,.10), rgba(255,255,255,.04));
+}
+
+.gmAI .aiFlowDoneBox{
+  margin-top: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+  padding: 14px;
+  display:flex;
+  align-items:center;
+  gap: 12px;
+}
+.gmAI .aiFlowDoneBox .okMark{
+  width: 44px; height: 44px;
+  border-radius: 14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: rgba(25,195,125,.16);
+  border: 1px solid rgba(25,195,125,.28);
+  font-weight: 900;
+  font-size: 18px;
+  color: rgba(25,195,125,.95);
+  box-shadow: 0 0 0 10px rgba(25,195,125,.10);
+}
+.gmAI .aiFlowDoneBox .meta .m1{
+  color: rgba(245,247,251,.62);
+  font-weight: 900;
+  font-size: 12px;
+}
+.gmAI .aiFlowDoneBox .meta .m2{
+  margin-top: 4px;
+  font-weight: 900;
+  font-size: 16px;
+  color: rgba(240,185,11,.95);
+}
+.gmAI .aiFlowDoneBox .meta .m3{
+  margin-top: 4px;
+  color: rgba(245,247,251,.70);
+  font-size: 12px;
+}
+
+/* responsive */
+@media (max-width: 820px){
+  .gmAI .aiFlowProgress{ grid-template-columns: 1fr; }
+  .gmAI .aiFlowRing{ height: 170px; }
+}
+
+/* =========================================================
+   ✅ EXTRA AI EFFECTS (ADD AT BOTTOM)
+========================================================= */
+
+/* Tech bar */
+.gmAI .aiTechBar{
+  margin-top: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+  padding: 10px;
+  display:grid;
+  grid-template-columns: 140px 1fr minmax(220px, 1fr) 54px;
+  gap: 10px;
+  align-items:center;
+  position: relative;
+  overflow:hidden;
+}
+.gmAI .aiTechBar::before{
+  content:"";
+  position:absolute;
+  inset:-40%;
+  background: conic-gradient(from 200deg, rgba(25,195,125,.10), rgba(240,185,11,.08), rgba(80,160,255,.08), rgba(25,195,125,.10));
+  filter: blur(22px);
+  opacity:.55;
+  animation: aiTechGlow 6s ease-in-out infinite;
+}
+@keyframes aiTechGlow{
+  0%,100%{ transform: rotate(0deg) scale(1); }
+  50%{ transform: rotate(18deg) scale(1.06); }
+}
+.gmAI .aiTechBar > *{ position: relative; z-index: 1; }
+
+.gmAI .aiPct .k,
+.gmAI .aiHash .k{
+  color: rgba(245,247,251,.62);
+  font-weight: 900;
+  font-size: 11px;
+}
+.gmAI .aiPct .v{
+  margin-top: 4px;
+  font-weight: 900;
+  font-size: 18px;
+  color: rgba(240,185,11,.95);
+}
+
+.gmAI .aiBarWrap{
+  height: 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  position: relative;
+  overflow:hidden;
+}
+.gmAI .aiBar{
+  position:absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(25,195,125,.75), rgba(240,185,11,.75));
+  box-shadow: 0 10px 22px rgba(25,195,125,.12);
+  transition: width .12s linear;
+}
+.gmAI .aiBarScan{
+  position:absolute;
+  inset:-40% -20%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.24), transparent);
+  transform: rotate(18deg) translateX(-65%);
+  animation: aiBarScan 2.4s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes aiBarScan{
+  0%{ transform: rotate(18deg) translateX(-65%); opacity: 0; }
+  30%{ opacity: .8; }
+  100%{ transform: rotate(18deg) translateX(65%); opacity: 0; }
+}
+
+/* Secure hash */
+.gmAI .aiHash .v{
+  margin-top: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 11px;
+  color: rgba(245,247,251,.86);
+  word-break: break-all;
+  line-height: 1.25;
+}
+
+/* Rotating key badge */
+.gmAI .aiKey{
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  border: 1px solid rgba(240,185,11,.24);
+  background: rgba(240,185,11,.10);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position: relative;
+  overflow:hidden;
+}
+.gmAI .aiKey .ring{
+  position:absolute;
+  inset: 8px;
+  border-radius: 999px;
+  border: 2px solid rgba(25,195,125,.22);
+  border-top-color: rgba(240,185,11,.55);
+  animation: aiKeySpin 1.2s linear infinite;
+}
+@keyframes aiKeySpin{ to{ transform: rotate(360deg); } }
+.gmAI .aiKey .key{
+  position: relative;
+  z-index: 1;
+  font-size: 18px;
+}
+
+/* Bloomberg-like scan lines (soundless pulse) */
+.gmAI .aiScanLines{
+  position:absolute;
+  inset:0;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      rgba(255,255,255,.00) 0px,
+      rgba(255,255,255,.00) 8px,
+      rgba(255,255,255,.06) 9px,
+      rgba(255,255,255,.00) 12px
+    );
+  opacity: .35;
+  mix-blend-mode: overlay;
+  animation: aiScanMove 2.4s linear infinite;
+  pointer-events:none;
+}
+@keyframes aiScanMove{
+  from{ transform: translateY(-18px); }
+  to{ transform: translateY(18px); }
+}
+
+/* Terminal */
+.gmAI .aiTerminal{
+  margin-top: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.24);
+  overflow:hidden;
+}
+.gmAI .aiTermTop{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+}
+.gmAI .aiTermTop .b{
+  width: 10px; height: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.22);
+}
+.gmAI .aiTermTop .b.y{ background: rgba(240,185,11,.75); }
+.gmAI .aiTermTop .b.g{ background: rgba(25,195,125,.75); }
+.gmAI .aiTermTop .t{
+  font-weight: 900;
+  letter-spacing:.2px;
+  color: rgba(245,247,251,.82);
+  font-size: 12px;
+  margin-left: 6px;
+}
+.gmAI .aiTermTop .sp{ flex:1; }
+.gmAI .aiTermTop .tag{
+  font-size: 11px;
+  font-weight: 900;
+  padding: 5px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(25,195,125,.24);
+  background: rgba(25,195,125,.10);
+  color: rgba(245,247,251,.92);
+}
+
+.gmAI .aiTermBody{
+  padding: 10px 12px 12px;
+  max-height: 180px;
+  overflow:auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: rgba(245,247,251,.86);
+}
+.gmAI .aiTermBody .ln{
+  white-space: pre-wrap;
+  word-break: break-word;
+  opacity: .95;
+}
+.gmAI .cursorRow{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  margin-top: 8px;
+  color: rgba(245,247,251,.78);
+}
+.gmAI .cursorRow .prompt{
+  color: rgba(240,185,11,.92);
+  font-weight: 900;
+}
+.gmAI .cursor{
+  width: 10px;
+  height: 16px;
+  border-radius: 3px;
+  background: rgba(245,247,251,.75);
+  animation: aiBlink 1s steps(1) infinite;
+}
+@keyframes aiBlink{
+  0%,49%{ opacity: 1; }
+  50%,100%{ opacity: 0; }
+}
+
+/* Congratulations */
+.gmAI .aiCongrats{
+  margin-top: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(240,185,11,.22);
+  background: linear-gradient(135deg, rgba(240,185,11,.10), rgba(0,0,0,.18));
+  padding: 14px;
+  display:flex;
+  gap: 12px;
+  align-items:flex-start;
+}
+.gmAI .aiCongrats .bolt{
+  width: 44px; height: 44px;
+  border-radius: 16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: rgba(240,185,11,.16);
+  border: 1px solid rgba(240,185,11,.28);
+  font-size: 18px;
+}
+.gmAI .aiCongrats .msg .m1{
+  font-size: 14px;
+  font-weight: 900;
+  color: rgba(245,247,251,.92);
+}
+.gmAI .aiCongrats .msg .m2,
+.gmAI .aiCongrats .msg .m3{
+  margin-top: 8px;
+  color: rgba(245,247,251,.78);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* responsive */
+@media (max-width: 860px){
+  .gmAI .aiTechBar{
+    grid-template-columns: 120px 1fr;
+    grid-auto-rows: auto;
+  }
+  .gmAI .aiHash{ grid-column: 1 / -1; }
+  .gmAI .aiKey{ display:none; }
+}
+
+/* ==============================
+   AI Flow Mobile Responsiveness
+============================== */
+
+/* terminal body scroll area (also helps desktop) */
+.aiTermBody{
+  overflow: auto;
+  max-height: 190px; /* desktop default */
+}
+
+/* ✅ NEW wrapper scroll area */
+.aiFlowScrollArea{
+  overflow: visible;
+}
+
+/* ------------------------------
+   Mobile tweaks
+------------------------------ */
+@media (max-width: 640px){
+  .aiFlowModal{
+    width: calc(100vw - 18px);
+    max-height: calc(100vh - 18px);
+    margin: 9px;
+  }
+
+  /* make the internal area scroll */
+  .aiFlowScrollArea{
+    overflow: auto;
+    max-height: calc(100vh - 210px); /* leaves space for title/stepper */
+    padding-right: 6px;
+  }
+
+  /* ring + steps stack nicer */
+  .aiFlowProgress{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* steps list gets its own scroll if needed */
+  .aiFlowSteps{
+    max-height: 240px;
+    overflow: auto;
+  }
+
+  /* terminal should always be reachable */
+  .aiTermBody{
+    max-height: 210px;
+    overflow: auto;
+  }
+
+  /* hash line break-friendly */
+  .aiHash .v{
+    word-break: break-all;
+  }
+}

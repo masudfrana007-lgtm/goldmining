@@ -49,9 +49,10 @@ const BRONZE = {
   dailyPct: 0.5, // ✅ 0.50% daily
   durationDays: 30,
 
-  // ✅ Range: 300 - 499.99
-  min: 300,
-  max: 499.99,
+  // ✅ Range: 501 - 1000
+  min: 501,
+  max: 1000,
+  durations: [1, 7, 15, 30], // Available duration options in days
 
   settlement: "Daily accrual",
   riskNote: "Market conditions apply",
@@ -114,6 +115,7 @@ export default function BronzeMiner() {
   // ✅ string (allows empty input)
   const [amount, setAmount] = useState(String(BRONZE.min));
   const [roiErr, setRoiErr] = useState("");
+  const [selectedDuration, setSelectedDuration] = useState(BRONZE.durations[0]); // ✅ Duration selector
 
   /** ✅ Subscribe flow states */
   const [subOpen, setSubOpen] = useState(false);
@@ -150,12 +152,12 @@ export default function BronzeMiner() {
       amount !== "" && safeAmount >= BRONZE.min && safeAmount <= BRONZE.max;
 
     const dailyProfit = safeAmount * (BRONZE.dailyPct / 100);
-    const totalProfit = dailyProfit * BRONZE.durationDays;
+    const totalProfit = dailyProfit * selectedDuration; // ✅ Use selected duration
     const totalReturn = safeAmount + totalProfit;
     const roiPct = safeAmount > 0 ? (totalProfit / safeAmount) * 100 : 0;
 
     return { inRange, dailyProfit, totalProfit, totalReturn, roiPct };
-  }, [amount, amountNum]);
+  }, [amount, amountNum, selectedDuration]); // ✅ Add selectedDuration dependency
 
   const totalReturnPct = useMemo(() => BRONZE.dailyPct * BRONZE.durationDays, []);
 
@@ -475,6 +477,32 @@ export default function BronzeMiner() {
                 </div>
               </label>
 
+              {/* ✅ Duration Selector */}
+              <label className="field">
+                <span className="label">Package Duration</span>
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+                  {BRONZE.durations.map((days) => (
+                    <button
+                      key={days}
+                      type="button"
+                      onClick={() => setSelectedDuration(days)}
+                      style={{
+                        padding: "0.5rem 1rem",
+                        background: selectedDuration === days ? "#cd7f32" : "#1e293b",
+                        border: `1px solid ${selectedDuration === days ? "#cd7f32" : "#334155"}`,
+                        borderRadius: "0.5rem",
+                        color: selectedDuration === days ? "#0f172a" : "#f1f5f9",
+                        cursor: "pointer",
+                        fontSize: "0.875rem",
+                        fontWeight: selectedDuration === days ? "600" : "400",
+                      }}
+                    >
+                      {days} {days === 1 ? "day" : "days"}
+                    </button>
+                  ))}
+                </div>
+              </label>
+
               <div className="bmCalcGrid">
                 <div className="bmCalcCard">
                   <div className="bmCalcLabel">Est. Daily Profit</div>
@@ -485,7 +513,7 @@ export default function BronzeMiner() {
                 <div className="bmCalcCard">
                   <div className="bmCalcLabel">Est. Total Profit</div>
                   <div className="bmCalcValue">${money(calc.totalProfit)}</div>
-                  <div className="bmCalcMeta">{BRONZE.durationDays} days</div>
+                  <div className="bmCalcMeta">{selectedDuration} {selectedDuration === 1 ? "day" : "days"}</div>
                 </div>
 
                 <div className="bmCalcCard">

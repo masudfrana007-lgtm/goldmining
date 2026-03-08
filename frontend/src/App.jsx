@@ -23,7 +23,9 @@ import BronzeMiner from "./pages/BronzeMiner.jsx";
 import Disclaimer from "./pages/Disclaimer.jsx";
 import Privacy from "./pages/Privacy.jsx";
 import Terms from "./pages/Terms.jsx";
-
+import Records from "./pages/Records.jsx";
+import WithdrawalMethod from "./pages/WithdrawalMethod.jsx";
+import AiDashboard from "./pages/GoldMiracleAIDashboard.jsx";
 
 export default function App() {
   return (
@@ -53,10 +55,15 @@ export default function App() {
         <Route path="/member/deposit/bank" element={<MemberDepositBank />} />
         <Route path="/mining/titan-vault-rig" element={<TitanVaultRig />} />
         <Route path="/member/how-it-works" element={<HowItWorks />} />
-      <Route path="/disclaimer" element={<Disclaimer />} />
-<Route path="/privacy" element={<Privacy />} />
-<Route path="/terms" element={<Terms />} />
+
+        <Route path="/disclaimer" element={<Disclaimer />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+
         <Route path="/member/mining/bronze-miner" element={<BronzeMiner />} />
+        <Route path="/records" element={<Records />} />
+        <Route path="/member/withdrawal-method" element={<WithdrawalMethod />} />
+        <Route path="/member/ai-dashboard" element={<AiDashboard />} />
       </Routes>
     </BrowserRouter>
   );

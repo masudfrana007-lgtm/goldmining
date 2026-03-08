@@ -1,13 +1,17 @@
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./GoldMining.css";
-
 
 /* ---------- helpers ---------- */
 function fmt(n) {
   return new Intl.NumberFormat("en-US").format(n);
 }
 function money(n) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(n);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 2,
+  }).format(n);
 }
 function pct(n) {
   return `${n.toFixed(2)}%`;
@@ -46,78 +50,104 @@ const ICONS = {
 };
 
 export default function GoldMining() {
+  const navigate = useNavigate();
+
   const packages = useMemo(
     () => [
       {
         key: "starter",
         name: "Starter Rig",
         tier: "Entry",
-        entry: 100,
-        dailyRate: 0.3,
+        minEntry: 100,
+        maxEntry: 500,
+        dailyRate: 0.30,
         badge: "Best to start",
-        // ✅ put your own image paths in public/gm/
         img: "/gm/rig-starter.png",
         specs: ["Low power draw", "Stable daily cycle", "Beginner-friendly setup"],
+        durations: [1, 7, 15, 30], // days
       },
       {
         key: "bronze",
         name: "Bronze Miner",
         tier: "Growth",
-        entry: 300,
+        minEntry: 501,
+        maxEntry: 1000,
         dailyRate: 0.5,
         badge: "Popular",
         img: "/gm/rig-bronze.png",
         specs: ["Balanced output", "Optimized cooling", "Auto status checks"],
+        durations: [1, 7, 15, 30], // days
       },
       {
         key: "silver",
         name: "Silver Engine",
         tier: "Advance",
-        entry: 500,
+        minEntry: 1001,
+        maxEntry: 2000,
         dailyRate: 0.75,
         badge: "Better yield",
         img: "/gm/rig-silver.png",
         specs: ["Higher hash mode", "Faster payout cycle", "Priority monitoring"],
+        durations: [3, 7, 15, 30], // days
       },
       {
         key: "gold",
         name: "Gold Core",
         tier: "Pro",
-        entry: 800,
+        minEntry: 2001,
+        maxEntry: 10000,
         dailyRate: 1.0,
         badge: "Pro tier",
-        img:"/gm/rig-gold.png",
+        img: "/gm/rig-gold.png",
         specs: ["Pro performance", "Uptime focus", "Dashboard analytics"],
+        durations: [7, 15, 30], // days
       },
       {
         key: "platinum",
         name: "Platinum Array",
         tier: "Elite",
-        entry: 1000,
+        minEntry: 10001,
+        maxEntry: 20000,
         dailyRate: 1.5,
         badge: "Elite",
         img: "/gm/rig-platinum.png",
         specs: ["Elite output", "Enhanced stability", "Advanced reporting"],
+        durations: [7, 15, 30], // days
       },
       {
         key: "titan",
         name: "Titan Vault Rig",
         tier: "Institutional",
-        entry: 2000,
+        minEntry: 20001,
+        maxEntry: null, // Unlimited
         dailyRate: 2.0,
         badge: "Max tier",
         img: "/gm/rig-titan.png",
         specs: ["Maximum capacity", "Priority support", "Enterprise monitoring"],
+        durations: [7, 15, 30], // days
       },
     ],
     []
   );
 
+  // ✅ route map for package detail pages
+  const ROUTES = {
+    starter: "/mining/starter-rig",
+    bronze: "/member/mining/bronze-miner",
+    silver: "/mining/silver-miner",
+    gold: "/mining/gold-core",
+    platinum: "/mining/platinum-array",
+    titan: "/mining/titan-vault-rig",
+  };
+
   const [selectedKey, setSelectedKey] = useState(packages[0].key);
+  const [selectedAmount, setSelectedAmount] = useState(packages[0].minEntry);
+  const [selectedDuration, setSelectedDuration] = useState(packages[0].durations[0]);
+  
   const selected = packages.find((p) => p.key === selectedKey) || packages[0];
 
-  // Estimator
-  const daily = (selected.entry * selected.dailyRate) / 100;
+  // Estimator - using selected amount
+  const daily = (selectedAmount * selected.dailyRate) / 100;
   const weekly = daily * 7;
   const monthly = daily * 30;
 
@@ -143,9 +173,27 @@ export default function GoldMining() {
           </div>
 
           <div className="gmMineActions">
-            <button className="gmMineBtn gmMineBtnGhost" type="button">
+            {/* need a button mining dashboard */}
+            <button
+              className="gmMineBtn"
+              type="button"
+              onClick={() => navigate("/member/dashboard")}
+              aria-label="Go to Mining Dashboard"
+              title="Go to Mining Dashboard"
+            >
+              Mining Dashboard
+            </button>
+
+            <button
+              className="gmMineBtn gmMineBtnGhost"
+              type="button"
+              onClick={() => navigate(-1)}
+              aria-label="Back"
+              title="Back to previous page"
+            >
               Back
             </button>
+
             <button className="gmMineBtn gmMineBtnGold" type="button">
               Start Mining
             </button>
@@ -172,57 +220,40 @@ export default function GoldMining() {
               clean specs, expected daily rate, and a realistic console-style UI.
             </p>
 
-            
+            {/* Visual Mining Graphic Block (NEXT LEVEL) */}
+            <div className="gmMineVisual gmMineVisualXL">
+              <div className="gmMineSweep" />
+              <div className="gmMineHud" />
+              <div className="gmMineHudScan" />
 
-           
-            {/* Visual Mining Graphic Block */}
-{/* Visual Mining Graphic Block (NEXT LEVEL) */}
-<div className="gmMineVisual gmMineVisualXL">
-  <div className="gmMineSweep" />
-  <div className="gmMineHud" />
-  <div className="gmMineHudScan" />
-  
+              {/* energy beam */}
+              <div className="gmMineEnergyBeam" />
 
-  {/* energy beam */}
-  <div className="gmMineEnergyBeam" />
+              {/* particles */}
+              <div className="gmMineParticles" aria-hidden="true">
+                {Array.from({ length: 18 }).map((_, i) => (
+                  <span className="gmMineParticle" style={{ ["--i"]: i }} key={i} />
+                ))}
+              </div>
 
-  {/* particles */}
-  <div className="gmMineParticles" aria-hidden="true">
-    {Array.from({ length: 18 }).map((_, i) => (
-      <span className="gmMineParticle" style={{ ["--i"]: i }} key={i} />
-    ))}
-  </div>
+              <div className="gmMineVisualInner">
+                <div className="gmMineOrbitA" />
+                <div className="gmMineOrbitB" />
 
-  <div className="gmMineVisualInner">
-    <div className="gmMineOrbitA" />
-    <div className="gmMineOrbitB" />
+                <img src="/gm/coin-btc.png" alt="Bitcoin" className="gmMineCoin" loading="lazy" />
 
-    <img
-      src="/gm/coin-btc.png"
-      alt="Bitcoin"
-      className="gmMineCoin"
-      loading="lazy"
-    />
+                <img src="/gm/gold-bar.png" alt="Gold bars" className="gmMineGoldBars" loading="lazy" />
 
-    <img
-      src="/gm/gold-bar.png"
-      alt="Gold bars"
-      className="gmMineGoldBars"
-      loading="lazy"
-    />
+                <div className="gmMineCoreRing" />
+                <div className="gmMineCoreRing2" />
+                <div className="gmMineCorePulse" />
+              </div>
 
-    <div className="gmMineCoreRing" />
-    <div className="gmMineCoreRing2" />
-    <div className="gmMineCorePulse" />
-  </div>
-
-  <div className="gmMineHudText">
-    <div className="t">Mining Visual Core</div>
-    <div className="s">BTC energy • Gold yield • Real-time status</div>
-  </div>
-</div>
-
-
+              <div className="gmMineHudText">
+                <div className="t">Mining Visual Core</div>
+                <div className="s">BTC energy • Gold yield • Real-time status</div>
+              </div>
+            </div>
           </div>
 
           <div className="gmMineHeroRight">
@@ -249,8 +280,10 @@ export default function GoldMining() {
 
                 <div className="gmMineMetrics">
                   <div className="gmMineMetric">
-                    <div className="gmMineMetricLbl">Entry</div>
-                    <div className="gmMineMetricVal">{money(selected.entry)}</div>
+                    <div className="gmMineMetricLbl">Entry Range</div>
+                    <div className="gmMineMetricVal">
+                      {money(selected.minEntry)} - {selected.maxEntry ? money(selected.maxEntry) : "Unlimited"}
+                    </div>
                   </div>
                   <div className="gmMineMetric">
                     <div className="gmMineMetricLbl">Daily Rate</div>
@@ -266,6 +299,62 @@ export default function GoldMining() {
                   </div>
                 </div>
 
+                {/* Amount Input */}
+                <div style={{ marginTop: "1rem" }}>
+                  <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.875rem", color: "#94a3b8" }}>
+                    Investment Amount
+                  </label>
+                  <input
+                    type="number"
+                    value={selectedAmount}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      if (val >= selected.minEntry && (!selected.maxEntry || val <= selected.maxEntry)) {
+                        setSelectedAmount(val);
+                      }
+                    }}
+                    min={selected.minEntry}
+                    max={selected.maxEntry || undefined}
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      background: "#1e293b",
+                      border: "1px solid #334155",
+                      borderRadius: "0.5rem",
+                      color: "#f1f5f9",
+                      fontSize: "1rem",
+                    }}
+                  />
+                </div>
+
+                {/* Duration Selection */}
+                <div style={{ marginTop: "1rem" }}>
+                  <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.875rem", color: "#94a3b8" }}>
+                    Package Duration
+                  </label>
+                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                    {selected.durations.map((days) => (
+                      <button
+                        key={days}
+                        type="button"
+                        onClick={() => setSelectedDuration(days)}
+                        style={{
+                          padding: "0.5rem 1rem",
+                          background: selectedDuration === days ? "#eab308" : "#1e293b",
+                          border: `1px solid ${selectedDuration === days ? "#eab308" : "#334155"}`,
+                          borderRadius: "0.5rem",
+                          color: selectedDuration === days ? "#0f172a" : "#f1f5f9",
+                          cursor: "pointer",
+                          fontSize: "0.875rem",
+                          fontWeight: selectedDuration === days ? "600" : "400",
+                        }}
+                      >
+                        {days} {days === 1 ? "day" : "days"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="gmMineSpecRow">
                   {selected.specs.map((s) => (
                     <div className="gmMineSpec" key={s}>
@@ -276,9 +365,14 @@ export default function GoldMining() {
                 </div>
 
                 <div className="gmMineConsoleFoot">
-                  <button className="gmMineBtn gmMineBtnGold" type="button">
+                  <button
+                    className="gmMineBtn gmMineBtnGold"
+                    type="button"
+                    onClick={() => navigate(ROUTES[selected.key])}
+                  >
                     Activate {selected.name}
                   </button>
+
                   <button className="gmMineBtn" type="button">
                     View Terms
                   </button>
@@ -330,7 +424,12 @@ export default function GoldMining() {
                 key={p.key}
                 type="button"
                 className={`gmMineCard ${p.key === selectedKey ? "active" : ""}`}
-                onClick={() => setSelectedKey(p.key)}
+                onClick={() => {
+                  setSelectedKey(p.key);
+                  setSelectedAmount(p.minEntry);
+                  setSelectedDuration(p.durations[0]);
+                  navigate(ROUTES[p.key]);
+                }}
               >
                 <div className="gmMineCardTop">
                   <div className="gmMineCardIcon">{ICONS.chip}</div>
@@ -346,15 +445,18 @@ export default function GoldMining() {
 
                 <div className="gmMineCardTitle">{p.name}</div>
                 <div className="gmMineCardDesc">
-                  Entry: <strong>{money(p.entry)}</strong> • Daily rate: <strong>{pct(p.dailyRate)}</strong>
+                  Entry: <strong>{money(p.minEntry)} - {p.maxEntry ? money(p.maxEntry) : "Unlimited"}</strong> • Daily rate: <strong>{pct(p.dailyRate)}</strong>
+                </div>
+                <div className="gmMineCardDesc" style={{ fontSize: "0.75rem", marginTop: "0.25rem" }}>
+                  Duration options: <strong>{p.durations.join(", ")} days</strong>
                 </div>
 
                 <div className="gmMineCardBottom">
                   <div className="gmMineCardMini">
-                    <div className="lbl">Est / day</div>
-                    <div className="val">{money((p.entry * p.dailyRate) / 100)}</div>
+                    <div className="lbl">Est / day (min)</div>
+                    <div className="val">{money((p.minEntry * p.dailyRate) / 100)}</div>
                   </div>
-                  <span className="gmMineCardCta">Preview</span>
+                  <span className="gmMineCardCta">Open</span>
                 </div>
               </button>
             ))}
@@ -406,11 +508,20 @@ export default function GoldMining() {
               </div>
             </div>
 
+            {/* ✅ ONLY CHANGED: footer links now route correctly */}
             <div className="gmMineFooterLinks">
-              <a href="#top">Top</a>
-              <a href="#packages">Packages</a>
-              <a href="#terms">Terms</a>
-              <a href="#support">Support</a>
+              <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+                Top
+              </button>
+              <button type="button" onClick={() => navigate("/mining")}>
+                Packages
+              </button>
+              <button type="button" onClick={() => navigate("/terms")}>
+                Terms
+              </button>
+              <button type="button" onClick={() => navigate("/customer-service")}>
+                Support
+              </button>
             </div>
           </div>
 

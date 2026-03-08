@@ -46,8 +46,9 @@ const GOLD_CORE = {
   subtitle: "Premium core mining package with higher daily yield and stable daily settlement.",
   dailyPct: 1.0,
   durationDays: 30,
-  min: 800,
-  max: 1199.99, // keep as your backend
+  min: 2001,
+  max: 10000, // ✅ 2001–10000
+  durations: [7, 15, 30], // Available duration options in days
   settlement: "Daily accrual",
   riskNote: "Market conditions apply",
   image: "/gm/rig-gold.png",
@@ -124,6 +125,7 @@ export default function GoldCore() {
   // ✅ keep string (allows empty input)
   const [amount, setAmount] = useState(String(GOLD_CORE.min));
   const [roiErr, setRoiErr] = useState("");
+  const [selectedDuration, setSelectedDuration] = useState(GOLD_CORE.durations[0]); // ✅ Duration selector
 
   /** ✅ Subscribe flow states */
   const [subOpen, setSubOpen] = useState(false);
@@ -161,12 +163,12 @@ export default function GoldCore() {
       amount !== "" && safeAmount >= GOLD_CORE.min && safeAmount <= GOLD_CORE.max;
 
     const dailyProfit = safeAmount * (GOLD_CORE.dailyPct / 100);
-    const totalProfit = dailyProfit * GOLD_CORE.durationDays;
+    const totalProfit = dailyProfit * selectedDuration; // ✅ Use selected duration
     const totalReturn = safeAmount + totalProfit;
     const roiPct = safeAmount > 0 ? (totalProfit / safeAmount) * 100 : 0;
 
     return { inRange, dailyProfit, totalProfit, totalReturn, roiPct };
-  }, [amount, amountNum]);
+  }, [amount, amountNum, selectedDuration]); // ✅ Add selectedDuration dependency
 
   const totalReturnPct = useMemo(() => GOLD_CORE.dailyPct * GOLD_CORE.durationDays, []);
 
@@ -492,6 +494,32 @@ export default function GoldCore() {
                 </div>
               </label>
 
+              {/* ✅ Duration Selector */}
+              <label className="field">
+                <span className="label">Package Duration</span>
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+                  {GOLD_CORE.durations.map((days) => (
+                    <button
+                      key={days}
+                      type="button"
+                      onClick={() => setSelectedDuration(days)}
+                      style={{
+                        padding: "0.5rem 1rem",
+                        background: selectedDuration === days ? "#ffd700" : "#1e293b",
+                        border: `1px solid ${selectedDuration === days ? "#ffd700" : "#334155"}`,
+                        borderRadius: "0.5rem",
+                        color: selectedDuration === days ? "#0f172a" : "#f1f5f9",
+                        cursor: "pointer",
+                        fontSize: "0.875rem",
+                        fontWeight: selectedDuration === days ? "600" : "400",
+                      }}
+                    >
+                      {days} {days === 1 ? "day" : "days"}
+                    </button>
+                  ))}
+                </div>
+              </label>
+
               <div className="calcGrid">
                 <div className="calcCard">
                   <div className="calcLabel">Est. Daily Profit</div>
@@ -502,7 +530,7 @@ export default function GoldCore() {
                 <div className="calcCard">
                   <div className="calcLabel">Est. Total Profit</div>
                   <div className="calcValue">${money(calc.totalProfit)}</div>
-                  <div className="calcMeta">{GOLD_CORE.durationDays} days</div>
+                  <div className="gcCalcMeta">{selectedDuration} {selectedDuration === 1 ? "day" : "days"}</div>
                 </div>
 
                 <div className="calcCard">

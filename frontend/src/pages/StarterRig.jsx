@@ -46,7 +46,8 @@ const STARTER_RIG = {
   dailyPct: 0.3,
   durationDays: 30,
   min: 100,
-  max: 299, // ✅ 100–299
+  max: 500, // ✅ 100–500
+  durations: [1, 7, 15, 30], // Available duration options in days
   settlement: "Daily accrual",
   riskNote: "Market conditions apply",
   image: "/gm/rig-starter.png",
@@ -122,6 +123,7 @@ export default function StarterRig() {
   // ✅ IMPORTANT: keep as STRING so user can clear input fully (no forced 0)
   const [amount, setAmount] = useState(String(STARTER_RIG.min));
   const [roiErr, setRoiErr] = useState("");
+  const [selectedDuration, setSelectedDuration] = useState(STARTER_RIG.durations[0]); // ✅ Duration selector
 
   /** ✅ Subscribe flow states */
   const [subOpen, setSubOpen] = useState(false);
@@ -163,12 +165,12 @@ export default function StarterRig() {
       safeAmount <= STARTER_RIG.max;
 
     const dailyProfit = safeAmount * (STARTER_RIG.dailyPct / 100);
-    const totalProfit = dailyProfit * STARTER_RIG.durationDays;
+    const totalProfit = dailyProfit * selectedDuration; // ✅ Use selected duration
     const totalReturn = safeAmount + totalProfit;
     const roiPct = safeAmount > 0 ? (totalProfit / safeAmount) * 100 : 0;
 
     return { inRange, dailyProfit, totalProfit, totalReturn, roiPct };
-  }, [amount, amountNum]);
+  }, [amount, amountNum, selectedDuration]); // ✅ Add selectedDuration dependency
 
   const totalReturnPct = useMemo(
     () => STARTER_RIG.dailyPct * STARTER_RIG.durationDays,
@@ -508,6 +510,32 @@ export default function StarterRig() {
                 </div>
               </label>
 
+              {/* ✅ Duration Selector */}
+              <label className="field">
+                <span className="label">Package Duration</span>
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+                  {STARTER_RIG.durations.map((days) => (
+                    <button
+                      key={days}
+                      type="button"
+                      onClick={() => setSelectedDuration(days)}
+                      style={{
+                        padding: "0.5rem 1rem",
+                        background: selectedDuration === days ? "#eab308" : "#1e293b",
+                        border: `1px solid ${selectedDuration === days ? "#eab308" : "#334155"}`,
+                        borderRadius: "0.5rem",
+                        color: selectedDuration === days ? "#0f172a" : "#f1f5f9",
+                        cursor: "pointer",
+                        fontSize: "0.875rem",
+                        fontWeight: selectedDuration === days ? "600" : "400",
+                      }}
+                    >
+                      {days} {days === 1 ? "day" : "days"}
+                    </button>
+                  ))}
+                </div>
+              </label>
+
               <div className="calcGrid">
                 <div className="calcCard">
                   <div className="calcLabel">Est. Daily Profit</div>
@@ -518,7 +546,7 @@ export default function StarterRig() {
                 <div className="calcCard">
                   <div className="calcLabel">Est. Total Profit</div>
                   <div className="calcValue">${money(calc.totalProfit)}</div>
-                  <div className="calcMeta">{STARTER_RIG.durationDays} days</div>
+                  <div className="calcMeta">{selectedDuration} {selectedDuration === 1 ? "day" : "days"}</div>
                 </div>
 
                 <div className="calcCard">

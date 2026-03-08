@@ -1,0 +1,462 @@
+:root {
+  --bg0: #060714;
+  --bg1: #090a18;
+
+  --text: #eaf0ff;
+  --muted: rgba(234, 240, 255, 0.72);
+
+  --gold: #ffd84a;
+  --gold2: #f4b400;
+
+  --blue: #5bb2ff;
+
+  --p1: #7c3aed;
+  --p2: #4c1d95;
+  --pGlow: rgba(124, 58, 237, 0.28);
+
+  --ok: #3ddc97;
+  --warn: #ffce5b;
+  --bad: #ff5b7a;
+
+  --stroke: rgba(255, 255, 255, 0.1);
+  --stroke2: rgba(255, 255, 255, 0.16);
+
+  --shadow: 0 18px 48px rgba(0, 0, 0, 0.58);
+  --shadow2: 0 12px 26px rgba(0, 0, 0, 0.45);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.recDash {
+  min-height: 100vh;
+  background: radial-gradient(1100px 680px at 18% -8%, rgba(255, 216, 74, 0.14), transparent 58%),
+    radial-gradient(980px 640px at 86% 12%, rgba(124, 58, 237, 0.18), transparent 62%),
+    radial-gradient(920px 620px at 70% 96%, rgba(91, 178, 255, 0.12), transparent 64%),
+    linear-gradient(180deg, var(--bg0), var(--bg1));
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.recVignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(1200px 800px at 50% 20%, transparent 30%, rgba(0, 0, 0, 0.62) 88%),
+    radial-gradient(900px 650px at 12% 0%, rgba(255, 216, 74, 0.08), transparent 65%),
+    radial-gradient(900px 650px at 90% 12%, rgba(124, 58, 237, 0.1), transparent 65%);
+  opacity: 0.9;
+}
+
+/* Top Mining Bar */
+.recTopMining {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(6, 8, 14, 0.55);
+  backdrop-filter: blur(14px);
+}
+
+.recTopLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.recBackBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.recBackBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(-2px);
+}
+
+.recTopOrb {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255, 216, 74, 0.35), rgba(124, 58, 237, 0.28));
+  display: grid;
+  place-items: center;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+
+.recTopOrbGlow {
+  position: absolute;
+  inset: -6px;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 216, 74, 0.28), transparent 62%);
+  animation: recPulse 3.2s ease-in-out infinite;
+}
+
+@keyframes recPulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.recTopTitle {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #ffd84a 0%, #fff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.recSupportPill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.recSupportPill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--gold);
+  transform: translateY(-1px);
+}
+
+.recSupportPillIco {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  color: var(--gold);
+}
+
+/* Wrapper */
+.recWrap {
+  width: min(1160px, calc(100% - 28px));
+  margin: 20px auto 40px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Card Base */
+.recCard {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(0, 0, 0, 0.22));
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
+}
+
+.recCard:hover {
+  border-color: var(--stroke2);
+}
+
+/* Tab Navigation */
+.recTabCard {
+  padding: 16px;
+}
+
+.recTabNav {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.recTab {
+  padding: 16px 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.recTab:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.recTab.active {
+  background: linear-gradient(135deg, rgba(255, 216, 74, 0.12), rgba(124, 58, 237, 0.08));
+  border-color: var(--gold);
+  color: var(--text);
+}
+
+.recTabTitle {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.recTabCount {
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold);
+}
+
+/* Table Card */
+.recTableCard {
+  padding: 24px;
+}
+
+.recTableHeader {
+  margin-bottom: 20px;
+}
+
+.recTableTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.recTableSub {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.recTableWrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.recTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.recTable thead {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.recTable th {
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--gold);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.recTable tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.2s ease;
+}
+
+.recTable tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.recTable td {
+  padding: 16px;
+  color: var(--text);
+}
+
+.recId {
+  font-weight: 600;
+  color: var(--blue);
+  font-size: 13px;
+}
+
+.recDate {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.recAmount {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.recCurrency {
+  font-size: 12px;
+  color: var(--gold);
+  font-weight: 600;
+  margin-left: 2px;
+}
+
+.recMethod {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.recStatus {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.recStatus.status-completed {
+  background: rgba(61, 220, 151, 0.12);
+  color: var(--ok);
+  border-color: rgba(61, 220, 151, 0.2);
+}
+
+.recStatus.status-pending {
+  background: rgba(255, 206, 91, 0.12);
+  color: var(--warn);
+  border-color: rgba(255, 206, 91, 0.2);
+}
+
+.recStatus.status-rejected {
+  background: rgba(255, 91, 122, 0.12);
+  color: var(--bad);
+  border-color: rgba(255, 91, 122, 0.2);
+}
+
+.recHash {
+  font-size: 13px;
+  font-family: "Courier New", monospace;
+  color: var(--muted);
+}
+
+/* Empty State */
+.recEmpty {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.recEmptyTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.recEmptySub {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* Quick Actions */
+.recActionsCard {
+  padding: 24px;
+}
+
+.recActionsTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.recActions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.recActionBtn {
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.recActionBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.recActionBtn.deposit:hover {
+  background: rgba(91, 178, 255, 0.12);
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.recActionBtn.withdrawal:hover {
+  background: rgba(255, 216, 74, 0.12);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.recActionBtn.dashboard:hover {
+  background: rgba(124, 58, 237, 0.12);
+  border-color: var(--p1);
+  color: var(--p1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .recWrap {
+    width: calc(100% - 16px);
+  }
+
+  .recTabNav {
+    grid-template-columns: 1fr;
+  }
+
+  .recTableWrap {
+    overflow-x: scroll;
+  }
+
+  .recTable {
+    min-width: 800px;
+  }
+
+  .recActions {
+    grid-template-columns: 1fr;
+  }
+
+  .recTopTitle {
+    font-size: 16px;
+  }
+
+  .recSupportPill span:last-child {
+    display: none;
+  }
+}

@@ -270,8 +270,8 @@ export default function HomeGoldMiracle() {
       </div>
 
       {/* Top nav */}
-      <header className="gmTop">
-        <div className="gmWrap gmTopIn">
+      <header className="HgmTop">
+        <div className="HgmWrap HgmTopIn">
           <div className="gmBrand">
             <div className="gmLogoWrap" aria-hidden="true">
               <img className="gmLogoImg" src="/gm/logo.png" alt="GoldMiracle logo" />
@@ -279,7 +279,7 @@ export default function HomeGoldMiracle() {
 
             <div className="gmBrandTxt">
               <div className="gmName">GoldMiracle</div>
-              <div className="gmTagline">goldmiracle.io • BTC Gold Mining Tech</div>
+              <div className="gmTagline">goldmiracle.bond • BTC Gold Mining Tech</div>
             </div>
           </div>
 
@@ -309,7 +309,7 @@ export default function HomeGoldMiracle() {
         </div>
       </header>
 
-      <main className="gmWrap">
+      <main className="HgmWrap">
         {/* HERO */}
         <section className="gmHero">
           <div className="gmHeroLeft">
@@ -396,11 +396,11 @@ export default function HomeGoldMiracle() {
             </div>
 
             {/* Trusted by / partners logo row */}
-            <div className="gmLogoRow" aria-label="technology logos">
+            {/* <div className="gmLogoRow" aria-label="technology logos">
               <img src="/gm/coin-btc.png" alt="Bitcoin" loading="lazy" />
               <img src="/gm/gold-bar.png" alt="Gold" loading="lazy" />
               <img src="/gm/mining-rig.png" alt="Mining" loading="lazy" />
-            </div>
+            </div> */}
           </div>
 
           {/* Hero right glass console */}
@@ -607,20 +607,40 @@ export default function HomeGoldMiracle() {
           <div className="gmFootTop">
             <div>
               <div className="gmFootBrand">GoldMiracle</div>
-              <div className="gmFootSub">goldmiracle.io • BTC Gold Mining Theme</div>
+              <div className="gmFootSub">goldmiracle.bond • BTC Gold Mining Theme</div>
             </div>
 
             <div className="gmFootLinks">
-              <a href="#products">Products</a>
-              <a href="#results">Results</a>
-              <a href="#technology">Technology</a>
-              <a href="#faq">FAQ</a>
+              <a href="#products" style={{ textDecoration: "none" }}>
+                Products
+              </a>
+              <a href="#results" style={{ textDecoration: "none" }}>
+                Results
+              </a>
+              <a href="#technology" style={{ textDecoration: "none" }}>
+                Technology
+              </a>
+              <a href="#faq" style={{ textDecoration: "none" }}>
+                FAQ
+              </a>
             </div>
           </div>
 
           <div className="gmFootBottom">
             <span>© {new Date().getFullYear()} GoldMiracle. All rights reserved.</span>
-            <span className="gmFootNote">Disclaimer • Privacy • Terms</span>
+            <span className="gmFootNote">
+              <a onClick={() => nav("/disclaimer")} style={{ textDecoration: "none", cursor: "pointer" }}>
+                Disclaimer
+              </a>{" "}
+              •{" "}
+              <a onClick={() => nav("/privacy")} style={{ textDecoration: "none", cursor: "pointer" }}>
+                Privacy
+              </a>{" "}
+              •{" "}
+              <a onClick={() => nav("/terms")} style={{ textDecoration: "none", cursor: "pointer" }}>
+                Terms
+              </a>
+            </span>
           </div>
         </footer>
       </main>

@@ -329,6 +329,11 @@ export default function TradingPro() {
 
   const [drawer, setDrawer] = useState(false);
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, []);
+
   // Market list
   const [coins, setCoins] = useState([]);
   const [q, setQ] = useState("");
@@ -903,7 +908,7 @@ export default function TradingPro() {
       </button>
 
       {!canSubmit ? <div className="tpWarn">Enter a valid amount{orderType === "limit" ? " and limit price" : ""}. Buy requires enough balance.</div> : null}
-
+      
       <div className="tpFine">Use the + / − buttons or slider to adjust leverage (e.g., 5x).
 Higher leverage increases potential profit but also increases risk. Choose your preferred Trade Time (e.g., 60 seconds).
 The position will automatically close when the selected duration ends. </div>
@@ -913,11 +918,18 @@ The position will automatically close when the selected duration ends. </div>
   return (
     <div className="tpPage">
       <header className="tpTop">
-        <button className="tpBurger" onClick={() => setDrawer(true)} aria-label="Open markets">
-          <span />
-          <span />
-          <span />
+        <button className="tpBackBtn" type="button" onClick={() => navigate(-1)} aria-label="Go back" title="Back to previous page">
+          <svg viewBox="0 0 24 24" width="18" height="18">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          <span>Back</span>
         </button>
+
+        {/* <button className="tpBurger" onClick={() => setDrawer(true)} aria-label="Open markets">
+          <span />
+          <span />
+          <span />
+        </button> */}
 
         <div className="tpBrand">
           <div className="tpMark" />
@@ -1255,10 +1267,32 @@ The position will automatically close when the selected duration ends. </div>
             {tradePop.stage === "countdown" ? (
               <div className="tpPopBody">
                 <div className="tpPopK">Time Remaining</div>
-                <div className="tpPopTimer">{tradePop.left}s</div>
-                <div className="tpPopHint">
-                  {tradePop.sym.replace("USDT", "")}/USDT • Amount <b>{nfmt(tradePop.amount, 2)} USDT</b>
+                <div className="tpPopTimerWrap">
+                  <div className="tpPopTimer">{tradePop.left}s</div>
                 </div>
+                <div className="tpPopHint">
+                  {tradePop.sym.replace("USDT", "")}/USDT • {side === "buy" ? "Long" : "Short"} • {orderType.toUpperCase()}
+                </div>
+                
+                <div className="tpPopDetails">
+                  <div className="tpPopDetailRow">
+                    <div className="tpPopDetailLabel">Amount</div>
+                    <div className="tpPopDetailValue">{nfmt(tradePop.amount, 2)} USDT</div>
+                  </div>
+                  <div className="tpPopDetailRow">
+                    <div className="tpPopDetailLabel">Leverage</div>
+                    <div className="tpPopDetailValue">{leverage}x</div>
+                  </div>
+                  <div className="tpPopDetailRow">
+                    <div className="tpPopDetailLabel">Entry Price</div>
+                    <div className="tpPopDetailValue">{nfmt(orderType === "market" ? last : Number(limitPrice || 0), priceDecimals)} USDT</div>
+                  </div>
+                  <div className="tpPopDetailRow">
+                    <div className="tpPopDetailLabel">Expected Return</div>
+                    <div className="tpPopDetailValue">+{nfmt(tradePop.amount * 0.2, 2)} USDT</div>
+                  </div>
+                </div>
+
                 <div className="tpPopBar">
                   <div
                     className="tpPopBarFill"
@@ -1270,13 +1304,53 @@ The position will automatically close when the selected duration ends. </div>
               </div>
             ) : (
               <div className="tpPopBody">
-                <div className="tpPopCongrats">Congratulations!</div>
-                <div className="tpPopMsg">Your trade completed successfully and profit has been added.</div>
+                <div className="tpPopCongrats">
+                  <div className="tpPopCongratsTitle">🎉 Congratulations!</div>
+                  <div className="tpPopCongratsMsg">
+                    Your trade completed successfully and profit has been added to your balance.
+                  </div>
+                </div>
 
-                <div className="tpPopProfit">
-                  <span className="tpPopPlus">+</span>
-                  <span className="tpPopAmt">{nfmt(tradePop.profit, 2)} USDT</span>
-                  <span className="tpPopPct"> (20%)</span>
+                <div className="tpPopSuccess">
+                  <div className="tpPopTick" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                  </div>
+
+                  <div className="tpPopSuccessText">
+                    Trade executed successfully!
+                    <div className="tpPopSuccessSmall">
+                      Profit: <b>+{nfmt(tradePop.profit, 2)} USDT</b> • Return: <b>20%</b>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="tpPopTradeInfo">
+                  <div className="tpPopInfoRow">
+                    <span>Pair</span>
+                    <b>{tradePop.sym.replace("USDT", "")}/USDT</b>
+                  </div>
+                  <div className="tpPopInfoRow">
+                    <span>Direction</span>
+                    <b>{side === "buy" ? "Long" : "Short"}</b>
+                  </div>
+                  <div className="tpPopInfoRow">
+                    <span>Amount</span>
+                    <b>{nfmt(tradePop.amount, 2)} USDT</b>
+                  </div>
+                  <div className="tpPopInfoRow">
+                    <span>Leverage</span>
+                    <b>{leverage}x</b>
+                  </div>
+                  <div className="tpPopInfoRow">
+                    <span>Entry Price</span>
+                    <b>{nfmt(orderType === "market" ? last : Number(limitPrice || 0), priceDecimals)} USDT</b>
+                  </div>
+                  <div className="tpPopInfoRow highlight">
+                    <span>Profit</span>
+                    <b className="profit">+{nfmt(tradePop.profit, 2)} USDT</b>
+                  </div>
                 </div>
 
                 <button className="tpPopDone" onClick={() => setTradePop((p) => ({ ...p, open: false }))} type="button">

@@ -52,6 +52,7 @@
 
   color: var(--txt);
   padding: clamp(10px, 2vw, 16px);
+  position: relative;
 }
 
 .tpPage,
@@ -96,6 +97,8 @@
     0 1px 0 rgba(0,231,156,0.05) inset !important;
 
   backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 10;
 }
 
 .tpPage .tpBurger{
@@ -116,6 +119,49 @@
   background:var(--txt);
   display:block;
   opacity:.9;
+}
+
+.tpPage .tpBackBtn{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid rgba(0,231,156,.22);
+  background: rgba(0,231,156,.08);
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 900;
+  font-size: 13px;
+  color: rgba(0,231,156,.95);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  flex-shrink: 0;
+}
+
+.tpPage .tpBackBtn svg{
+  flex-shrink: 0;
+}
+
+.tpPage .tpBackBtn svg path{
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tpPage .tpBackBtn:hover{
+  background: rgba(0,231,156,.14);
+  border-color: rgba(0,231,156,.40);
+  transform: translateX(-2px);
+  box-shadow: 
+    0 3px 12px rgba(0,231,156,.25),
+    0 0 20px rgba(0,231,156,.15);
+}
+
+.tpPage .tpBackBtn:active{
+  transform: translateX(-1px);
+  box-shadow: 0 1px 4px rgba(0,0,0,.3);
 }
 
 .tpPage .tpBrand{ display:flex; align-items:center; gap: 10px !important; min-width: 0; }
@@ -150,8 +196,8 @@
   grid-template-columns: 320px minmax(0, 1fr) 360px !important;
   gap: 16px !important;
   align-items:start;
-
   position: relative;
+  z-index: 1;
 }
 
 /* SIDEBAR */
@@ -165,6 +211,7 @@
   height: calc(100vh - 140px);
   position: sticky;
   top: 14px;
+  z-index: 5;
 }
 .tpPage .tpSideTop{
   padding: 14px 14px 12px;
@@ -262,7 +309,14 @@
 .tpPage .tpNote{ color:var(--mut); font-size: var(--fs-12); }
 
 /* MAIN */
-.tpPage .tpMain{ min-width:0 !important; display:flex; flex-direction:column; gap: clamp(10px, 2vw, 14px); }
+.tpPage .tpMain{ 
+  min-width:0 !important; 
+  display:flex; 
+  flex-direction:column; 
+  gap: clamp(10px, 2vw, 14px); 
+  position: relative;
+  z-index: 2;
+}
 
 /* TOP STATS */
 .tpPage .tpMainTop.tpMainTop--compact{
@@ -350,6 +404,8 @@
   background:var(--panel);
   border-radius:var(--r);
   overflow:hidden;
+  position: relative;
+  z-index: auto;
 }
 .tpPage .tpPanelHead{
   padding: 14px 16px;
@@ -502,11 +558,32 @@
 /* RIGHT PANEL */
 .tpPage .tpRight{
   position: sticky;
-  top: 14px;
-  height: calc(100vh - 140px);
+  top: 0;
+  margin-top: 115px;
+  max-height: 80%  !important;
   display:flex;
   flex-direction:column;
   gap: clamp(10px, 2vw, 14px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 5;
+}
+
+/* Custom scrollbar for tpRight */
+.tpPage .tpRight::-webkit-scrollbar {
+  width: 8px;
+}
+.tpPage .tpRight::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.02);
+  border-radius: 4px;
+}
+.tpPage .tpRight::-webkit-scrollbar-thumb {
+  background: rgba(0,231,156,0.15);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+.tpPage .tpRight::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,231,156,0.25);
 }
 
 /* Highlight Manual Trade Panel */
@@ -518,6 +595,9 @@
     0 0 0 1px rgba(0,231,156,0.05) inset,
     0 0 40px rgba(0,231,156,0.06);
   border-radius: 20px !important;
+  flex-shrink: 0;
+  width: 100%;
+  min-width: 0;
 }
 .tpPage .tpOrderPanel .tpPanelHead{ border-bottom: 1px solid rgba(0,231,156,0.08) !important; }
 .tpPage .tpOrderPanel .tpPanelTitle{
@@ -529,6 +609,7 @@
 /* ✅ Coin picker inside Manual Trade */
 .tpPage .tpCoinPick{
   padding: 12px 14px 0;
+  min-width: 0;
 }
 .tpPage .tpCoinPickTop{
   display:flex;
@@ -536,18 +617,28 @@
   justify-content:space-between;
   gap:10px;
   margin-bottom:8px;
+  flex-wrap: nowrap;
 }
 .tpPage .tpCoinPickLabel{
   font-size: var(--fs-12);
   color: var(--mut);
   font-weight:900;
+  flex-shrink: 0;
 }
 .tpPage .tpCoinPickNow{
   font-size: var(--fs-12);
   color: rgba(231,238,249,.85);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
-.tpPage .tpCoinPickNow b{ color: var(--txt); font-weight:980; }
-.tpPage .tpCoinPickNow span{ color: var(--mut); margin-left:6px; }
+.tpPage .tpCoinPickNow b{ 
+  color: var(--txt); 
+  font-weight:980; 
+}
+.tpPage .tpCoinPickNow span{ 
+  color: var(--mut); 
+  margin-left:6px; 
+}
 
 .tpPage .tpCoinPickRow{
   display:grid;
@@ -676,7 +767,7 @@
 .tpPage .tpSubmit.disabled{ opacity:.5; cursor:not-allowed; }
 
 .tpPage .tpWarn{ padding:0 14px 12px; color:var(--mut); font-size: var(--fs-12); }
-.tpPage .tpFine{ padding:0 14px 12px; color:rgba(231,238,249,.55); font-size: var(--fs-12); line-height: 1.45; }
+.tpPage .tpFine{ padding:10px 14px 12px; color:rgba(231,238,249,.55); font-size: var(--fs-12); line-height: 1.45; }
 
 /* ACTIVITY */
 .tpPage .tpTabs{ display:flex; gap:10px; }
@@ -944,6 +1035,106 @@
 /* =========================
    ✅ Trade Popup (Timer + Profit)
 ========================= */
+/* ==========================================
+   TRADE PROCESSING MODAL - Enhanced Animations
+========================================== */
+
+@keyframes tpModalFadeIn {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(4px);
+  }
+}
+
+@keyframes tpModalSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes tpTimerPulse {
+  0%, 100% {
+    transform: scale(1);
+    text-shadow: 0 0 20px rgba(0,231,156,0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    text-shadow: 0 0 30px rgba(0,231,156,0.5);
+  }
+}
+
+@keyframes tpBarShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes tpCelebrate {
+  0% {
+    transform: scale(0.8) translateY(20px);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes tpProfitGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0,231,156,0.2), 0 0 40px rgba(0,231,156,0.1);
+    border-color: rgba(0,231,156,.22);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(0,231,156,0.4), 0 0 60px rgba(0,231,156,0.2);
+    border-color: rgba(0,231,156,.35);
+  }
+}
+
+@keyframes tpShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes tpSpinner {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes tpFloat {
+  0%, 100% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-20px) translateX(10px) scale(1.2);
+    opacity: 0.6;
+  }
+}
+
 .tpPage .tpPopWrap{
   position: fixed;
   inset: 0;
@@ -951,29 +1142,97 @@
   display:flex;
   align-items:center;
   justify-content:center;
-  z-index: 999;
+  z-index: 99999;
   padding: 16px;
+  backdrop-filter: blur(4px);
+  animation: tpModalFadeIn 0.3s ease-out;
 }
+
+.tpPage .tpPopWrap::before,
+.tpPage .tpPopWrap::after{
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(0,231,156,0.6);
+  border-radius: 50%;
+  box-shadow: 
+    0 0 20px rgba(0,231,156,0.8),
+    0 0 40px rgba(0,231,156,0.4);
+}
+
+.tpPage .tpPopWrap::before{
+  top: 15%;
+  left: 20%;
+  animation: tpFloat 3s ease-in-out infinite;
+}
+
+.tpPage .tpPopWrap::after{
+  bottom: 20%;
+  right: 25%;
+  animation: tpFloat 3s ease-in-out infinite 1.5s;
+}
+
 .tpPage .tpPop{
-  width: min(520px, 100%);
+  width: min(580px, 100%);
   border-radius: 22px;
   border: 1px solid rgba(255,255,255,.12);
   background: linear-gradient(180deg, rgba(12,18,26,.98), rgba(8,13,22,.98));
-  box-shadow: 0 30px 80px rgba(0,0,0,.65);
+  box-shadow: 
+    0 30px 80px rgba(0,0,0,.65),
+    0 0 0 1px rgba(0,231,156,0.08) inset;
   overflow:hidden;
+  position: relative;
+  z-index: 100000;
+  animation: tpModalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+
+.tpPage .tpPop::before{
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(0,231,156,0.6), 
+    transparent
+  );
+  animation: tpShimmer 3s ease-in-out infinite;
+}
+
 .tpPage .tpPopTop{
   padding: 14px 16px;
   display:flex;
   align-items:center;
   justify-content:space-between;
   border-bottom: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,231,156,0.02);
 }
+
 .tpPage .tpPopTitle{
   font-weight: 980;
   letter-spacing: .2px;
   font-size: var(--fs-13);
+  background: linear-gradient(135deg, rgba(0,231,156,0.95), rgba(0,231,156,0.7));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  padding-left: 24px;
 }
+
+.tpPage .tpPopTitle::before{
+  content: '⚡';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  animation: tpTimerPulse 2s ease-in-out infinite;
+}
+
 .tpPage .tpPopClose{
   border: 1px solid rgba(255,255,255,.14);
   background: rgba(255,255,255,.03);
@@ -981,82 +1240,311 @@
   width: 38px;
   height: 38px;
   cursor:pointer;
+  transition: all 0.2s ease;
 }
+
+.tpPage .tpPopClose:hover{
+  background: rgba(255,77,79,.15);
+  border-color: rgba(255,77,79,.3);
+  transform: rotate(90deg);
+}
+
 .tpPage .tpPopBody{
-  padding: 18px 16px 16px;
+  padding: 16px 20px 16px;
   text-align:center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
+
 .tpPage .tpPopK{
   color: var(--mut);
   font-weight: 900;
   font-size: var(--fs-12);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
+
+.tpPage .tpPopTimerWrap{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 12px;
+  margin-bottom: 8px;
+  width: 100px;
+  height: 100px;
+}
+
+.tpPage .tpPopTimerWrap::before{
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 90px;
+  height: 90px;
+  margin-top: -45px;
+  margin-left: -45px;
+  border: 3px solid rgba(0,231,156,0.08);
+  border-top-color: rgba(0,231,156,0.7);
+  border-right-color: rgba(0,231,156,0.5);
+  border-radius: 50%;
+  animation: tpSpinner 1.5s linear infinite;
+}
+
+.tpPage .tpPopTimerWrap::after{
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 76px;
+  height: 76px;
+  margin-top: -38px;
+  margin-left: -38px;
+  border: 2px solid transparent;
+  border-bottom-color: rgba(0,255,179,0.4);
+  border-left-color: rgba(0,255,179,0.3);
+  border-radius: 50%;
+  animation: tpSpinner 2.5s linear infinite reverse;
+}
+
 .tpPage .tpPopTimer{
-  margin-top: 10px;
   font-weight: 990;
-  font-size: clamp(34px, 4vw, 48px);
+  font-size: clamp(26px, 4vw, 32px);
   letter-spacing: .5px;
+  background: linear-gradient(135deg, #00e79c, #00ffb3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: tpTimerPulse 1.5s ease-in-out infinite;
+  position: relative;
+  z-index: 1;
 }
+
 .tpPage .tpPopHint{
-  margin-top: 8px;
+  margin-top: 6px;
   color: rgba(231,238,249,.78);
   font-size: var(--fs-12);
   font-weight: 850;
+  line-height: 1.4;
 }
+
+.tpPage .tpPopDetails{
+  margin-top: 10px;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tpPage .tpPopDetailRow{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: rgba(0,231,156,0.04);
+  border: 1px solid rgba(0,231,156,0.12);
+}
+
+.tpPage .tpPopDetailLabel{
+  font-size: var(--fs-12);
+  color: rgba(231,238,249,.65);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tpPage .tpPopDetailValue{
+  font-size: var(--fs-14);
+  color: rgba(0,231,156,.95);
+  font-weight: 980;
+}
+
 .tpPage .tpPopBar{
   margin-top: 14px;
-  height: 10px;
+  height: 12px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.02);
+  border: 1px solid rgba(0,231,156,.15);
+  background: rgba(0,0,0,.3);
   overflow:hidden;
+  box-shadow: 0 0 15px rgba(0,231,156,0.1) inset;
+  position: relative;
 }
+
+.tpPage .tpPopBar::after{
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, 
+    rgba(255,255,255,0.15), 
+    transparent
+  );
+  border-radius: 999px 999px 0 0;
+}
+
 .tpPage .tpPopBarFill{
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, rgba(0,231,156,.65), rgba(0,231,156,.25));
+  background: linear-gradient(90deg, 
+    rgba(0,231,156,.9), 
+    rgba(0,255,179,.7), 
+    rgba(0,231,156,.9)
+  );
+  background-size: 200% 100%;
+  animation: tpBarShimmer 2s linear infinite;
   transition: width .25s ease;
+  box-shadow: 
+    0 0 20px rgba(0,231,156,0.5),
+    0 0 10px rgba(0,231,156,0.3) inset;
+  position: relative;
 }
 
+.tpPage .tpPopBarFill::after{
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255,255,255,0.5)
+  );
+  border-radius: 0 999px 999px 0;
+  filter: blur(3px);
+}
+
+/* ==================== Success Modal (GoldCore Style) ==================== */
+
 .tpPage .tpPopCongrats{
-  font-weight: 990;
-  font-size: clamp(18px, 2vw, 22px);
+  margin-top: 6px;
+  text-align: center;
 }
-.tpPage .tpPopMsg{
-  margin-top: 8px;
-  color: rgba(231,238,249,.78);
-  font-size: var(--fs-13);
-  font-weight: 850;
-}
-.tpPage .tpPopProfit{
-  margin-top: 14px;
-  display:flex;
-  align-items:baseline;
-  justify-content:center;
-  gap: 6px;
-  padding: 12px 12px;
-  border-radius: 18px;
-  border: 1px solid rgba(0,231,156,.22);
-  background: rgba(0,231,156,.08);
-}
-.tpPage .tpPopPlus{
-  color: rgba(0,231,156,.95);
-  font-weight: 990;
+
+.tpPage .tpPopCongratsTitle{
+  font-weight: 1000;
   font-size: 18px;
+  letter-spacing: .2px;
+  background: linear-gradient(90deg, rgba(255,216,74,.95), rgba(61,220,151,.95), rgba(91,178,255,.9));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: tpCelebrate 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.tpPage .tpPopAmt{
-  color: rgba(0,231,156,.98);
-  font-weight: 990;
-  font-size: clamp(20px, 2.4vw, 26px);
+
+.tpPage .tpPopCongratsMsg{
+  margin-top: 6px;
+  font-weight: 800;
+  font-size: 13.5px;
+  color: rgba(255,255,255,.80);
+  animation: tpCelebrate 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
 }
-.tpPage .tpPopPct{
-  color: rgba(231,238,249,.70);
+
+.tpPage .tpPopSuccess{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 8px 12px;
+  animation: tpCelebrate 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
+}
+
+.tpPage .tpPopTick{
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  border: 1px solid rgba(0,231,156,.30);
+  background: rgba(0,231,156,.10);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 16px 40px rgba(0,0,0,.35);
+  flex-shrink: 0;
+}
+
+.tpPage .tpPopTick svg{
+  width: 28px;
+  height: 28px;
+}
+
+.tpPage .tpPopTick svg path{
+  fill: none;
+  stroke: rgba(0,231,156,.95);
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tpPage .tpPopSuccessText{
   font-weight: 900;
-  font-size: var(--fs-12);
+  color: rgba(255,255,255,.92);
+  font-size: var(--fs-14);
+}
+
+.tpPage .tpPopSuccessSmall{
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,.62);
+}
+
+.tpPage .tpPopTradeInfo{
+  margin-top: 12px;
+  width: 100%;
+  max-width: 400px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: rgba(0,231,156,0.04);
+  border: 1px solid rgba(0,231,156,0.14);
+  animation: tpCelebrate 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+}
+
+.tpPage .tpPopInfoRow{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.tpPage .tpPopInfoRow:last-child{
+  border-bottom: none;
+}
+
+.tpPage .tpPopInfoRow.highlight{
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0,231,156,0.20);
+  border-bottom: none;
+}
+
+.tpPage .tpPopInfoRow span{
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(255,255,255,.60);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.tpPage .tpPopInfoRow b{
+  font-size: 13px;
+  font-weight: 900;
+  color: rgba(255,255,255,.88);
+}
+
+.tpPage .tpPopInfoRow.highlight b.profit{
+  color: rgba(0,231,156,.95);
+  font-size: 15px;
+  font-weight: 990;
+  text-shadow: 0 0 20px rgba(0,231,156,0.3);
 }
 
 .tpPage .tpPopDone{
-  margin-top: 14px;
+  margin-top: 16px;
   width: 100%;
   border: none;
   border-radius: 16px;
@@ -1066,6 +1554,15 @@
   font-size: var(--fs-13);
   color:#07110c;
   background: linear-gradient(180deg, var(--green), rgba(0,231,156,.82));
+  box-shadow: 0 4px 20px rgba(0,231,156,0.3);
+  transition: all 0.3s ease;
+  animation: tpCelebrate 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
+}
+
+.tpPage .tpPopDone:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(0,231,156,0.5);
+  background: linear-gradient(180deg, #00ffb3, var(--green));
 }
 
 
@@ -1085,6 +1582,9 @@
     0 0 34px rgba(255, 196, 61, 0.14),
     0 0 64px rgba(255, 196, 61, 0.08);
   border-radius: 20px !important;
+  flex-shrink: 0;
+  width: 100%;
+  min-width: 0;
 }
 
 /* Keep your head/title style but make title slightly gold-tinted (optional but pro) */
@@ -1166,6 +1666,9 @@
     0 0 28px rgba(240, 180, 40, 0.18),
     0 0 60px rgba(240, 180, 40, 0.10);
   border-radius: 24px !important;
+  flex-shrink: 0;
+  width: 100%;
+  min-width: 0;
 }
 
 .tpPage .tpOrderPanel.tpOrderPanel--light .tpPanelHead{
@@ -1288,12 +1791,13 @@
 .tpPage .tpTimePopWrap{
   position: fixed;
   inset: 0;
-  z-index: 1200;
+  z-index: 99999;
   background: rgba(0,0,0,.55);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
+  backdrop-filter: blur(4px);
 }
 
 .tpPage .tpTimePop{
@@ -1303,6 +1807,8 @@
   border: 1px solid rgba(15, 23, 42, 0.14);
   background: #ffffff;
   box-shadow: 0 26px 70px rgba(15, 23, 42, 0.28);
+  position: relative;
+  z-index: 100000;
 }
 
 .tpPage .tpTimePopTop{

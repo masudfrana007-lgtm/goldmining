@@ -48,8 +48,10 @@ const TITAN = {
   dailyPct: 2.0, // ✅ 2% flat daily
   durationDays: 30,
 
-  // ✅ Range: 2000 or more (no max)
-  min: 2000,
+  // ✅ Range: 20001 or more (no max)
+  min: 20001,
+  max: null, // Unlimited
+  durations: [7, 15, 30], // Available duration options in days
 
   settlement: "Daily accrual",
   riskNote: "Market conditions apply",
@@ -127,6 +129,7 @@ export default function TitanVaultRig() {
   // ✅ string (like sample, allows empty)
   const [amount, setAmount] = useState(String(TITAN.min));
   const [roiErr, setRoiErr] = useState("");
+  const [selectedDuration, setSelectedDuration] = useState(TITAN.durations[0]); // ✅ Duration selector
 
   /** ✅ Subscribe flow states (same as sample) */
   const [subOpen, setSubOpen] = useState(false);
@@ -164,12 +167,12 @@ export default function TitanVaultRig() {
     const inRange = amount !== "" && safeAmount >= TITAN.min;
 
     const dailyProfit = safeAmount * (TITAN.dailyPct / 100);
-    const totalProfit = dailyProfit * TITAN.durationDays;
+    const totalProfit = dailyProfit * selectedDuration; // ✅ Use selected duration
     const totalReturn = safeAmount + totalProfit;
     const roiPct = safeAmount > 0 ? (totalProfit / safeAmount) * 100 : 0;
 
     return { inRange, dailyProfit, totalProfit, totalReturn, roiPct };
-  }, [amount, amountNum]);
+  }, [amount, amountNum, selectedDuration]); // ✅ Add selectedDuration dependency
 
   const totalReturnPct = useMemo(() => TITAN.dailyPct * TITAN.durationDays, []);
 
@@ -494,6 +497,32 @@ export default function TitanVaultRig() {
                 </div>
               </label>
 
+              {/* ✅ Duration Selector */}
+              <label className="field">
+                <span className="label">Package Duration</span>
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+                  {TITAN.durations.map((days) => (
+                    <button
+                      key={days}
+                      type="button"
+                      onClick={() => setSelectedDuration(days)}
+                      style={{
+                        padding: "0.5rem 1rem",
+                        background: selectedDuration === days ? "#8b7355" : "#1e293b",
+                        border: `1px solid ${selectedDuration === days ? "#8b7355" : "#334155"}`,
+                        borderRadius: "0.5rem",
+                        color: "#f1f5f9",
+                        cursor: "pointer",
+                        fontSize: "0.875rem",
+                        fontWeight: selectedDuration === days ? "600" : "400",
+                      }}
+                    >
+                      {days} {days === 1 ? "day" : "days"}
+                    </button>
+                  ))}
+                </div>
+              </label>
+
               <div className="calcGrid">
                 <div className="calcCard">
                   <div className="calcLabel">Est. Daily Profit</div>
@@ -504,7 +533,7 @@ export default function TitanVaultRig() {
                 <div className="calcCard">
                   <div className="calcLabel">Est. Total Profit</div>
                   <div className="calcValue">${money(calc.totalProfit)}</div>
-                  <div className="calcMeta">{TITAN.durationDays} days</div>
+                  <div className="tvCalcMeta">{selectedDuration} {selectedDuration === 1 ? "day" : "days"}</div>
                 </div>
 
                 <div className="calcCard">

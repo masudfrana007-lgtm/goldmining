@@ -154,6 +154,15 @@ function Icon({ name }) {
           <path d="M7 17h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
         </svg>
       );
+    case "ai":
+      return (
+        <svg {...common}>
+          <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+          <path d="M2 17l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+        </svg>
+      );
     default:
       return null;
   }
@@ -280,6 +289,14 @@ export default function TradingDashboardGoldMiracle() {
             </div>
           </div>
 
+          {/* need Ai reading button and click korle /member/ai-dashboard */}
+          <button className="tdAiReadingBtn" onClick={() => go("/member/ai-dashboard")} type="button">
+            <span className="tdAiIcon">
+              <Icon name="ai" />
+            </span>
+            AI Reading
+          </button>
+
           <div className="tdWelcomeRight">
             <div className="tdAvatar" title="Your profile">
               <img
@@ -336,18 +353,18 @@ export default function TradingDashboardGoldMiracle() {
   {/* ✅ Add -> MemberDeposit */}
   <button className="tdMAction" type="button" onClick={() => go("/member/deposit")}>
     <span className="tdMIcon"><Icon name="add" /></span>
-    <span className="tdMText">Add</span>
+    <span className="tdMText">Deposit</span>
   </button>
 
   {/* ✅ Send -> WithdrawalMethod */}
   <button className="tdMAction" type="button" onClick={() => go("/member/withdrawal-method")}>
-    <span className="tdMIcon"><Icon name="send" /></span>
-    <span className="tdMText">Send</span>
+    <span className="tdMIcon"><Icon name="request" /></span>
+    <span className="tdMText">Withdraw</span>
   </button>
 
-  <button className="tdMAction" type="button" onClick={() => go("/request")}>
-    <span className="tdMIcon"><Icon name="request" /></span>
-    <span className="tdMText">Request</span>
+  <button className="tdMAction" type="button" onClick={() => go("/records")}>
+    <span className="tdMIcon"><Icon name="bill" /></span>
+    <span className="tdMText">Records</span>
   </button>
 </div>
         </section>

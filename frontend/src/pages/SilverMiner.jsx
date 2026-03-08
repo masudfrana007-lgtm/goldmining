@@ -46,8 +46,9 @@ const SILVER_MINER = {
   subtitle: "Advanced mining package with improved yield and steady daily accrual.",
   dailyPct: 0.75,
   durationDays: 30,
-  min: 500,
-  max: 799, // ✅ FIX: 500–799
+  min: 1001,
+  max: 2000, // ✅ FIX: 1001–2000
+  durations: [3, 7, 15, 30], // Available duration options in days
   settlement: "Daily accrual",
   riskNote: "Market conditions apply",
   image: "/gm/rig-silver.png",
@@ -124,6 +125,7 @@ export default function SilverMiner() {
   // ✅ IMPORTANT: keep as STRING so user can clear input fully (no forced 0)
   const [amount, setAmount] = useState(String(SILVER_MINER.min));
   const [roiErr, setRoiErr] = useState("");
+  const [selectedDuration, setSelectedDuration] = useState(SILVER_MINER.durations[0]); // ✅ Duration selector
 
   /** ✅ Subscribe flow states */
   const [subOpen, setSubOpen] = useState(false);
@@ -165,12 +167,12 @@ export default function SilverMiner() {
       safeAmount <= SILVER_MINER.max;
 
     const dailyProfit = safeAmount * (SILVER_MINER.dailyPct / 100);
-    const totalProfit = dailyProfit * SILVER_MINER.durationDays;
+    const totalProfit = dailyProfit * selectedDuration; // ✅ Use selected duration
     const totalReturn = safeAmount + totalProfit;
     const roiPct = safeAmount > 0 ? (totalProfit / safeAmount) * 100 : 0;
 
     return { inRange, dailyProfit, totalProfit, totalReturn, roiPct };
-  }, [amount, amountNum]);
+  }, [amount, amountNum, selectedDuration]); // ✅ Add selectedDuration dependency
 
   const totalReturnPct = useMemo(
     () => SILVER_MINER.dailyPct * SILVER_MINER.durationDays,
@@ -502,7 +504,31 @@ export default function SilverMiner() {
                   {roiErr ? <div className="srRoiError">{roiErr}</div> : null}
                 </div>
               </label>
-
+              {/* ✅ Duration Selector */}
+              <label className="field">
+                <span className="label">Package Duration</span>
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+                  {SILVER_MINER.durations.map((days) => (
+                    <button
+                      key={days}
+                      type="button"
+                      onClick={() => setSelectedDuration(days)}
+                      style={{
+                        padding: "0.5rem 1rem",
+                        background: selectedDuration === days ? "#c0c0c0" : "#1e293b",
+                        border: `1px solid ${selectedDuration === days ? "#c0c0c0" : "#334155"}`,
+                        borderRadius: "0.5rem",
+                        color: selectedDuration === days ? "#0f172a" : "#f1f5f9",
+                        cursor: "pointer",
+                        fontSize: "0.875rem",
+                        fontWeight: selectedDuration === days ? "600" : "400",
+                      }}
+                    >
+                      {days} {days === 1 ? "day" : "days"}
+                    </button>
+                  ))}
+                </div>
+              </label>
               <div className="calcGrid">
                 <div className="calcCard">
                   <div className="calcLabel">Est. Daily Profit</div>
@@ -513,7 +539,7 @@ export default function SilverMiner() {
                 <div className="calcCard">
                   <div className="calcLabel">Est. Total Profit</div>
                   <div className="calcValue">${money(calc.totalProfit)}</div>
-                  <div className="calcMeta">{SILVER_MINER.durationDays} days</div>
+                  <div className="smCalcMeta">{selectedDuration} {selectedDuration === 1 ? "day" : "days"}</div>
                 </div>
 
                 <div className="calcCard">
