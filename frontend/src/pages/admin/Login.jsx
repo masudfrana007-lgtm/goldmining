@@ -45,16 +45,22 @@ export default function Login() {
       }
 
       setErr("Access denied");
+
       } catch (e2) {
-        console.error('🔐 Login error:', e2); // 👈 ADD THIS for debugging
+        console.error('🔐 Login error:', e2);
         
-        const msg = e2?.response?.data?.message 
-          || e2?.request?.status === 404 ? 'Backend not found' 
-          || e2?.message 
-          || 'Login failed';
-          
+        // Clear, safe error handling
+        let msg = 'Login failed';
+        if (e2?.response?.data?.message) {
+          msg = e2.response.data.message;
+        } else if (e2?.request?.status === 404) {
+          msg = 'Backend not found - please check your connection';
+        } else if (e2?.message) {
+          msg = e2.message;
+        }
         setErr(msg);
-      } finally {
+      }      
+       finally {
       setLoading(false);
     }
   };
