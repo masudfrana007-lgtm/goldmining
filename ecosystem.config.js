@@ -1,4 +1,5 @@
-module.exports = {
+// ecosystem.config.js
+export default {
   apps: [
     {
       name: "goldmining-backend",
@@ -7,13 +8,28 @@ module.exports = {
       autorestart: true,
       watch: false,
       max_memory_restart: "500M",
+      
+      // ✅ Individual DB vars (more reliable than connection string)
       env: {
-        NODE_ENV: "production",
-        PORT: 5040
+        NODE_ENV: "development",
+        PORT: 5040,
+        DB_HOST: "localhost",
+        DB_PORT: "5432",
+        DB_NAME: "goldmiracle",
+        DB_USER: "postgres",
+        DB_PASSWORD: "aih82Halald523jlana",
+        JWT_SECRET: "goldmiracle_super_secret"
       },
+      
       env_production: {
         NODE_ENV: "production",
-        PORT: 5040
+        PORT: 5040,
+        DB_HOST: "localhost",
+        DB_PORT: "5432",
+        DB_NAME: "goldmiracle",
+        DB_USER: "postgres",
+        DB_PASSWORD: "aih82Halald523jlana",
+        JWT_SECRET: "goldmiracle_super_secret"
       }
     }
   ]
