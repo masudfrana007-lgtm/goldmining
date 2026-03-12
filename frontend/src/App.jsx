@@ -27,6 +27,12 @@ import Records from "./pages/Records.jsx";
 import WithdrawalMethod from "./pages/WithdrawalMethod.jsx";
 import AiDashboard from "./pages/GoldMiracleAIDashboard.jsx";
 
+// Admin Pages
+import AdminLogin from "./pages/admin/Login.jsx";
+import AdminCsLogin from "./pages/admin/CsLogin.jsx";
+import AdminDashboard from "./pages/admin/DashboardMain.jsx";
+import AdminUsers from "./pages/admin/Users.jsx";
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -64,6 +70,14 @@ export default function App() {
         <Route path="/records" element={<Records />} />
         <Route path="/member/withdrawal-method" element={<WithdrawalMethod />} />
         <Route path="/member/ai-dashboard" element={<AiDashboard />} />
+
+        {/* ===== ADMIN ROUTES ===== */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/cs-login" element={<AdminCsLogin />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
+
+
       </Routes>
     </BrowserRouter>
   );
