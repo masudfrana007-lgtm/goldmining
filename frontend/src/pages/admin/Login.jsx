@@ -40,14 +40,21 @@ export default function Login() {
       const role = data?.user?.role;
 
       if (role === "admin" || role === "owner" || role === "agent") {
-        nav("/admin", { replace: true });
+        nav("/admin/dashboard", { replace: true });
         return;
       }
 
       setErr("Access denied");
-    } catch (e2) {
-      setErr(e2?.response?.data?.message || "Login failed");
-    } finally {
+      } catch (e2) {
+        console.error('🔐 Login error:', e2); // 👈 ADD THIS for debugging
+        
+        const msg = e2?.response?.data?.message 
+          || e2?.request?.status === 404 ? 'Backend not found' 
+          || e2?.message 
+          || 'Login failed';
+          
+        setErr(msg);
+      } finally {
       setLoading(false);
     }
   };
