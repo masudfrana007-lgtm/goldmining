@@ -1,4 +1,3 @@
-// ecosystem.config.js
 export default {
   apps: [
     {
@@ -8,8 +7,6 @@ export default {
       autorestart: true,
       watch: false,
       max_memory_restart: "500M",
-      
-      // ✅ Individual DB vars (more reliable than connection string)
       env: {
         NODE_ENV: "development",
         PORT: 5040,
@@ -20,7 +17,6 @@ export default {
         DB_PASSWORD: "aih82Halald523jlana",
         JWT_SECRET: "goldmiracle_super_secret"
       },
-      
       env_production: {
         NODE_ENV: "production",
         PORT: 5040,
