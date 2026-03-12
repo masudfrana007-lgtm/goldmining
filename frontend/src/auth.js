@@ -1,6 +1,9 @@
-// frontend/src/auth.js
+// src/auth.js - Authentication helpers (localStorage-based)
 
-// Save token + user after successful login
+/**
+ * Save auth data after login
+ * @param {Object} data - Response from login API: { token, user }
+ */
 export const saveAuth = (data) => {
   if (data?.token) {
     localStorage.setItem('token', data.token);
@@ -10,26 +13,55 @@ export const saveAuth = (data) => {
   }
 };
 
-// Get current user object (parsed from JSON)
-export const getCurrentUser = () => {
+/**
+ * Get current user object from localStorage
+ * @returns {Object|null} User object or null if not logged in
+ */
+export const getUser = () => {
   const userStr = localStorage.getItem('user');
-  return userStr ? JSON.parse(userStr) : null;
+  if (!userStr) return null;
+  try {
+    return JSON.parse(userStr);
+  } catch {
+    return null;
+  }
 };
 
-// Get raw token string
+/**
+ * Get raw JWT token string
+ * @returns {string|null} Token or null
+ */
 export const getToken = () => localStorage.getItem('token');
 
-// Clear all auth data (logout)
-export const clearAuth = () => {
+/**
+ * Clear all auth data (logout)
+ */
+export const logout = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
 };
 
-// Check if user is logged in
+/**
+ * Check if user is authenticated (has token)
+ * @returns {boolean}
+ */
 export const isAuthenticated = () => !!getToken();
 
-// Check if user has one of the required roles
+/**
+ * Check if current user has one of the required roles
+ * @param  {...string} roles - Roles to check against (e.g., 'admin', 'owner')
+ * @returns {boolean}
+ */
 export const hasRole = (...roles) => {
-  const user = getCurrentUser();
+  const user = getUser();
   return user?.role && roles.includes(user.role);
+};
+
+/**
+ * Get Authorization header value for API requests
+ * @returns {Object} Headers object with Authorization
+ */
+export const getAuthHeader = () => {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
 };

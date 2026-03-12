@@ -468,3 +468,53 @@
   /* if your sidebar is fixed and AppLayout doesn't already offset content */
   /* margin-left: 240px; */
 }
+
+/* ===== ADD THESE 3 BLOCKS TO YOUR EXISTING CSS ===== */
+
+/* 1. Error message styling (used in JSX: {err && <div className="msg err">}) */
+.msg {
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+.msg.err {
+  background: rgba(255, 77, 94, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(255, 77, 94, 0.25);
+}
+
+/* 2. Remove invalid :contains() selectors (not standard CSS) */
+/* Your JSX already colors amounts conditionally, so these lines can be deleted: */
+/* 
+.txAmt:contains("-") { color: #ef4444; }
+.txAmt:contains("+") { color: #10b981; }
+*/
+
+/* 3. Optional: Loading state polish */
+.sValue:empty::after,
+.sValue:has(+ .sValue:empty)::after {
+  content: "…";
+  color: #cbd5e1;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Ensure sidebar offset is handled by AppLayout (flexbox), not margin */
+/* If dashboard appears cut off, uncomment ONLY if needed: */
+/*
+.db {
+  margin-left: 240px;
+}
+.app-layout.collapsed .db {
+  margin-left: 72px;
+}
+@media (max-width: 768px) {
+  .db { margin-left: 0 !important; }
+}
+*/

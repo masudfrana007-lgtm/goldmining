@@ -1,10 +1,13 @@
-// src/pages/DashboardMain.jsx
+// src/pages/admin/DashboardMain.jsx
 import "./DashboardMain.css";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-// import { getUser, logout } from "../auth";
-// import api from "../services/api";
-// import AppLayout from "../components/AppLayout";
+
+// ✅ FIXED: Uncommented imports with correct relative paths
+import { getUser, logout } from "../../auth";
+import api from "../../services/api";
+import AppLayout from "../../components/AppLayout";
+import "./DashboardMain.css";
 
 function money(n) {
   return new Intl.NumberFormat("en-US", {
@@ -17,7 +20,6 @@ function money(n) {
 function fmtDate(iso) {
   if (!iso) return "-";
   const d = new Date(iso);
-  // simple readable format
   return d.toLocaleString("en-GB", {
     year: "numeric",
     month: "short",
@@ -165,153 +167,123 @@ export default function DashboardMain() {
     };
   }, [sum]);
 
-  // ✅ real stats for cards
-const stats = useMemo(() => {
-  const deposits = adjusted?.deposits || {};
-  const withdrawals = adjusted?.withdrawals || {};
-  const users = adjusted?.users || {};
-  const sets = adjusted?.sets || {};
-  const tasks = adjusted?.tasks || {};
-  const members = adjusted?.members || {};
-  const support = adjusted?.support || {};
+  const stats = useMemo(() => {
+    const deposits = adjusted?.deposits || {};
+    const withdrawals = adjusted?.withdrawals || {};
+    const users = adjusted?.users || {};
+    const sets = adjusted?.sets || {};
+    const tasks = adjusted?.tasks || {};
+    const members = adjusted?.members || {};
+    const support = adjusted?.support || {};
 
-  return [
-    // -----------------------
-    // LIFETIME
-    // -----------------------
-    {
-      title: "Deposit",
-      sub: "Lifetime approved",
-      icon: "⬇️",
-      theme: "green",
-      rows: [
-        ["Approved amount", Number(deposits.approved_amount || 0)],
-        ["Pending amount", Number(deposits.pending_amount || 0)],
-        ["Total deposits", Number(deposits.total || 0)],
-      ],
-      moneyMask: [true, true, false],
-    },
-    {
-      title: "Withdraw",
-      sub: "Lifetime approved",
-      icon: "⬆️",
-      theme: "red",
-      rows: [
-        ["Approved amount", Number(withdrawals.approved_amount || 0)],
-        ["Pending amount", Number(withdrawals.pending_amount || 0)],
-        ["Total withdrawals", Number(withdrawals.total || 0)],
-      ],
-      moneyMask: [true, true, false],
-    },
+    return [
+      {
+        title: "Deposit",
+        sub: "Lifetime approved",
+        icon: "⬇️",
+        theme: "green",
+        rows: [
+          ["Approved amount", Number(deposits.approved_amount || 0)],
+          ["Pending amount", Number(deposits.pending_amount || 0)],
+          ["Total deposits", Number(deposits.total || 0)],
+        ],
+        moneyMask: [true, true, false],
+      },
+      {
+        title: "Withdraw",
+        sub: "Lifetime approved",
+        icon: "⬆️",
+        theme: "red",
+        rows: [
+          ["Approved amount", Number(withdrawals.approved_amount || 0)],
+          ["Pending amount", Number(withdrawals.pending_amount || 0)],
+          ["Total withdrawals", Number(withdrawals.total || 0)],
+        ],
+        moneyMask: [true, true, false],
+      },
+      {
+        title: "Deposit Today",
+        sub: "Approved today",
+        icon: "📅",
+        theme: "green",
+        rows: [
+          ["Approved amount", Number(deposits.today_approved || 0)],
+          ["Pending amount", Number(deposits.today_pending || 0)],
+          ["Total deposits", Number(deposits.today_total || 0)],
+        ],
+        moneyMask: [true, true, false],
+      },
+      {
+        title: "Withdraw Today",
+        sub: "Approved today",
+        icon: "📅",
+        theme: "red",
+        rows: [
+          ["Approved amount", Number(withdrawals.today_approved || 0)],
+          ["Pending amount", Number(withdrawals.today_pending || 0)],
+          ["Total withdrawals", Number(withdrawals.today_total || 0)],
+        ],
+        moneyMask: [true, true, false],
+      },
+      {
+        title: "Deposit Month",
+        sub: "Approved this month",
+        icon: "🗓️",
+        theme: "green",
+        rows: [
+          ["Approved amount", Number(deposits.month_approved || 0)],
+          ["Pending amount", Number(deposits.month_pending || 0)],
+          ["Total deposits", Number(deposits.month_total || 0)],
+        ],
+        moneyMask: [true, true, false],
+      },
+      {
+        title: "Withdraw Month",
+        sub: "Approved this month",
+        icon: "🗓️",
+        theme: "red",
+        rows: [
+          ["Approved amount", Number(withdrawals.month_approved || 0)],
+          ["Pending amount", Number(withdrawals.month_pending || 0)],
+          ["Total withdrawals", Number(withdrawals.month_total || 0)],
+        ],
+        moneyMask: [true, true, false],
+      },
+      {
+        title: "Platform",
+        sub: "Core totals",
+        icon: "🧩",
+        theme: "purple",
+        rows: [
+          ["Users", Number(users.total || 0)],
+          ["Members", Number(members.total || 0)],
+          ["Support open", Number(support.open || 0)],
+        ],
+        moneyMask: [false, false, false],
+      },
+      {
+        title: "Tasks & Sets",
+        sub: "Packages totals",
+        icon: "📦",
+        theme: "green",
+        rows: [
+          ["Tasks", Number(tasks.total || 0)],
+          ["Sets", Number(sets.total || 0)],
+          ["Combo sets", Number(sets.combo_sets || 0)],
+        ],
+        moneyMask: [false, false, false],
+      },
+    ];
+  }, [adjusted]);
 
-    // -----------------------
-    // TODAY
-    // -----------------------
-    {
-      title: "Deposit Today",
-      sub: "Approved today",
-      icon: "📅",
-      theme: "green",
-      rows: [
-        ["Approved amount", Number(deposits.today_approved || 0)],
-        ["Pending amount", Number(deposits.today_pending || 0)],
-        ["Total deposits", Number(deposits.today_total || 0)],
-      ],
-      moneyMask: [true, true, false],
-    },
-    {
-      title: "Withdraw Today",
-      sub: "Approved today",
-      icon: "📅",
-      theme: "red",
-      rows: [
-        ["Approved amount", Number(withdrawals.today_approved || 0)],
-        ["Pending amount", Number(withdrawals.today_pending || 0)],
-        ["Total withdrawals", Number(withdrawals.today_total || 0)],
-      ],
-      moneyMask: [true, true, false],
-    },
-
-    // -----------------------
-    // THIS MONTH
-    // -----------------------
-    {
-      title: "Deposit Month",
-      sub: "Approved this month",
-      icon: "🗓️",
-      theme: "green",
-      rows: [
-        ["Approved amount", Number(deposits.month_approved || 0)],
-        ["Pending amount", Number(deposits.month_pending || 0)],
-        ["Total deposits", Number(deposits.month_total || 0)],
-      ],
-      moneyMask: [true, true, false],
-    },
-    {
-      title: "Withdraw Month",
-      sub: "Approved this month",
-      icon: "🗓️",
-      theme: "red",
-      rows: [
-        ["Approved amount", Number(withdrawals.month_approved || 0)],
-        ["Pending amount", Number(withdrawals.month_pending || 0)],
-        ["Total withdrawals", Number(withdrawals.month_total || 0)],
-      ],
-      moneyMask: [true, true, false],
-    },
-
-    // -----------------------
-    // Platform & Tasks
-    // -----------------------
-    {
-      title: "Platform",
-      sub: "Core totals",
-      icon: "🧩",
-      theme: "purple",
-      rows: [
-        ["Users", Number(users.total || 0)],
-        ["Members", Number(members.total || 0)],
-        ["Support open", Number(support.open || 0)],
-      ],
-      moneyMask: [false, false, false],
-    },
-    {
-      title: "Tasks & Sets",
-      sub: "Packages totals",
-      icon: "📦",
-      theme: "green",
-      rows: [
-        ["Tasks", Number(tasks.total || 0)],
-        ["Sets", Number(sets.total || 0)],
-        ["Combo sets", Number(sets.combo_sets || 0)],
-      ],
-      moneyMask: [false, false, false],
-    },
-  ];
-}, [adjusted]);
-
-  // keep your chart shape (placeholder), but show real numbers in tooltip
+  // Chart placeholder data (replace with real time-series later)
   const revenue = [
-    [1, 40],
-    [2, 55],
-    [3, 38],
-    [4, 46],
-    [5, 62],
-    [6, 50],
-    [7, 70],
-    [8, 58],
-    [9, 76],
+    [1, 40], [2, 55], [3, 38], [4, 46], [5, 62],
+    [6, 50], [7, 70], [8, 58], [9, 76],
   ];
   const withdrawSeries = [
-    [1, 22],
-    [2, 28],
-    [3, 18],
-    [4, 24],
-    [5, 35],
-    [6, 30],
-    [7, 42],
-    [8, 34],
-    [9, 48],
+    [1, 22], [2, 28], [3, 18], [4, 24], [5, 35],
+    [6, 30], [7, 42], [8, 34], [9, 48],
   ];
   const revPath = pathFromPoints(revenue);
   const wdrPath = pathFromPoints(withdrawSeries);
@@ -319,7 +291,7 @@ const stats = useMemo(() => {
   const hintRevenue = Number(adjusted?.deposits?.approved_amount || 0);
   const hintWithdraw = Number(adjusted?.withdrawals?.approved_amount || 0);
 
-  // pie from adjusted values
+  // Pie chart calculations
   const dep = Number(adjusted?.deposits?.approved_amount || 0);
   const wdr = Number(adjusted?.withdrawals?.approved_amount || 0);
   const total = dep + wdr || 1;
