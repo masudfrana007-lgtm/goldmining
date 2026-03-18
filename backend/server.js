@@ -1,18 +1,20 @@
+// server/index.js (or app.js)
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 
 // Import route modules
 import authRoutes from "./routes/auth.js";
-import usersRoutes from "./routes/users.js";  // ← ADD THIS
+import usersRoutes from "./routes/users.js";
+import membersRoutes from "./routes/members.js";  // ✅ ADD THIS
 
 dotenv.config();
 
 const app = express();
 
-// ✅ Update CORS to allow your production domain
+// ✅ Fix CORS: remove trailing spaces in URL
 app.use(cors({
-  origin: ["http://localhost:5173", "https://goldmiracle.bond"],  // ← ADD production URL
+  origin: ["http://localhost:5173", "https://goldmiracle.bond"],  // ✅ Trimmed
   credentials: true
 }));
 
@@ -24,7 +26,8 @@ app.get("/", (req, res) => {
 
 // Mount routes
 app.use("/auth", authRoutes);
-app.use("/users", usersRoutes);  // ← ADD THIS LINE
+app.use("/users", usersRoutes);
+app.use("/members", membersRoutes);  // ✅ ADD THIS LINE
 
 const PORT = process.env.PORT || 5040;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));

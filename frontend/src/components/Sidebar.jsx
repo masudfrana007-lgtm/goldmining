@@ -41,7 +41,7 @@ export default function Sidebar({ collapsed, onItemClick }) {
         <>
           {section("Users")}
           <NavLink
-            to="/users"
+            to="/admin/users"
             className={linkClass}
             title="Users"
             onClick={onItemClick}
@@ -56,7 +56,7 @@ export default function Sidebar({ collapsed, onItemClick }) {
         <>
           {section("Members")}
           <NavLink
-            to="/members"
+            to="/admin/member/members"
             className={linkClass}
             title="Members"
             onClick={onItemClick}
@@ -123,7 +123,7 @@ export default function Sidebar({ collapsed, onItemClick }) {
     {section("Finance")}
 
     <NavLink
-      to="/vip-wallets"
+      to="/admin/vip-wallets"
       className={linkClass}
       title="VIP Wallet Addresses"
       onClick={onItemClick}
@@ -137,7 +137,7 @@ export default function Sidebar({ collapsed, onItemClick }) {
           {/* --- NEW Settings Section --- */}
     {section("Settings")}
     <NavLink
-      to="/settings"
+      to="/admin/settings"
       className={linkClass}
       title="Settings"
       onClick={onItemClick}

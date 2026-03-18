@@ -1,3 +1,4 @@
+// src/pages/CreateMember.jsx
 import { useEffect, useMemo, useState } from "react";
 import api from "../../../services/api";
 import { getUser } from "../../../auth";
@@ -7,7 +8,6 @@ import AppLayout from "../../../components/AppLayout";
 const RANKS = ["Trial", "V1", "V2", "V3"];
 
 const COUNTRIES = [
-  // Tier 1 — Wealthy / High purchasing power
   { name: "United States of America", dial: "+1" },
   { name: "Canada", dial: "+1" },
   { name: "United Kingdom", dial: "+44" },
@@ -25,8 +25,6 @@ const COUNTRIES = [
   { name: "Japan", dial: "+81" },
   { name: "South Korea", dial: "+82" },
   { name: "Ireland", dial: "+353" },
-
-  // Tier 2 — Emerging + high-investor appetite
   { name: "India", dial: "+91" },
   { name: "Indonesia", dial: "+62" },
   { name: "Philippines", dial: "+63" },
@@ -62,7 +60,6 @@ const COUNTRIES = [
   { name: "China", dial: "+86" }
 ];
 
-
 function extractDialCode(countryLabel) {
   const m = String(countryLabel || "").match(/\(\s*(\+\d+)\s*\)/);
   return m ? m[1] : "";
@@ -83,7 +80,6 @@ function normalizeStoredPhone(storedPhone, selectedCountryLabel) {
   if (raw.startsWith("+")) return `+${digitsOnly(raw)}`;
   return buildFullPhone(selectedCountryLabel, raw);
 }
-
 function rankLabel(v) {
   const x = String(v || "").toUpperCase();
   if (x === "V1") return "VIP 1";
@@ -96,41 +92,9 @@ function rankLabel(v) {
 export default function CreateMember() {
   const me = getUser();
 
-  // Static demo data
-  const staticData = [
-    {
-      id: 1,
-      short_id: "GM001245",
-      nickname: "alexchen",
-      phone: "+1-555-0303",
-      gender: "male",
-      ranking: "Trial",
-      approval_status: "approved",
-      sponsor_short_id: "GM000001",
-    },
-    {
-      id: 2,
-      short_id: "GM001246",
-      nickname: "sophiakim",
-      phone: "+82-2-1234-5678",
-      gender: "female",
-      ranking: "V1",
-      approval_status: "pending",
-      sponsor_short_id: "GM000001",
-    },
-    {
-      id: 3,
-      short_id: "GM001247",
-      nickname: "jamesbrown",
-      phone: "+44-20-7890-1234",
-      gender: "male",
-      ranking: "Trial",
-      approval_status: "approved",
-      sponsor_short_id: "GM000001",
-    },
-  ];
-
-  const [list, setList] = useState(staticData);
+  // ✅ Dynamic data only - start empty
+  const [list, setList] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
@@ -145,14 +109,22 @@ export default function CreateMember() {
     withdraw_privilege: "Enabled",
   });
 
+  // ✅ Load members from backend ONLY
   const load = async () => {
-    const { data } = await api.get("/members");
-    setList(data);
+    setLoading(true);
+    try {
+      const { data } = await api.get("/members");
+      setList(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error("Failed to load members:", e);
+      // Don't block form - just log error
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onChange = (key, value) => {
@@ -166,6 +138,7 @@ export default function CreateMember() {
     [form.nickname]
   );
 
+  // ✅ Check duplicates against live backend data only
   const nicknameDuplicate = useMemo(() => {
     if (!normalizedNickname) return false;
     return list.some(
@@ -192,6 +165,7 @@ export default function CreateMember() {
     setOk("");
     setFieldErrors({});
 
+    // Client-side validation
     if (!form.country.trim()) return setErr("Country is required");
     if (!form.phone.trim()) return setErr("Phone number is required");
     if (!form.nickname.trim()) return setErr("Nickname is required");
@@ -202,7 +176,7 @@ export default function CreateMember() {
     if (phoneDuplicate) return setErr("Phone number already exists");
 
     const fullPhone = buildFullPhone(form.country, form.phone);
-    if (!fullPhone) return setErr("Invalid phone/country");
+    if (!fullPhone) return setErr("Invalid phone/country combination");
 
     try {
       await api.post("/members", {
@@ -229,16 +203,28 @@ export default function CreateMember() {
         withdraw_privilege: "Enabled",
       });
       
-      // Reload member list
+      // Reload member list to show new member
       await load();
       
       // Clear success message after 3 seconds
       setTimeout(() => setOk(""), 3000);
     } catch (e2) {
       const data = e2?.response?.data;
+      // Backend already checks for duplicates, so show that message
       setErr(data?.message || "Failed to create member");
     }
   };
+
+  // ✅ Show loading state for the list section
+  if (loading && list.length === 0) {
+    return (
+      <AppLayout>
+        <div className="members-container">
+          <div className="members-loading">Loading member data...</div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -254,7 +240,7 @@ export default function CreateMember() {
           <button
             type="button"
             className="members-btn members-btn-secondary"
-            onClick={() => window.location.href = "/members"}
+            onClick={() => window.location.href = "/admin/member/members"}
           >
             ← Back to Members
           </button>
@@ -287,11 +273,6 @@ export default function CreateMember() {
                     </option>
                   ))}
                 </select>
-                {fieldErrors.country && (
-                  <div className="members-error" style={{ marginTop: 4, fontSize: 12 }}>
-                    {fieldErrors.country[0]}
-                  </div>
-                )}
               </div>
 
               {/* Phone */}
@@ -312,11 +293,6 @@ export default function CreateMember() {
                     Phone number already exists
                   </div>
                 )}
-                {fieldErrors.phone && (
-                  <div className="members-error" style={{ marginTop: 4, fontSize: 12 }}>
-                    {fieldErrors.phone[0]}
-                  </div>
-                )}
               </div>
 
               {/* Gender */}
@@ -335,11 +311,6 @@ export default function CreateMember() {
                   <option value="female">Female</option>
                   <option value="other">Prefer not to say</option>
                 </select>
-                {fieldErrors.gender && (
-                  <div className="members-error" style={{ marginTop: 4, fontSize: 12 }}>
-                    {fieldErrors.gender[0]}
-                  </div>
-                )}
               </div>
 
               {/* Nickname */}
@@ -358,11 +329,6 @@ export default function CreateMember() {
                 {form.nickname.trim() && nicknameDuplicate && (
                   <div className="members-error" style={{ marginTop: 4, fontSize: 12 }}>
                     Username already exists
-                  </div>
-                )}
-                {fieldErrors.nickname && (
-                  <div className="members-error" style={{ marginTop: 4, fontSize: 12 }}>
-                    {fieldErrors.nickname[0]}
                   </div>
                 )}
               </div>
@@ -384,11 +350,6 @@ export default function CreateMember() {
                     </option>
                   ))}
                 </select>
-                {fieldErrors.ranking && (
-                  <div className="members-error" style={{ marginTop: 4, fontSize: 12 }}>
-                    {fieldErrors.ranking[0]}
-                  </div>
-                )}
               </div>
 
               {/* Password */}
@@ -405,11 +366,6 @@ export default function CreateMember() {
                   placeholder="Enter password"
                   minLength={6}
                 />
-                {fieldErrors.password && (
-                  <div className="members-error" style={{ marginTop: 4, fontSize: 12 }}>
-                    {fieldErrors.password[0]}
-                  </div>
-                )}
               </div>
 
               {/* Sponsor ID (Read-only) */}
@@ -444,11 +400,6 @@ export default function CreateMember() {
                   <option value="Enabled">Enabled</option>
                   <option value="Disabled">Disabled</option>
                 </select>
-                {fieldErrors.withdraw_privilege && (
-                  <div className="members-error" style={{ marginTop: 4, fontSize: 12 }}>
-                    {fieldErrors.withdraw_privilege[0]}
-                  </div>
-                )}
               </div>
             </div>
 
@@ -469,7 +420,7 @@ export default function CreateMember() {
               <button
                 type="button"
                 className="members-btn members-btn-secondary members-btn-large"
-                onClick={() => window.location.href = "/members"}
+                onClick={() => window.location.href = "/admin/member/members"}
               >
                 Cancel
               </button>
@@ -477,11 +428,11 @@ export default function CreateMember() {
           </form>
         </div>
 
-        {/* Members List */}
+        {/* Members List - Dynamic Data Only */}
         <div className="members-table-card" style={{ marginTop: 24 }}>
           <h3>Recently Created Members</h3>
           <div className="small">
-            Showing members created by you
+            Showing members from your database
           </div>
           <div className="members-hr" />
 
@@ -499,25 +450,26 @@ export default function CreateMember() {
                 </tr>
               </thead>
               <tbody>
-                {list.map((m) => (
-                  <tr key={m.short_id || m.id}>
-                    <td>{m.short_id}</td>
-                    <td>{m.nickname}</td>
-                    <td>{m.phone}</td>
-                    <td style={{ textTransform: "capitalize" }}>{m.gender || "-"}</td>
-                    <td>
-                      <span className="badge">{rankLabel(m.ranking)}</span>
-                    </td>
-                    <td>
-                      <span className="badge">{m.approval_status}</span>
-                    </td>
-                    <td>{m.sponsor_short_id || "-"}</td>
-                  </tr>
-                ))}
-                {!list.length && (
+                {list.length > 0 ? (
+                  list.map((m) => (
+                    <tr key={m.id}>
+                      <td>{m.short_id}</td>
+                      <td>{m.nickname}</td>
+                      <td>{m.phone}</td>
+                      <td style={{ textTransform: "capitalize" }}>{m.gender || "-"}</td>
+                      <td>
+                        <span className="badge">{rankLabel(m.ranking)}</span>
+                      </td>
+                      <td>
+                        <span className="badge">{m.approval_status}</span>
+                      </td>
+                      <td>{m.sponsor_short_id || "-"}</td>
+                    </tr>
+                  ))
+                ) : (
                   <tr>
                     <td colSpan="7" className="empty">
-                      No members created yet
+                      {loading ? "Loading members..." : "No members found in database"}
                     </td>
                   </tr>
                 )}
