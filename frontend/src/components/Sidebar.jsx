@@ -10,6 +10,9 @@ import {
   FaClipboardList, // ✅ add
   FaWallet,  
   FaCog,
+  FaRobot,
+  FaChartLine,
+  FaGem, // ✅ Mining icon
 } from "react-icons/fa";
 
 export default function Sidebar({ collapsed, onItemClick }) {
@@ -20,14 +23,15 @@ export default function Sidebar({ collapsed, onItemClick }) {
     isActive ? "sidebar-item active" : "sidebar-item";
 
   const label = (text) => (!collapsed ? <span>{text}</span> : null);
+  const section = (text) => (!collapsed ? <div className="sidebar-section">{text}</div> : null);
 
   return (
     <div className={`sidebar ${collapsed ? "collapsed" : ""}`}>
-      <div className="sidebar-logo">
-        {collapsed ? "E" : "eorder.vip"}
+      <div className="sidebar-logo" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60px' }}>
+        {collapsed ? "G" : "Goldmiracle"} {/* Show "G" when collapsed, "Goldmiracle" when expanded */}
       </div>
 
-      <div className="sidebar-section">Main</div>
+      {section("Main")}
       <NavLink to="/admin" className={linkClass} title="Dashboard" onClick={onItemClick}>
         <FaTachometerAlt />
         {label("Dashboard")}
@@ -35,7 +39,7 @@ export default function Sidebar({ collapsed, onItemClick }) {
 
       {(role === "admin" || role === "owner") && (
         <>
-          <div className="sidebar-section">Users</div>
+          {section("Users")}
           <NavLink
             to="/users"
             className={linkClass}
@@ -50,7 +54,7 @@ export default function Sidebar({ collapsed, onItemClick }) {
 
       {(role === "owner" || role === "agent") && (
         <>
-          <div className="sidebar-section">Members</div>
+          {section("Members")}
           <NavLink
             to="/members"
             className={linkClass}
@@ -65,35 +69,44 @@ export default function Sidebar({ collapsed, onItemClick }) {
 
       {role === "owner" && (
         <>
-          <div className="sidebar-section">Tasks</div>
+          {section("Trading")}
           <NavLink
             to="/tasks"
             className={linkClass}
-            title="Tasks"
+            title="AI Trading"
             onClick={onItemClick}
           >
-            <FaTasks />
-            {label("Manage Tasks")}
+            <FaRobot />
+            {label("AI Trading")}
+          </NavLink>
+          <NavLink
+            to="/tasks"
+            className={linkClass}
+            title="Manual Trading"
+            onClick={onItemClick}
+          >
+            <FaChartLine />
+            {label("Manual Trading")}
           </NavLink>
         </>
       )}
 
       {(role === "owner" || role === "agent") && (
         <>
-          <div className="sidebar-section">Packages</div>
+          {section("Mining")}
 
           <NavLink
             to="/sets"
             className={linkClass}
-            title="Packages"
+            title="Mining"
             onClick={onItemClick}
           >
-            <FaBoxOpen />
-            {label("Manage Sets")}
+            <FaGem />
+            {label("Mining")}
           </NavLink>
 
           {/* ✅ NEW: Manage Assign Sets */}
-          <NavLink
+          {/* <NavLink
             to="/assign-sets"
             className={linkClass}
             title="Manage Assign Sets"
@@ -101,13 +114,13 @@ export default function Sidebar({ collapsed, onItemClick }) {
           >
             <FaClipboardList />
             {label("Manage Assign Sets")}
-          </NavLink>
+          </NavLink> */}
         </>
       )}
 
       {(role === "owner" || role === "admin") && (
   <>
-    <div className="sidebar-section">Finance</div>
+    {section("Finance")}
 
     <NavLink
       to="/vip-wallets"
@@ -122,7 +135,7 @@ export default function Sidebar({ collapsed, onItemClick }) {
 )}
 
           {/* --- NEW Settings Section --- */}
-    <div className="sidebar-section">Settings</div>
+    {section("Settings")}
     <NavLink
       to="/settings"
       className={linkClass}

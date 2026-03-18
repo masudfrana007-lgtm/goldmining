@@ -53,6 +53,12 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  margin-left: 240px;
+  transition: margin-left 0.2s ease;
+}
+
+.app-layout.collapsed .main-area {
+  margin-left: 72px;
 }
 
 .page-content {
@@ -194,6 +200,10 @@
   
   .app-layout.show-sidebar .sidebar {
     transform: translateX(0);
+  }
+  
+  .main-area {
+    margin-left: 0;
   }
   
   .page-content {

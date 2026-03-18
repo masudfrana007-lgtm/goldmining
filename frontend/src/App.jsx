@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 import HomeGoldMiracle from "./pages/HomeGoldMiracle.jsx";
 import GoldMining from "./pages/GoldMining.jsx";
@@ -31,7 +32,20 @@ import AiDashboard from "./pages/GoldMiracleAIDashboard.jsx";
 import AdminLogin from "./pages/admin/Login.jsx";
 import AdminCsLogin from "./pages/admin/CsLogin.jsx";
 import AdminDashboard from "./pages/admin/DashboardMain.jsx";
-import AdminUsers from "./pages/admin/Users.jsx";
+import AdminUsers from "./pages/admin/Users/Users.jsx";
+import AdminMembers from "./pages/admin/Member/Members.jsx";
+import AdminCreateMember from "./pages/admin/Member/CreateMember.jsx";
+import MemberWallet from "./pages/admin/Member/MemberWallet.jsx";
+import MemberEdit from "./pages/admin/Member/MemberEdit.jsx";
+import CreateMemberDeposit from "./pages/admin/Member/CreateMemberDeposit.jsx";
+import CreateMemberWithdrawal from "./pages/admin/Member/CreateMemberWithdrawal.jsx";
+import VipWalletAddresses from "./pages/admin/VipWalletAddresses";
+import Settings from "./pages/admin/Settings.jsx";
+import ForgotPassword from "./pages/admin/ForgotPassword";
+
+
+// need to create MemberEdit.jsx for the edit page
+
 
 export default function App() {
   return (
@@ -72,11 +86,69 @@ export default function App() {
         <Route path="/member/ai-dashboard" element={<AiDashboard />} />
 
         {/* ===== ADMIN ROUTES ===== */}
+        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/cs-login" element={<AdminCsLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/users" element={<AdminUsers />} />
+        <Route path="/admin/vip-wallets" element={<VipWalletAddresses />} />
+        <Route path="/vip-wallets" element={<VipWalletAddresses />} />
+        <Route path="/admin/settings" element={<Settings />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/admin/forgot-password" element={<ForgotPassword />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        
+        
+        {/* Members routes */}
+        <Route path="/admin/member/members" element={<AdminMembers />} />
+        <Route path="/members" element={<AdminMembers />} />
+        <Route path="/admin/member/create" element={<AdminCreateMember />} />
+        <Route path="/members/create" element={<AdminCreateMember />} />
+        
+        <Route 
+          path="/admin/member/:memberId/wallet" 
+          element={
+            <ProtectedRoute roles={["owner", "agent"]}>
+              <MemberWallet />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/members/:memberId/wallet" 
+          element={
+            <ProtectedRoute roles={["owner", "agent"]}>
+              <MemberWallet />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/members/:memberId/edit" 
+          element={
+            <ProtectedRoute roles={["owner", "agent"]}>
+              <MemberEdit />
+            </ProtectedRoute>
+          } 
+        />
 
+        <Route
+          path= "/members/:memberId/wallet/deposit/new"
+          element={
+            <ProtectedRoute roles={["owner","agent"]}>
+              <CreateMemberDeposit />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path= "/members/:memberId/wallet/withdraw/new"
+          element={
+            <ProtectedRoute roles={["owner","agent"]}>
+              <CreateMemberWithdrawal />
+            </ProtectedRoute>
+          }
+        />
 
       </Routes>
     </BrowserRouter>
