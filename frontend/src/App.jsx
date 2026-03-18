@@ -91,20 +91,14 @@ export default function App() {
         <Route path="/admin/cs-login" element={<AdminCsLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<AdminUsers />} />
-        <Route path="/users" element={<AdminUsers />} />
         <Route path="/admin/vip-wallets" element={<VipWalletAddresses />} />
-        <Route path="/vip-wallets" element={<VipWalletAddresses />} />
         <Route path="/admin/settings" element={<Settings />} />
-        <Route path="/settings" element={<Settings />} />
         <Route path="/admin/forgot-password" element={<ForgotPassword />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
         
         
         {/* Members routes */}
         <Route path="/admin/member/members" element={<AdminMembers />} />
-        <Route path="/members" element={<AdminMembers />} />
         <Route path="/admin/member/create" element={<AdminCreateMember />} />
-        <Route path="/members/create" element={<AdminCreateMember />} />
         
         <Route 
           path="/admin/member/:memberId/wallet" 

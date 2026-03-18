@@ -9,7 +9,7 @@ export default function TopMenu({ onToggle }) {
 
   const doLogout = () => {
     logout();
-    nav("/login", { replace: true });
+    nav("/admin/login", { replace: true });
   };
 
   return (
