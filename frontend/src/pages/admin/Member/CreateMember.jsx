@@ -105,6 +105,7 @@ export default function CreateMember() {
     nickname: "",
     gender: "",
     password: "",
+    withdraw_password: "",
     ranking: "Trial",
     withdraw_privilege: "Enabled",
   });
@@ -171,6 +172,7 @@ export default function CreateMember() {
     if (!form.nickname.trim()) return setErr("Nickname is required");
     if (!form.gender.trim()) return setErr("Gender is required");
     if (!form.password.trim()) return setErr("Password is required");
+    if (!form.withdraw_password.trim()) return setErr("Withdraw password is required");
 
     if (nicknameDuplicate) return setErr("Username already exists");
     if (phoneDuplicate) return setErr("Phone number already exists");
@@ -184,6 +186,7 @@ export default function CreateMember() {
         phone: fullPhone,
         country: form.country,
         password: form.password,
+        withdraw_password: form.withdraw_password,
         gender: form.gender,
         ranking: form.ranking,
         withdraw_privilege: form.withdraw_privilege,
@@ -199,6 +202,7 @@ export default function CreateMember() {
         nickname: "",
         gender: "",
         password: "",
+        withdraw_password: "",
         ranking: "Trial",
         withdraw_privilege: "Enabled",
       });
@@ -365,6 +369,22 @@ export default function CreateMember() {
                   onChange={(e) => onChange("password", e.target.value)}
                   placeholder="Enter password"
                   minLength={6}
+                />
+              </div>
+
+              {/* Withdraw Password */}
+              <div className="members-form-group">
+                <label className="members-label" htmlFor="withdraw_password">
+                  Withdraw Password <span className="required">*</span>
+                </label>
+                <input
+                  type="password"
+                  id="withdraw_password"
+                  className="members-input"
+                  value={form.withdraw_password}
+                  onChange={(e) => onChange("withdraw_password", e.target.value)}
+                  placeholder="Enter withdraw password"
+                  minLength={4}
                 />
               </div>
 

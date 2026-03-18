@@ -32,9 +32,7 @@ const ASSETS = [
 
 export default function CreateMemberDeposit() {
   const me = getUser();
-  // Owner can create + review; agent can create but not review
   const canCreate = me?.role === "owner" || me?.role === "agent";
-  const canReview = me?.role === "owner";
   const nav = useNavigate();
   const { memberId } = useParams();
 
@@ -42,7 +40,6 @@ export default function CreateMemberDeposit() {
   const [method, setMethod] = useState("bank"); // "crypto" | "bank"
   const [asset, setAsset] = useState("USDT");
   const [network, setNetwork] = useState("TRC20");
-
   const [txRef, setTxRef] = useState("");
   const [proofUrl, setProofUrl] = useState("");
   const [err, setErr] = useState("");
@@ -54,8 +51,6 @@ export default function CreateMemberDeposit() {
   const onChangeMethod = (v) => {
     setMethod(v);
     setErr("");
-
-    // if switching to crypto, ensure network matches asset
     if (v === "crypto") {
       const a = ASSETS.find((x) => x.symbol === asset) || ASSETS[0];
       const defNet = a.networks[0] || "";
@@ -72,31 +67,25 @@ export default function CreateMemberDeposit() {
 
   const submit = async () => {
     if (!canCreate) return setErr("Only owner or agent can create deposits");
-    setErr("");
 
+    setErr("");
     const n = Number(amount || 0);
     if (!n || n <= 0) return setErr("Deposit amount must be > 0");
 
     const txRefClean = String(txRef || "").trim();
     const proofUrlClean = String(proofUrl || "").trim();
 
-    // ✅ Validate crypto requirements
+    // Validate crypto requirements (matches backend)
     if (method === "crypto") {
       if (!asset) return setErr("Asset is required for crypto deposit");
       if (!network) return setErr("Network is required for crypto deposit");
     }
 
-    // ✅ Match backend validation: if method includes "crypto", network required.
-    // Use method values that make this predictable.
-    const methodStr = method === "crypto" ? "crypto" : "bank";
-
-    // ✅ Build payload:
-    // - include tx_ref only if user entered it (otherwise DB default can generate)
-    // - include asset/network only for crypto
+    // Prepare payload exactly as backend expects
     const payload = {
       member_id: Number(memberId),
       amount: n,
-      method: methodStr,
+      method: method === "crypto" ? "crypto" : "bank",
       ...(method === "crypto" ? { asset, network } : {}),
       ...(txRefClean ? { tx_ref: txRefClean } : {}),
       ...(proofUrlClean ? { proof_url: proofUrlClean } : {}),
@@ -104,10 +93,14 @@ export default function CreateMemberDeposit() {
 
     setBusy(true);
     try {
-      await api.post("/deposits", payload);
+      const response = await api.post("/deposits", payload);
+      // Success → redirect to wallet with deposits tab active
       nav(`/members/${memberId}/wallet?tab=deposits`);
     } catch (e) {
-      setErr(e?.response?.data?.message || "Create deposit failed");
+      // Show exact backend error message if available
+      const backendMsg = e?.response?.data?.message;
+      setErr(backendMsg || "Failed to create deposit. Please try again.");
+      console.error("Deposit creation error:", e);
     } finally {
       setBusy(false);
     }
@@ -127,16 +120,14 @@ export default function CreateMemberDeposit() {
             ← Back
           </button>
         </div>
-
         {err && <div className="error">{err}</div>}
-
         {/* Amount Section */}
         <div className="form-section">
           <div className="form-section-header">
             <div className="form-section-icon">💵</div>
             <h3>Amount</h3>
           </div>
-          
+         
           <div className="form-group">
             <label>Amount *</label>
             <input
@@ -150,29 +141,26 @@ export default function CreateMemberDeposit() {
             />
           </div>
         </div>
-
         {/* Method Selection */}
         <div className="form-section">
           <div className="form-section-header">
             <div className="form-section-icon">🔀</div>
             <h3>Method</h3>
           </div>
-
           <div className="method-switcher">
-            <div 
+            <div
               className={`method-option ${method === "crypto" ? "active" : ""}`}
               onClick={() => !busy && onChangeMethod("crypto")}
             >
               🪙 Cryptocurrency
             </div>
-            <div 
+            <div
               className={`method-option ${method === "bank" ? "active" : ""}`}
               onClick={() => !busy && onChangeMethod("bank")}
             >
               🏦 Bank Transfer
             </div>
           </div>
-
           {/* Crypto-specific fields */}
           {method === "crypto" && (
             <div>
@@ -186,7 +174,6 @@ export default function CreateMemberDeposit() {
                   ))}
                 </select>
               </div>
-
               <div className="form-group">
                 <label>Network *</label>
                 <select value={network} onChange={(e) => setNetwork(e.target.value)} disabled={busy}>
@@ -200,14 +187,12 @@ export default function CreateMemberDeposit() {
             </div>
           )}
         </div>
-
         {/* Transaction Details */}
         <div className="form-section">
           <div className="form-section-header">
             <div className="form-section-icon">📋</div>
             <h3>Transaction</h3>
           </div>
-
           <div className="form-group">
             <label>Reference</label>
             <input
@@ -217,7 +202,6 @@ export default function CreateMemberDeposit() {
               disabled={busy}
             />
           </div>
-
           <div className="form-group">
             <label>Proof URL</label>
             <input
@@ -228,7 +212,6 @@ export default function CreateMemberDeposit() {
             />
           </div>
         </div>
-
         {/* Submit Actions */}
         <div className="action-buttons">
           <button className="btn btn-success" type="button" onClick={submit} disabled={busy}>

@@ -101,14 +101,6 @@ export default function App() {
         <Route path="/admin/member/create" element={<AdminCreateMember />} />
         
         <Route 
-          path="/admin/member/:memberId/wallet" 
-          element={
-            <ProtectedRoute roles={["owner", "agent"]}>
-              <MemberWallet />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
           path="/members/:memberId/wallet" 
           element={
             <ProtectedRoute roles={["owner", "agent"]}>

@@ -21,8 +21,7 @@ const fmtDate = (d) => {
   }
 };
 
-// ✅ Map DB status to UI status labels used in DepositRecord.css
-// deposits/withdrawals table status: pending | approved | rejected
+// Map DB status → UI-friendly labels
 function uiStatus(dbStatus) {
   const s = String(dbStatus || "").toLowerCase();
   if (s === "approved") return "Completed";
@@ -30,38 +29,32 @@ function uiStatus(dbStatus) {
   return "Confirming"; // pending or unknown
 }
 
-/** Confirmation rule:
- * - Completed => 12/12
- * - Others => random 3..10 / 12
- */
 function getConfirmationsByStatus(status, max = 12) {
   if (status === "Completed") return { current: max, max };
   const current = Math.floor(Math.random() * (10 - 3 + 1)) + 3;
   return { current, max };
 }
 
-// ✅ Normalize deposit row => card record
 function normalizeDeposit(d) {
   const status = uiStatus(d.status);
   return {
     kind: "deposit",
-    id: d.id, // numeric for API
-    displayId: d.tx_ref ? `DP-${d.id}` : `DP-${d.id}`, // visible id
+    id: d.id,
+    displayId: d.tx_ref ? `DP-${d.id}` : `DP-${d.id}`,
     date: fmtDate(d.created_at),
     amount: Number(d.amount || 0),
     method: d.method || "-",
-    asset: d.asset || "-",
+    asset: d.asset || "USDT",
     network: d.network || "-",
     status,
-    // show tx_ref as hash-like string
     txHash: d.tx_ref || "-",
+    proofUrl: d.proof_url || null,
     completedAt: d.reviewed_at ? fmtDate(d.reviewed_at) : "-",
     adminNote: d.admin_note || "",
     rawStatus: d.status || "pending",
   };
 }
 
-// ✅ Normalize withdrawal row => card record
 function normalizeWithdrawal(w) {
   const status = uiStatus(w.status);
   return {
@@ -71,10 +64,10 @@ function normalizeWithdrawal(w) {
     date: fmtDate(w.created_at),
     amount: Number(w.amount || 0),
     method: w.method || "-",
-    asset: w.asset || "-", // if exists
-    network: w.network || "-", // if exists
+    asset: w.asset || "USDT", // fallback
+    network: w.network || "-",
     status,
-    txHash: w.tx_ref || "-", // if you have
+    txHash: w.tx_ref || "-",
     account: w.account_details || "-",
     completedAt: w.reviewed_at ? fmtDate(w.reviewed_at) : "-",
     adminNote: w.admin_note || "",
@@ -84,43 +77,38 @@ function normalizeWithdrawal(w) {
 
 export default function MemberWallet() {
   const me = getUser();
-  const canCreate = me?.role === "owner" || me?.role === "agent"; // owners + agents
-  const canReview = me?.role === "owner"; // only owners can approve/reject
-  
+  const canCreate = me?.role === "owner" || me?.role === "agent";
+  const canReview = me?.role === "owner";
+
   const nav = useNavigate();
   const { memberId } = useParams();
   const [sp, setSp] = useSearchParams();
-
-  const tab = sp.get("tab") || "deposits"; // deposits | withdrawals
+  const tab = sp.get("tab") || "deposits";
   const setTab = (t) => setSp({ tab: t });
 
   const [busy, setBusy] = useState(false);
+  const [actionBusy, setActionBusy] = useState(false);
   const [err, setErr] = useState("");
-
   const [member, setMember] = useState(null);
   const [wallet, setWallet] = useState(null);
   const [deps, setDeps] = useState([]);
   const [wds, setWds] = useState([]);
 
-  // ✅ DepositRecord-like UI state
-  const [filter, setFilter] = useState("All"); // All | Confirming | Completed | Failed
+  const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
-  const [active, setActive] = useState(null); // modal record
+  const [active, setActive] = useState(null);
 
   const load = async () => {
     setErr("");
     setBusy(true);
     try {
       const { data } = await api.get(`/members/${memberId}/wallet`);
-
       setMember(data?.member || null);
       setWallet(data?.wallet || null);
-
-      // ✅ show ALL records: keep full arrays from backend response
       setDeps(Array.isArray(data?.deposits) ? data.deposits : []);
       setWds(Array.isArray(data?.withdrawals) ? data.withdrawals : []);
     } catch (e) {
-      setErr(e?.response?.data?.message || "Failed to load wallet");
+      setErr(e?.response?.data?.message || "Failed to load wallet data");
     } finally {
       setBusy(false);
     }
@@ -128,7 +116,6 @@ export default function MemberWallet() {
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [memberId]);
 
   const totals = useMemo(() => {
@@ -137,55 +124,42 @@ export default function MemberWallet() {
     return { totalDeposit, totalWithdraw };
   }, [deps, wds]);
 
-  const titleName = member?.nickname || member?.name || "Member";
+  const titleName = member?.nickname || "Member";
 
-  // ✅ Build records for current tab (normalized)
   const records = useMemo(() => {
     if (tab === "withdrawals") return wds.map(normalizeWithdrawal);
     return deps.map(normalizeDeposit);
   }, [tab, deps, wds]);
 
-  // ✅ Apply filter + search (same behavior as DepositRecord)
   const filtered = useMemo(() => {
     return records.filter((r) => {
       if (filter !== "All" && r.status !== filter) return false;
-
       if (search) {
         const q = search.toLowerCase();
-        const a = String(r.displayId || "").toLowerCase();
-        const b = String(r.txHash || "").toLowerCase();
-        if (!a.includes(q) && !b.includes(q)) return false;
+        if (
+          !String(r.displayId || "").toLowerCase().includes(q) &&
+          !String(r.txHash || "").toLowerCase().includes(q)
+        ) {
+          return false;
+        }
       }
       return true;
     });
   }, [records, filter, search]);
 
-  // approve/reject actions (owner)
-  const actDeposit = async (id, action) => {
+  const actTransaction = async (kind, id, action) => {
+    if (actionBusy) return;
     setErr("");
-    setBusy(true);
+    setActionBusy(true);
     try {
-      await api.patch(`/deposits/${id}/${action}`, { admin_note: null });
+      const endpoint = kind === "deposit" ? `/deposits/${id}/${action}` : `/withdrawals/${id}/${action}`;
+      await api.patch(endpoint, { admin_note: "" });
       await load();
       setActive(null);
     } catch (e) {
-      setErr(e?.response?.data?.message || `Deposit ${action} failed`);
+      setErr(e?.response?.data?.message || `${action} failed for ${kind}`);
     } finally {
-      setBusy(false);
-    }
-  };
-
-  const actWithdrawal = async (id, action) => {
-    setErr("");
-    setBusy(true);
-    try {
-      await api.patch(`/withdrawals/${id}/${action}`, { admin_note: null });
-      await load();
-      setActive(null);
-    } catch (e) {
-      setErr(e?.response?.data?.message || `Withdrawal ${action} failed`);
-    } finally {
-      setBusy(false);
+      setActionBusy(false);
     }
   };
 
@@ -202,21 +176,35 @@ export default function MemberWallet() {
               <span className="badge">{member?.short_id || memberId}</span>
             </div>
           </div>
-
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button className="members-btn members-btn-secondary" type="button" onClick={() => nav(-1)} disabled={busy}>
+            <button
+              className="members-btn members-btn-secondary"
+              type="button"
+              onClick={() => nav(-1)}
+              disabled={busy || actionBusy}
+            >
               ← Back
             </button>
-            <button className="members-btn members-btn-primary" type="button" onClick={load} disabled={busy}>
+            <button
+              className="members-btn members-btn-primary"
+              type="button"
+              onClick={load}
+              disabled={busy || actionBusy}
+            >
               Refresh
             </button>
-
             {canCreate && (
               <>
-                <Link className="members-btn members-btn-primary" to={`/members/${memberId}/wallet/deposit/new`}>
+                <Link
+                  className="members-btn members-btn-primary"
+                  to={`/members/${memberId}/wallet/deposit/new`}
+                >
                   + Create Deposit
                 </Link>
-                <Link className="members-btn members-btn-primary" to={`/members/${memberId}/wallet/withdraw/new`}>
+                <Link
+                  className="members-btn members-btn-primary"
+                  to={`/members/${memberId}/wallet/withdraw/new`}
+                >
                   + Create Withdrawal
                 </Link>
               </>
@@ -234,19 +222,16 @@ export default function MemberWallet() {
               {wallet ? fmtMoney(wallet.balance) : busy ? "…" : "0.00"}
             </div>
           </div>
-
           <div className="wallet-summary-card">
             <div className="label">Locked</div>
             <div className="value">
               {wallet ? fmtMoney(wallet.locked_balance) : busy ? "…" : "0.00"}
             </div>
           </div>
-
           <div className="wallet-summary-card">
             <div className="label">Total Deposit</div>
             <div className="value">{fmtMoney(totals.totalDeposit)}</div>
           </div>
-
           <div className="wallet-summary-card">
             <div className="label">Total Withdraw</div>
             <div className="value">{fmtMoney(totals.totalWithdraw)}</div>
@@ -255,7 +240,6 @@ export default function MemberWallet() {
 
         {/* Tabs + Records */}
         <div className="members-table-card">
-          {/* Tabs */}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
             <button
               className={`members-btn ${tab === "deposits" ? "members-btn-primary" : "members-btn-secondary"}`}
@@ -266,10 +250,10 @@ export default function MemberWallet() {
                 setSearch("");
                 setActive(null);
               }}
+              disabled={busy || actionBusy}
             >
               Deposits ({deps.length})
             </button>
-
             <button
               className={`members-btn ${tab === "withdrawals" ? "members-btn-primary" : "members-btn-secondary"}`}
               type="button"
@@ -279,6 +263,7 @@ export default function MemberWallet() {
                 setSearch("");
                 setActive(null);
               }}
+              disabled={busy || actionBusy}
             >
               Withdrawals ({wds.length})
             </button>
@@ -286,7 +271,6 @@ export default function MemberWallet() {
 
           <div className="members-hr" />
 
-          {/* Status filter (same as DepositRecord) */}
           <section className="dpFilters" style={{ marginTop: 6 }}>
             {filters.map((f) => (
               <button
@@ -294,25 +278,24 @@ export default function MemberWallet() {
                 className={`dpFilterBtn ${filter === f ? "active" : ""}`}
                 onClick={() => setFilter(f)}
                 type="button"
+                disabled={busy || actionBusy}
               >
                 {f}
               </button>
             ))}
           </section>
 
-          {/* Search */}
           <section className="dpSearch">
             <input
               placeholder={`Search by ${tab === "deposits" ? "Deposit" : "Withdraw"} ID or TX hash`}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              disabled={busy || actionBusy}
             />
           </section>
 
-          {/* Records */}
           <main className="dpWrap">
             {busy && <div className="small">Loading…</div>}
-
             {!busy && filtered.length === 0 && (
               <div className="dpEmpty">No records found.</div>
             )}
@@ -321,37 +304,28 @@ export default function MemberWallet() {
               <div
                 key={`${r.kind}-${r.id}`}
                 className="dpCard clickable"
-                onClick={() =>
-                  setActive({
-                    ...r,
-                    confirmations: getConfirmationsByStatus(r.status, 12),
-                  })
-                }
+                onClick={() => setActive(r)}
               >
                 <div className="dpRow">
                   <span className="dpLabel">Amount</span>
                   <span className="dpAmount">
-                    {fmtMoney(r.amount)} {r.asset !== "-" ? r.asset : "USDT"}
+                    {fmtMoney(r.amount)} {r.asset}
                   </span>
                 </div>
-
                 <div className="dpRow">
                   <span className="dpLabel">{r.kind === "deposit" ? "Network" : "Method"}</span>
                   <span>{r.kind === "deposit" ? r.network : r.method}</span>
                 </div>
-
                 <div className="dpRow">
                   <span className="dpLabel">Date</span>
                   <span>{r.date}</span>
                 </div>
-
                 <div className="dpRow">
                   <span className="dpLabel">Status</span>
                   <span className={`dpStatus ${r.status.toLowerCase()}`}>
                     {r.status}
                   </span>
                 </div>
-
                 <div className="dpFooter">
                   <span className="dpId">{r.displayId}</span>
                   <span className="dpView">View Details →</span>
@@ -377,7 +351,7 @@ export default function MemberWallet() {
               <div className="dpModalBody">
                 <DepositTimeline status={active.status} />
 
-                {active.confirmations && active.kind === "deposit" && (
+                {active.kind === "deposit" && active.confirmations && (
                   <DetailRow
                     label="Confirmations"
                     value={`${active.confirmations.current} / ${active.confirmations.max}`}
@@ -385,7 +359,10 @@ export default function MemberWallet() {
                 )}
 
                 <DetailRow label="Record ID" value={active.displayId} />
-                <DetailRow label="Amount" value={`${fmtMoney(active.amount)} ${active.asset !== "-" ? active.asset : "USDT"}`} />
+                <DetailRow
+                  label="Amount"
+                  value={`${fmtMoney(active.amount)} ${active.asset}`}
+                />
                 <DetailRow label="Method" value={active.method} />
 
                 {active.kind === "deposit" ? (
@@ -398,16 +375,41 @@ export default function MemberWallet() {
                 )}
 
                 <DetailRow label="TX Hash" mono value={active.txHash} />
+
+                {active.kind === "deposit" && active.proofUrl && active.proofUrl !== "-" && (
+                  <div style={{ marginTop: 16 }}>
+                    <div className="dpDetailLabel">Proof Image</div>
+                    <img
+                      src={active.proofUrl}
+                      alt="Payment proof"
+                      style={{
+                        maxWidth: "100%",
+                        borderRadius: 8,
+                        marginTop: 8,
+                        display: "block",
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                      }}
+                    />
+                  </div>
+                )}
+
                 <DetailRow label="Submitted At" value={active.date} />
                 <DetailRow label="Completed At" value={active.completedAt} />
 
-                {!!active.adminNote && (
-                  <DetailRow label="Admin note" value={active.adminNote} />
+                {active.adminNote && (
+                  <DetailRow label="Admin Note" value={active.adminNote} />
                 )}
               </div>
 
               <div className="dpModalFooter" style={{ gap: 8, flexWrap: "wrap" }}>
-                <button className="dpBtnSoft" onClick={() => setActive(null)} type="button">
+                <button
+                  className="dpBtnSoft"
+                  onClick={() => setActive(null)}
+                  type="button"
+                  disabled={actionBusy}
+                >
                   Close
                 </button>
 
@@ -421,7 +423,6 @@ export default function MemberWallet() {
                   </button>
                 )}
 
-                {/* Owner actions if pending */}
                 {canReview && String(active.rawStatus).toLowerCase() === "pending" && (
                   <>
                     {active.kind === "deposit" ? (
@@ -429,19 +430,19 @@ export default function MemberWallet() {
                         <button
                           className="dpBtnPrimary"
                           type="button"
-                          disabled={busy}
-                          onClick={() => actDeposit(active.id, "approve")}
+                          disabled={actionBusy}
+                          onClick={() => actTransaction("deposit", active.id, "approve")}
                         >
-                          Approve
+                          {actionBusy ? "Processing..." : "Approve"}
                         </button>
                         <button
                           className="dpBtnPrimary"
                           type="button"
-                          disabled={busy}
-                          onClick={() => actDeposit(active.id, "reject")}
+                          disabled={actionBusy}
+                          onClick={() => actTransaction("deposit", active.id, "reject")}
                           style={{ background: "#dc2626" }}
                         >
-                          Reject
+                          {actionBusy ? "Processing..." : "Reject"}
                         </button>
                       </>
                     ) : (
@@ -449,19 +450,19 @@ export default function MemberWallet() {
                         <button
                           className="dpBtnPrimary"
                           type="button"
-                          disabled={busy}
-                          onClick={() => actWithdrawal(active.id, "approve")}
+                          disabled={actionBusy}
+                          onClick={() => actTransaction("withdrawal", active.id, "approve")}
                         >
-                          Approve
+                          {actionBusy ? "Processing..." : "Approve"}
                         </button>
                         <button
                           className="dpBtnPrimary"
                           type="button"
-                          disabled={busy}
-                          onClick={() => actWithdrawal(active.id, "reject")}
+                          disabled={actionBusy}
+                          onClick={() => actTransaction("withdrawal", active.id, "reject")}
                           style={{ background: "#dc2626" }}
                         >
-                          Reject
+                          {actionBusy ? "Processing..." : "Reject"}
                         </button>
                       </>
                     )}
@@ -476,11 +477,9 @@ export default function MemberWallet() {
   );
 }
 
-/* Components copied from your DepositRecord */
-
+/* Reused components */
 function DepositTimeline({ status }) {
   const steps = ["Submitted", "Confirming", "Completed"];
-
   let current = 1;
   if (status === "Confirming") current = 2;
   if (status === "Completed") current = 3;
@@ -491,7 +490,6 @@ function DepositTimeline({ status }) {
       {steps.map((s, i) => {
         const done = i + 1 <= current && status !== "Failed";
         const failed = status === "Failed" && i === 1;
-
         return (
           <div key={s} className="dpStep">
             <div className={`dpDot ${done ? "done" : ""} ${failed ? "failed" : ""}`} />
@@ -504,11 +502,11 @@ function DepositTimeline({ status }) {
   );
 }
 
-function DetailRow({ label, value, mono }) {
+function DetailRow({ label, value, mono = false }) {
   return (
     <div className="dpDetailRow">
       <div className="dpDetailLabel">{label}</div>
-      <div className={`dpDetailValue ${mono ? "mono" : ""}`}>{value}</div>
+      <div className={`dpDetailValue ${mono ? "mono" : ""}`}>{value || "-"}</div>
     </div>
   );
 }

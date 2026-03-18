@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth.js";
 import usersRoutes from "./routes/users.js";
 import membersRoutes from "./routes/members.js";  // ✅ ADD THIS
+import depositsRoutes from "./routes/deposits.js";
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.get("/", (req, res) => {
 app.use("/auth", authRoutes);
 app.use("/users", usersRoutes);
 app.use("/members", membersRoutes);  // ✅ ADD THIS LINE
+app.use("/deposits", depositsRoutes); 
 
 const PORT = process.env.PORT || 5040;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
