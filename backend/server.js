@@ -1,4 +1,4 @@
-// server/index.js (or app.js)
+// server/index.js
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -6,21 +6,24 @@ import dotenv from "dotenv";
 // Import route modules
 import authRoutes from "./routes/auth.js";
 import usersRoutes from "./routes/users.js";
-import membersRoutes from "./routes/members.js";  // ✅ ADD THIS
+import membersRoutes from "./routes/members.js";
 import depositsRoutes from "./routes/deposits.js";
+import withdrawalsRoutes from "./routes/withdrawals.js"; 
+import adminNotifications from "./routes/notifications.js";
 
 dotenv.config();
 
 const app = express();
 
-// ✅ Fix CORS: remove trailing spaces in URL
+// CORS configuration
 app.use(cors({
-  origin: ["http://localhost:5173", "https://goldmiracle.bond"],  // ✅ Trimmed
+  origin: ["http://localhost:5173", "https://goldmiracle.bond"],
   credentials: true
 }));
 
 app.use(express.json());
 
+// Health check
 app.get("/", (req, res) => {
   res.json({ message: "Backend running 🚀" });
 });
@@ -28,8 +31,12 @@ app.get("/", (req, res) => {
 // Mount routes
 app.use("/auth", authRoutes);
 app.use("/users", usersRoutes);
-app.use("/members", membersRoutes);  // ✅ ADD THIS LINE
-app.use("/deposits", depositsRoutes); 
+app.use("/members", membersRoutes);        // Member-facing routes (deposits, withdrawals, etc.)
+app.use("/deposits", depositsRoutes);      // Admin deposit management
+app.use("/withdrawals", withdrawalsRoutes); // ✅ ADD: Admin withdrawal management
+app.use("/notifications", adminNotifications); // Admin notifications (badge + list)
 
 const PORT = process.env.PORT || 5040;
-app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

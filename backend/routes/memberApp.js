@@ -705,6 +705,16 @@ router.post("/deposits", memberAuth, async (req, res) => {
         : [memberId, amount, method, asset, network || null, proof_url || null]
     );
 
+        // 🔔 Create admin notification for new deposit
+    await pool.query(
+      `
+      INSERT INTO admin_notifications (type, ref_id, member_id)
+      VALUES ('deposit', $1, $2)
+      ON CONFLICT (type, ref_id) DO NOTHING
+      `,
+      [r.rows[0].id, memberId]
+    );
+
     res.status(201).json(r.rows[0]);
   } catch (e) {
     console.error(e);
@@ -903,6 +913,16 @@ router.post("/withdrawals", memberAuth, async (req, res) => {
         isBank ? (routing_number || null) : null,
         isBank ? (branch_name || null) : null,
       ]
+    );
+
+        // 🔔 Create admin notification for new withdrawal
+    await client.query(
+      `
+      INSERT INTO admin_notifications (type, ref_id, member_id)
+      VALUES ('withdrawal', $1, $2)
+      ON CONFLICT (type, ref_id) DO NOTHING
+      `,
+      [wd.rows[0].id, memberId]
     );
 
     await client.query("COMMIT");
