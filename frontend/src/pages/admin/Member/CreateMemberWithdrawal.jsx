@@ -82,27 +82,27 @@ export default function CreateMemberWithdrawal() {
     try {
       const n = Number(amount || 0);
 
-      const payload =
-        method === "crypto"
-          ? {
-              member_id: Number(memberId),
-              amount: n,
-              method: "crypto",
-              asset,
-              network,
-              wallet_address: walletAddress.trim(),
-            }
-          : {
-              member_id: Number(memberId),
-              amount: n,
-              method: "bank",
-              bank_country: bankCountry,
-              bank_name: bankName.trim(),
-              account_holder_name: accountHolderName.trim(),
-              account_number: accountNumber.trim(),
-              routing_number: routingNumber.trim() || null,
-              branch_name: branchName.trim() || null,
-            };
+const payload =
+  method === "crypto"
+    ? {
+        member_id: Number(memberId),
+        amount: n,
+        method: "crypto",
+        account_details: `${asset} ${network} ${walletAddress.trim()}`,
+      }
+    : {
+        member_id: Number(memberId),
+        amount: n,
+        method: "bank",
+        account_details: `
+Country: ${bankCountry}
+Bank: ${bankName}
+Name: ${accountHolderName}
+Account: ${accountNumber}
+Routing: ${routingNumber || "-"}
+Branch: ${branchName || "-"}
+        `.trim(),
+      };
 
       await api.post("/withdrawals", payload);
       nav(`/members/${memberId}/wallet?tab=withdrawals`);

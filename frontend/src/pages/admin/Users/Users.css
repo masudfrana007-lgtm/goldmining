@@ -191,6 +191,10 @@
   color: #111827;
 }
 
+.small{
+  color:black;
+}
+
 .users-table-scroll {
   width: 100%;
   overflow-x: auto;
