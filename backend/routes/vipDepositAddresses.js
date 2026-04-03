@@ -52,21 +52,48 @@ const upload = multer({
  * POST /vip-deposit-addresses/photo
  * form-data: photo=<file>, vip_rank=V1|V2|V3
  */
+// In routes/vipDepositAddresses.js - UPDATE the /photo route:
+
 router.post(
   "/photo",
   auth,
   allowRoles("owner", "admin"),
   upload.single("photo"),
+  (err, req, res, next) => {
+    // ⚠️ Multer error handler - MUST come before async handler
+    if (err) {
+      console.error('Multer error:', err.code, err.message);
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ message: 'File too large. Max 5MB allowed.' });
+      }
+      if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+        return res.status(400).json({ message: 'Invalid file field name. Use "photo".' });
+      }
+      return res.status(400).json({ message: `Upload error: ${err.message}` });
+    }
+    next(); // ✅ No error → proceed to main handler
+  },
   async (req, res) => {
     try {
-      if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+      // DEBUG LOGS
+      console.log('=== PHOTO UPLOAD ===');
+      console.log('User ID:', req.user?.id);
+      console.log('Roles:', req.user?.roles);
+      console.log('vip_rank from body:', req.body.vip_rank);
+      console.log('File:', req.file?.filename, 'Size:', req.file?.size, 'Type:', req.file?.mimetype);
+
+      if (!req.file) {
+        console.log('❌ No file in req.file');
+        return res.status(400).json({ message: "No file uploaded" });
+      }
 
       const vip_rank = safeRankOrDefault(req.body.vip_rank);
       const photo_url = `/uploads/vip-wallets/${req.file.filename}`;
 
+      console.log('✅ Success:', { vip_rank, photo_url });
       res.json({ vip_rank, photo_url });
     } catch (e) {
-      console.error(e);
+      console.error('Handler error:', e);
       res.status(500).json({ message: "Server error" });
     }
   }

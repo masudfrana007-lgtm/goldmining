@@ -81,23 +81,46 @@ export default function VipWalletAddresses() {
     }));
   }
 
-  async function uploadPhoto(file) {
-    setBusy(true);
-    setErr("");
-    setOk("");
-    try {
-      const fd = new FormData();
-      fd.append("photo", file);
-      fd.append("vip_rank", vip);
-      const { data } = await api.post("/vip-deposit-addresses/photo", fd);
-      patchRow({ photo_url: data?.photo_url || "" });
-      setOk("Photo uploaded");
-    } catch (e) {
-      setErr(e?.response?.data?.message || "Upload failed");
-    } finally {
-      setBusy(false);
-    }
+async function uploadPhoto(file) {
+  setBusy(true);
+  setErr("");
+  setOk("");
+  try {
+    const fd = new FormData();
+    fd.append("photo", file);
+    fd.append("vip_rank", vip);
+    
+    console.log('📤 Uploading:', { 
+      fileName: file.name, 
+      size: file.size, 
+      type: file.type,
+      vip_rank: vip 
+    });
+    
+    const { data } = await api.post("/vip-deposit-addresses/photo", fd, {
+      headers: { 'Content-Type': 'multipart/form-data' } // ✅ Explicit, but axios usually handles this
+    });
+    
+    console.log('✅ Upload response:', data);
+    patchRow({ photo_url: data?.photo_url || "" });
+    setOk("Photo uploaded");
+  } catch (e) {
+    console.error('❌ Upload failed:', {
+      status: e?.response?.status,
+      statusText: e?.response?.statusText,
+      data: e?.response?.data,
+      message: e?.message,
+      config: {
+        url: e?.config?.url,
+        method: e?.config?.method,
+        headers: e?.config?.headers
+      }
+    });
+    setErr(e?.response?.data?.message || "Upload failed");
+  } finally {
+    setBusy(false);
   }
+}
 
   async function save() {
     const row = getRow();

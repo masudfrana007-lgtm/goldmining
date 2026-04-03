@@ -13,6 +13,12 @@ import withdrawalsRoutes from "./routes/withdrawals.js";
 import adminNotifications from "./routes/notifications.js";
 import vipDepositAddressesRoutes from "./routes/vipDepositAddresses.js";
 
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 dotenv.config();
 
 const app = express();
@@ -51,6 +57,7 @@ app.use("/deposits", depositsRoutes);
 app.use("/withdrawals", withdrawalsRoutes);
 app.use("/notifications", adminNotifications);
 app.use("/vip-deposit-addresses", vipDepositAddressesRoutes);
+app.use('/uploads', express.static(join(__dirname, 'uploads')));
 
 // Start server
 const PORT = process.env.PORT || 5040;
