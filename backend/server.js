@@ -16,8 +16,17 @@ dotenv.config();
 const app = express();
 
 // CORS configuration
+const allowedOrigins = ["http://localhost:5173", "https://goldmiracle.bond", "https://www.goldmiracle.bond"];
+
 app.use(cors({
-  origin: ["http://localhost:5173", "https://goldmiracle.bond"],
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // allow REST clients like Postman
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
 
