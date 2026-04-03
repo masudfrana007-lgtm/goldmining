@@ -1,4 +1,3 @@
-// src/pages/DepositBank.jsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./memberDepositBank.css";
@@ -87,18 +86,7 @@ const PARTNER_LOGOS = [
 /** ✅ Local DEMO storage (no API) */
 const DEMO = {
   balance: 0,
-  deposits: [
-    // Example:
-    // {
-    //   id: "DP-123456",
-    //   created_at: new Date().toISOString(),
-    //   amount: 100,
-    //   status: "pending", // pending/approved/rejected
-    //   method: "bank",
-    //   network: "ABA Bank",
-    //   country: "KH",
-    // }
-  ],
+  deposits: [],
 };
 
 export default function DepositBank() {
@@ -106,7 +94,6 @@ export default function DepositBank() {
 
   const MIN_DEPOSIT = 10;
 
-  // ✅ local balance
   const [balance, setBalance] = useState(0);
 
   const countries = useMemo(() => getAllCountries(), []);
@@ -115,21 +102,17 @@ export default function DepositBank() {
   const banks = useMemo(() => BANKS_BY_COUNTRY[country] || [], [country]);
   const [bank, setBank] = useState("");
 
-  // Payer details (who is sending)
   const [payerName, setPayerName] = useState("");
   const [payerAccount, setPayerAccount] = useState("");
 
-  // Receiving bank details (optional fields to help match)
   const [reference, setReference] = useState("");
   const [routingNumber, setRoutingNumber] = useState("");
   const [branchNumber, setBranchNumber] = useState("");
 
   const [amount, setAmount] = useState("");
 
-  // ✅ local history
   const [history, setHistory] = useState([]);
 
-  // Inline validation + submit lock
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
@@ -146,7 +129,6 @@ export default function DepositBank() {
     if (!amount || Number.isNaN(amt) || amt <= 0) next.amount = "Enter a valid amount.";
     else if (amt < MIN_DEPOSIT) next.amount = `Minimum deposit is ${MIN_DEPOSIT} USD.`;
 
-    // Reference is recommended, not required
     if (reference && reference.trim().length < 4) next.reference = "Reference is too short (min 4 chars).";
 
     return next;
@@ -154,12 +136,10 @@ export default function DepositBank() {
 
   const isReadyToSubmit = () => Object.keys(validateDeposit()).length === 0;
 
-  // ✅ load balance (local)
   const loadMe = async () => {
     setBalance(Number(DEMO.balance || 0));
   };
 
-  // ✅ load deposits (local) and map to UI
   const loadDeposits = async () => {
     setLoadingHistory(true);
     try {
@@ -203,7 +183,6 @@ export default function DepositBank() {
     try {
       const n = Number(amount);
 
-      // If user didn't type a reference, generate one
       const txRef = reference?.trim()
         ? reference.trim()
         : `DP-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -212,7 +191,7 @@ export default function DepositBank() {
         id: txRef,
         created_at: new Date().toISOString(),
         amount: n,
-        status: "pending", // pending/approved/rejected demo
+        status: "pending",
         method: "bank",
         network: bank,
         country,
@@ -231,7 +210,7 @@ export default function DepositBank() {
       setRoutingNumber("");
       setBranchNumber("");
 
-      setErrors((prev) => ({ ...prev, form: "Deposit request submitted ✅" }));
+      setErrors((prev) => ({ ...prev, form: "Deposit request submitted successfully." }));
       setTimeout(() => setErrors((p) => ({ ...p, form: "" })), 2500);
 
       await loadMe();
@@ -261,12 +240,18 @@ export default function DepositBank() {
           <div className="topSub">Submit your deposit details for faster verification</div>
         </div>
 
-        <button className="dcHistoryBtn" onClick={() => nav("/member/deposit/records")}>
-          History
-        </button>
+        <div className="dcTopActions">
+          <button className="dcSupportBtn" onClick={() => nav("/customer-service")} type="button">
+            Support
+          </button>
+
+          <button className="dcHistoryBtn" onClick={() => nav("/member/deposit/records")} type="button">
+            History
+          </button>
+        </div>
       </header>
 
-      {/* ✅ Frozen supported networks block */}
+      {/* Supported networks */}
       <section className="db3-netSticky" aria-label="Supported networks">
         <div className="db3-netInner">
           <div className="db3-netTitle">
@@ -373,7 +358,7 @@ export default function DepositBank() {
               {errors.bank ? (
                 <div className="db3-error">{errors.bank}</div>
               ) : (
-                <div className="db3-help">Banks load by selected country (demo list).</div>
+                <div className="db3-help">Banks load by selected country.</div>
               )}
             </div>
 
@@ -444,12 +429,22 @@ export default function DepositBank() {
 
             <div className="db3-field">
               <label>Routing Number (optional)</label>
-              <input value={routingNumber} onChange={(e) => setRoutingNumber(e.target.value)} inputMode="numeric" />
+              <input
+                value={routingNumber}
+                onChange={(e) => setRoutingNumber(e.target.value)}
+                inputMode="numeric"
+                placeholder="Routing number"
+              />
             </div>
 
             <div className="db3-field">
               <label>Branch Number (optional)</label>
-              <input value={branchNumber} onChange={(e) => setBranchNumber(e.target.value)} inputMode="numeric" />
+              <input
+                value={branchNumber}
+                onChange={(e) => setBranchNumber(e.target.value)}
+                inputMode="numeric"
+                placeholder="Branch number"
+              />
             </div>
           </div>
 
@@ -464,7 +459,6 @@ export default function DepositBank() {
             </div>
           </div>
 
-          {/* Desktop button */}
           <button
             className="db3-primaryBtn db3-desktopOnly"
             onClick={submit}

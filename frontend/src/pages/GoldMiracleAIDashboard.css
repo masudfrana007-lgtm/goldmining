@@ -2029,3 +2029,547 @@
     word-break: break-all;
   }
 }
+
+
+
+/* =========================================
+   REPORTS SECTION UPGRADE
+========================================= */
+
+.gmAI .gmReportSwitch{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.gmAI .gmReportTab{
+  cursor:pointer;
+  border:none;
+  border-radius:999px;
+  padding:9px 14px;
+  font-size:12px;
+  font-weight:800;
+  color:rgba(245,247,251,.86);
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.10);
+  transition:.18s ease;
+}
+.gmAI .gmReportTab:hover{
+  transform:translateY(-1px);
+  background:rgba(255,255,255,.08);
+}
+.gmAI .gmReportTab.active{
+  background:linear-gradient(135deg, rgba(25,195,125,.18), rgba(255,255,255,.05));
+  border-color:rgba(25,195,125,.32);
+  color:#fff;
+}
+
+.gmAI .gmReportsWrap{
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.gmAI .gmReportSummary{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap:12px;
+}
+
+.gmAI .gmReportStat{
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(0,0,0,.14);
+  padding:14px;
+}
+.gmAI .gmReportStat .k{
+  font-size:12px;
+  color:var(--mut2);
+  font-weight:800;
+}
+.gmAI .gmReportStat .v{
+  margin-top:8px;
+  font-size:20px;
+  font-weight:900;
+  letter-spacing:.2px;
+}
+
+.gmAI .gmReportList{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.gmAI .gmTradeReportRow{
+  width:100%;
+  cursor:pointer;
+  border:none;
+  text-align:left;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:16px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.10);
+  background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.035));
+  transition:transform .16s ease, border-color .16s ease, background .16s ease;
+}
+.gmAI .gmTradeReportRow:hover{
+  transform:translateY(-2px);
+  border-color:rgba(25,195,125,.24);
+  background:linear-gradient(180deg, rgba(25,195,125,.08), rgba(255,255,255,.03));
+}
+
+.gmAI .gmTradeReportMain{
+  flex:1;
+  min-width:0;
+}
+
+.gmAI .gmTradeTopLine{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.gmAI .gmTradePairWrap{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.gmAI .gmTradePair{
+  font-size:15px;
+  font-weight:900;
+  color:#fff;
+}
+
+.gmAI .gmTradeSide{
+  padding:5px 9px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:900;
+  border:1px solid rgba(255,255,255,.10);
+}
+.gmAI .gmTradeSide.buy{
+  color:var(--emerald);
+  border-color:rgba(25,195,125,.24);
+  background:rgba(25,195,125,.10);
+}
+.gmAI .gmTradeSide.sell{
+  color:var(--red);
+  border-color:rgba(255,77,109,.24);
+  background:rgba(255,77,109,.10);
+}
+
+.gmAI .gmTradeOutcome{
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:900;
+}
+.gmAI .gmTradeOutcome.win{
+  color:var(--emerald);
+  background:rgba(25,195,125,.12);
+  border:1px solid rgba(25,195,125,.24);
+}
+.gmAI .gmTradeOutcome.loss{
+  color:var(--red);
+  background:rgba(255,77,109,.10);
+  border:1px solid rgba(255,77,109,.22);
+}
+
+.gmAI .gmTradePnl{
+  text-align:right;
+  font-size:18px;
+  font-weight:900;
+  white-space:nowrap;
+}
+.gmAI .gmTradePnl span{
+  font-size:12px;
+  margin-left:6px;
+  opacity:.9;
+}
+
+.gmAI .gmTradeMidLine,
+.gmAI .gmTradeBottomLine{
+  margin-top:10px;
+  display:grid;
+  gap:10px;
+  color:rgba(245,247,251,.82);
+  font-size:13px;
+}
+
+.gmAI .gmTradeMidLine{
+  grid-template-columns: 1.2fr 1fr 1fr;
+}
+.gmAI .gmTradeBottomLine{
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.gmAI .gmTradeMidLine span,
+.gmAI .gmTradeBottomLine span{
+  color:var(--mut2);
+  margin-right:6px;
+  font-weight:700;
+}
+
+.gmAI .gmTradeArrow{
+  font-size:22px;
+  font-weight:900;
+  color:rgba(245,247,251,.45);
+  flex:0 0 auto;
+}
+
+.gmAI .gmReportsFootNote{
+  color:var(--mut2);
+  font-size:12px;
+}
+
+/* =========================================
+   REPORT DETAIL MODAL
+========================================= */
+
+.gmAI .gmTradeModalWrap{
+  position:fixed;
+  inset:0;
+  z-index:70;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+}
+
+.gmAI .gmTradeModalBackdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.62);
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+}
+
+.gmAI .gmTradeModal{
+  position:relative;
+  width:min(920px, 96vw);
+  max-height:min(88vh, 920px);
+  overflow:auto;
+  border-radius:22px;
+  background:#ffffff;
+  color:#0b1220;
+  border:1px solid rgba(0,0,0,.08);
+  box-shadow:0 30px 90px rgba(0,0,0,.35);
+}
+
+.gmAI .gmTradeModalHead{
+  padding:18px 18px 14px;
+  border-bottom:1px solid rgba(0,0,0,.08);
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.gmAI .gmTradeModalTitle{
+  font-size:18px;
+  font-weight:900;
+  color:#0b1220;
+}
+
+.gmAI .gmTradeModalSub{
+  margin-top:6px;
+  color:rgba(11,18,32,.64);
+  font-size:13px;
+  line-height:1.45;
+}
+
+.gmAI .gmTradeModalBody{
+  padding:18px;
+}
+
+.gmAI .gmTradeHero{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:16px 18px;
+  border-radius:18px;
+  background:linear-gradient(135deg, rgba(11,18,32,.04), rgba(11,18,32,.02));
+  border:1px solid rgba(11,18,32,.08);
+}
+
+.gmAI .gmTradeHeroPair{
+  font-size:24px;
+  font-weight:900;
+  color:#0b1220;
+}
+
+.gmAI .gmTradeHeroMeta{
+  margin-top:6px;
+  font-size:13px;
+  color:rgba(11,18,32,.62);
+}
+
+.gmAI .gmTradeHeroBadge{
+  padding:10px 14px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  white-space:nowrap;
+}
+.gmAI .gmTradeHeroBadge.win{
+  color:#0e6b46;
+  background:rgba(25,195,125,.14);
+  border:1px solid rgba(25,195,125,.28);
+}
+.gmAI .gmTradeHeroBadge.loss{
+  color:#b4233c;
+  background:rgba(255,77,109,.10);
+  border:1px solid rgba(255,77,109,.22);
+}
+
+.gmAI .gmTradeDetailGrid{
+  margin-top:16px;
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap:14px;
+}
+
+.gmAI .gmTradeDetailCard{
+  border-radius:18px;
+  border:1px solid rgba(11,18,32,.08);
+  background:#fff;
+  padding:16px;
+}
+
+.gmAI .gmTradeDetailCard .t{
+  font-size:14px;
+  font-weight:900;
+  color:#0b1220;
+  margin-bottom:12px;
+}
+
+.gmAI .gmTradeDetailRows{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.gmAI .gmTradeDetailRows div{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding-bottom:10px;
+  border-bottom:1px dashed rgba(11,18,32,.10);
+}
+.gmAI .gmTradeDetailRows div:last-child{
+  border-bottom:none;
+  padding-bottom:0;
+}
+
+.gmAI .gmTradeDetailRows span{
+  color:rgba(11,18,32,.62);
+  font-size:13px;
+}
+.gmAI .gmTradeDetailRows b{
+  color:#0b1220;
+  font-size:13px;
+  text-align:right;
+}
+
+.gmAI .gmTradeNarrative{
+  margin-top:16px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.gmAI .gmTradeNarrativeBlock{
+  border-radius:18px;
+  border:1px solid rgba(11,18,32,.08);
+  background:rgba(11,18,32,.025);
+  padding:16px;
+}
+
+.gmAI .gmTradeNarrativeBlock .h{
+  font-size:13px;
+  font-weight:900;
+  color:#0b1220;
+  margin-bottom:8px;
+}
+
+.gmAI .gmTradeNarrativeBlock p{
+  margin:0;
+  color:rgba(11,18,32,.74);
+  line-height:1.65;
+  font-size:13px;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 980px){
+  .gmAI .gmReportSummary{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gmAI .gmTradeMidLine{
+    grid-template-columns: 1fr;
+  }
+
+  .gmAI .gmTradeBottomLine{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gmAI .gmTradeDetailGrid{
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px){
+  .gmAI .gmReportSummary{
+    grid-template-columns: 1fr;
+  }
+
+  .gmAI .gmTradeReportRow{
+    padding:14px;
+    align-items:flex-start;
+  }
+
+  .gmAI .gmTradeTopLine{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .gmAI .gmTradePnl{
+    text-align:left;
+  }
+
+  .gmAI .gmTradeBottomLine{
+    grid-template-columns: 1fr;
+  }
+
+  .gmAI .gmTradeArrow{
+    display:none;
+  }
+
+  .gmAI .gmTradeHero{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .gmAI .gmTradeHeroPair{
+    font-size:20px;
+  }
+}
+
+/* =========================================
+   EXTRA UPGRADES FOR COIN MODAL / MARKETS / REPORTS
+========================================= */
+
+.gmAI .gmModalTall{
+  max-height: min(90vh, 880px);
+}
+
+.gmAI .gmModalListTall{
+  max-height: 52vh;
+  overflow: auto;
+}
+
+.gmAI .gmReportSummary6{
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.gmAI .gmHeatGrid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap:12px;
+}
+
+.gmAI .gmHeatCard{
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.14);
+  padding:14px;
+}
+
+.gmAI .gmHeatTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.gmAI .gmHeatCard .pair{
+  font-weight:900;
+  color:rgba(245,247,251,.94);
+  font-size:14px;
+}
+
+.gmAI .gmHeatCard .move{
+  font-weight:900;
+  font-size:13px;
+}
+
+.gmAI .gmHeatMeta{
+  margin-top:8px;
+  color:var(--mut2);
+  font-size:12px;
+}
+
+.gmAI .gmReportContextCard{
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.10);
+  background:linear-gradient(135deg, rgba(255,255,255,.05), rgba(25,195,125,.05));
+  padding:14px;
+}
+
+.gmAI .gmReportContextTitle{
+  font-weight:900;
+  font-size:14px;
+  color:#fff;
+}
+
+.gmAI .gmReportContextText{
+  margin-top:8px;
+  color:rgba(245,247,251,.82);
+  line-height:1.55;
+  font-size:13px;
+}
+
+.gmAI .gmReportContextCoins{
+  margin-top:10px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+@media (max-width: 1180px){
+  .gmAI .gmReportSummary6{
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .gmAI .gmHeatGrid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px){
+  .gmAI .gmReportSummary6{
+    grid-template-columns: 1fr;
+  }
+
+  .gmAI .gmHeatGrid{
+    grid-template-columns: 1fr;
+  }
+
+  .gmAI .gmModalListTall{
+    max-height: 48vh;
+  }
+}

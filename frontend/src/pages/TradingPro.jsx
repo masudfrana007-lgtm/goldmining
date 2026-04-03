@@ -1,17 +1,71 @@
-// TradingPro.jsx
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./TradingPro.css";
 
-const API = "https://data-api.binance.vision";
+const REST_BASE = "https://data-api.binance.vision/api/v3";
+const WS_BASE = "wss://stream.binance.com:9443/ws";
+const HISTORY_KEY = "tradingpro_history_v1";
+const FAVORITES_KEY = "tradingpro_favorites_v1";
 
-/* ---------------- helpers ---------------- */
+const PAIRS = [
+  { symbol: "BTCUSDT", label: "BTC/USDT", payout: 92, seed: 45000, baseAsset: "BTC", quoteAsset: "USDT" },
+  { symbol: "ETHUSDT", label: "ETH/USDT", payout: 88, seed: 2500, baseAsset: "ETH", quoteAsset: "USDT" },
+  { symbol: "BNBUSDT", label: "BNB/USDT", payout: 86, seed: 600, baseAsset: "BNB", quoteAsset: "USDT" },
+  { symbol: "SOLUSDT", label: "SOL/USDT", payout: 90, seed: 140, baseAsset: "SOL", quoteAsset: "USDT" },
+  { symbol: "XRPUSDT", label: "XRP/USDT", payout: 84, seed: 0.55, baseAsset: "XRP", quoteAsset: "USDT" },
+  { symbol: "ADAUSDT", label: "ADA/USDT", payout: 85, seed: 0.62, baseAsset: "ADA", quoteAsset: "USDT" },
+  { symbol: "DOGEUSDT", label: "DOGE/USDT", payout: 83, seed: 0.12, baseAsset: "DOGE", quoteAsset: "USDT" },
+  { symbol: "TRXUSDT", label: "TRX/USDT", payout: 82, seed: 0.13, baseAsset: "TRX", quoteAsset: "USDT" },
+  { symbol: "AVAXUSDT", label: "AVAX/USDT", payout: 87, seed: 38, baseAsset: "AVAX", quoteAsset: "USDT" },
+  { symbol: "DOTUSDT", label: "DOT/USDT", payout: 84, seed: 7.2, baseAsset: "DOT", quoteAsset: "USDT" },
+  { symbol: "LINKUSDT", label: "LINK/USDT", payout: 86, seed: 18, baseAsset: "LINK", quoteAsset: "USDT" },
+  { symbol: "MATICUSDT", label: "MATIC/USDT", payout: 83, seed: 0.95, baseAsset: "MATIC", quoteAsset: "USDT" },
+  { symbol: "LTCUSDT", label: "LTC/USDT", payout: 84, seed: 82, baseAsset: "LTC", quoteAsset: "USDT" },
+  { symbol: "BCHUSDT", label: "BCH/USDT", payout: 82, seed: 420, baseAsset: "BCH", quoteAsset: "USDT" },
+  { symbol: "ATOMUSDT", label: "ATOM/USDT", payout: 83, seed: 10.5, baseAsset: "ATOM", quoteAsset: "USDT" },
+  { symbol: "NEARUSDT", label: "NEAR/USDT", payout: 84, seed: 5.8, baseAsset: "NEAR", quoteAsset: "USDT" },
+  { symbol: "APTUSDT", label: "APT/USDT", payout: 84, seed: 9.5, baseAsset: "APT", quoteAsset: "USDT" },
+  { symbol: "ARBUSDT", label: "ARB/USDT", payout: 83, seed: 1.1, baseAsset: "ARB", quoteAsset: "USDT" },
+  { symbol: "OPUSDT", label: "OP/USDT", payout: 83, seed: 2.3, baseAsset: "OP", quoteAsset: "USDT" },
+  { symbol: "FILUSDT", label: "FIL/USDT", payout: 82, seed: 6.4, baseAsset: "FIL", quoteAsset: "USDT" },
+];
+
+const INDICATORS = [
+  { key: "ema9", label: "EMA 9" },
+  { key: "ema21", label: "EMA 21" },
+  { key: "sma20", label: "SMA 20" },
+  { key: "bb", label: "Bollinger" },
+  { key: "zigzag", label: "ZigZag" },
+];
+
+const MENU_ITEMS = [
+  { key: "trade", label: "TRADE" },
+  { key: "support", label: "SUPPORT" },
+  { key: "account", label: "ACCOUNT" },
+  { key: "tournaments", label: "TOURNA-\nMENTS" },
+  { key: "market", label: "MARKET" },
+  { key: "more", label: "MORE" },
+];
+
+const QUOTE_FILTERS = ["ALL", "USDT", "BTC"];
+const SORT_OPTIONS = [
+  { key: "marketcap", label: "Market Cap" },
+  { key: "volume", label: "Top Volume" },
+  { key: "favorites", label: "Favorites" },
+  { key: "az", label: "A-Z" },
+];
+
+function cls(...arr) {
+  return arr.filter(Boolean).join(" ");
+}
+
 function nfmt(n, d = 2) {
   const num = Number(n || 0);
   return new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: d,
     minimumFractionDigits: d,
+    maximumFractionDigits: d,
   }).format(num);
 }
+
 function compact(n) {
   const num = Number(n || 0);
   return new Intl.NumberFormat("en-US", {
@@ -19,1348 +73,2263 @@ function compact(n) {
     maximumFractionDigits: 2,
   }).format(num);
 }
-function cls(...a) {
-  return a.filter(Boolean).join(" ");
-}
-async function jget(url, signal) {
-  const r = await fetch(url, { signal });
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  return r.json();
+
+function pad2(v) {
+  return String(v).padStart(2, "0");
 }
 
-/** Smooth number animation */
-function useAnimatedNumber(value, duration = 380) {
-  const [v, setV] = useState(value);
-  const rafRef = useRef(0);
-  const fromRef = useRef(value);
+function formatClock(ts) {
+  const d = new Date(ts);
+  return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+}
 
-  useEffect(() => {
-    const from = Number(fromRef.current || 0);
-    const to = Number(value || 0);
-    if (!isFinite(to)) return;
+function formatDateTime(ts) {
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(
+    d.getHours()
+  )}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+}
 
-    const start = performance.now();
-    cancelAnimationFrame(rafRef.current);
+function formatCountdown(sec) {
+  const s = Math.max(0, Math.floor(sec));
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${pad2(m)}:${pad2(r)}`;
+}
 
-    function tick(now) {
-      const t = Math.min(1, (now - start) / duration);
-      const e = 1 - Math.pow(1 - t, 3); // easeOutCubic
-      const cur = from + (to - from) * e;
-      setV(cur);
-      if (t < 1) rafRef.current = requestAnimationFrame(tick);
-      else fromRef.current = to;
+function getDigits(price) {
+  const p = Number(price || 0);
+  if (p >= 1000) return 2;
+  if (p >= 100) return 3;
+  if (p >= 1) return 4;
+  return 6;
+}
+
+function normalizeKline(k) {
+  return {
+    openTime: Number(k[0]),
+    open: Number(k[1]),
+    high: Number(k[2]),
+    low: Number(k[3]),
+    close: Number(k[4]),
+    volume: Number(k[5]),
+    closeTime: Number(k[6]),
+  };
+}
+
+function createFallbackCandles(count = 140, startPrice = 45000) {
+  const out = [];
+  let price = startPrice;
+  const start = Date.now() - count * 60_000;
+
+  for (let i = 0; i < count; i++) {
+    const open = price;
+    const move = (Math.random() - 0.5) * startPrice * 0.003;
+    const close = Math.max(0.0001, open + move);
+    const high = Math.max(open, close) + Math.random() * startPrice * 0.0013;
+    const low = Math.min(open, close) - Math.random() * startPrice * 0.0013;
+
+    out.push({
+      openTime: start + i * 60_000,
+      open,
+      high,
+      low,
+      close,
+      volume: 100 + Math.random() * 800,
+      closeTime: start + (i + 1) * 60_000 - 1,
+    });
+
+    price = close;
+  }
+
+  return out;
+}
+
+function linePath(points) {
+  const valid = points.filter((p) => p && Number.isFinite(p.x) && Number.isFinite(p.y));
+  if (!valid.length) return "";
+  return valid
+    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`)
+    .join(" ");
+}
+
+function areaPath(upper, lower) {
+  const u = upper.filter(Boolean);
+  const l = lower.filter(Boolean);
+  if (!u.length || !l.length) return "";
+  let d = `M ${u[0].x.toFixed(2)} ${u[0].y.toFixed(2)} `;
+  for (let i = 1; i < u.length; i++) d += `L ${u[i].x.toFixed(2)} ${u[i].y.toFixed(2)} `;
+  for (let i = l.length - 1; i >= 0; i--) d += `L ${l[i].x.toFixed(2)} ${l[i].y.toFixed(2)} `;
+  d += "Z";
+  return d;
+}
+
+function calcSMA(values, period) {
+  const out = new Array(values.length).fill(null);
+  let sum = 0;
+  for (let i = 0; i < values.length; i++) {
+    sum += values[i];
+    if (i >= period) sum -= values[i - period];
+    if (i >= period - 1) out[i] = sum / period;
+  }
+  return out;
+}
+
+function calcEMA(values, period) {
+  const out = new Array(values.length).fill(null);
+  const k = 2 / (period + 1);
+  let ema = null;
+
+  for (let i = 0; i < values.length; i++) {
+    if (i < period - 1) continue;
+
+    if (i === period - 1) {
+      let seed = 0;
+      for (let j = i - period + 1; j <= i; j++) seed += values[j];
+      ema = seed / period;
+      out[i] = ema;
+    } else {
+      ema = values[i] * k + ema * (1 - k);
+      out[i] = ema;
+    }
+  }
+
+  return out;
+}
+
+function calcBollinger(values, period = 20, mult = 2) {
+  const mid = calcSMA(values, period);
+  const upper = new Array(values.length).fill(null);
+  const lower = new Array(values.length).fill(null);
+
+  for (let i = period - 1; i < values.length; i++) {
+    const slice = values.slice(i - period + 1, i + 1);
+    const mean = mid[i];
+    const variance = slice.reduce((acc, v) => acc + (v - mean) ** 2, 0) / period;
+    const sd = Math.sqrt(variance);
+    upper[i] = mean + mult * sd;
+    lower[i] = mean - mult * sd;
+  }
+
+  return { mid, upper, lower };
+}
+
+function calcZigZag(candles, thresholdPct = 0.003) {
+  if (!candles || candles.length < 3) return [];
+
+  const pivots = [];
+  let lastPivotIndex = 0;
+  let lastPivotPrice = candles[0].close;
+  let trend = 0;
+
+  for (let i = 1; i < candles.length; i++) {
+    const high = candles[i].high;
+    const low = candles[i].low;
+
+    if (trend === 0) {
+      const upMove = (high - lastPivotPrice) / lastPivotPrice;
+      const downMove = (lastPivotPrice - low) / lastPivotPrice;
+
+      if (upMove >= thresholdPct) {
+        trend = 1;
+        pivots.push({ index: lastPivotIndex, price: lastPivotPrice });
+        lastPivotIndex = i;
+        lastPivotPrice = high;
+      } else if (downMove >= thresholdPct) {
+        trend = -1;
+        pivots.push({ index: lastPivotIndex, price: lastPivotPrice });
+        lastPivotIndex = i;
+        lastPivotPrice = low;
+      } else {
+        if (
+          Math.abs(candles[i].close - candles[lastPivotIndex].close) >
+          Math.abs(lastPivotPrice - candles[lastPivotIndex].close)
+        ) {
+          lastPivotIndex = i;
+          lastPivotPrice = candles[i].close;
+        }
+      }
+      continue;
     }
 
-    rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [value, duration]);
+    if (trend === 1) {
+      if (high >= lastPivotPrice) {
+        lastPivotPrice = high;
+        lastPivotIndex = i;
+      } else {
+        const reversal = (lastPivotPrice - low) / lastPivotPrice;
+        if (reversal >= thresholdPct) {
+          pivots.push({ index: lastPivotIndex, price: lastPivotPrice });
+          trend = -1;
+          lastPivotPrice = low;
+          lastPivotIndex = i;
+        }
+      }
+    } else {
+      if (low <= lastPivotPrice) {
+        lastPivotPrice = low;
+        lastPivotIndex = i;
+      } else {
+        const reversal = (high - lastPivotPrice) / lastPivotPrice;
+        if (reversal >= thresholdPct) {
+          pivots.push({ index: lastPivotIndex, price: lastPivotPrice });
+          trend = 1;
+          lastPivotPrice = high;
+          lastPivotIndex = i;
+        }
+      }
+    }
+  }
 
-  return v;
+  pivots.push({ index: lastPivotIndex, price: lastPivotPrice });
+
+  const cleaned = [];
+  for (const p of pivots) {
+    const last = cleaned[cleaned.length - 1];
+    if (!last || last.index !== p.index) cleaned.push(p);
+  }
+
+  return cleaned;
 }
 
-/* ---------------- Candlestick canvas ---------------- */
+function useElementSize(ref) {
+  const [size, setSize] = useState({ width: 900, height: 560 });
 
-function fmtTime(ms) {
+  useEffect(() => {
+    if (!ref.current) return;
+    const el = ref.current;
+
+    const update = () => {
+      const rect = el.getBoundingClientRect();
+      setSize({
+        width: Math.max(320, rect.width),
+        height: Math.max(320, rect.height),
+      });
+    };
+
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener("resize", update);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, [ref]);
+
+  return size;
+}
+
+function getStoredHistory() {
   try {
-    const d = new Date(ms);
-    return d.toLocaleString([], { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
-    return "";
+    return [];
   }
 }
 
-/**
- * candles: [{t, o, h, l, c}]
- * onHover: (candle|null) => void
- */
-function CandleCanvas({ candles = [], livePrice = 0, isUp = true, onHover }) {
-  const ref = useRef(null);
-  const [hoverIdx, setHoverIdx] = useState(null);
+function saveHistory(history) {
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  } catch {}
+}
 
-  const draw = useCallback(() => {
-    const c = ref.current;
-    if (!c) return;
-    const ctx = c.getContext("2d");
-    const dpr = window.devicePixelRatio || 1;
+function getStoredFavorites() {
+  try {
+    const raw = localStorage.getItem(FAVORITES_KEY);
+    if (!raw) return ["BTCUSDT", "ETHUSDT", "SOLUSDT"];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : ["BTCUSDT", "ETHUSDT", "SOLUSDT"];
+  } catch {
+    return ["BTCUSDT", "ETHUSDT", "SOLUSDT"];
+  }
+}
 
-    const w = c.clientWidth;
-    const h = c.clientHeight;
+function saveFavorites(favorites) {
+  try {
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+  } catch {}
+}
 
-    c.width = Math.floor(w * dpr);
-    c.height = Math.floor(h * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, w, h);
+function coinLogoUrl(base) {
+  return `https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/128/color/${String(
+    base || ""
+  ).toLowerCase()}.png`;
+}
 
-    // background
-    ctx.fillStyle = "rgba(0,0,0,0)";
-    ctx.fillRect(0, 0, w, h);
+function marketCapRank(base) {
+  const ranks = {
+    BTC: 1,
+    ETH: 2,
+    BNB: 3,
+    SOL: 4,
+    XRP: 5,
+    DOGE: 6,
+    ADA: 7,
+    TRX: 8,
+    AVAX: 9,
+    DOT: 10,
+    LINK: 11,
+    BCH: 12,
+    LTC: 13,
+    NEAR: 14,
+    APT: 15,
+    ATOM: 16,
+    FIL: 17,
+    OP: 18,
+    ARB: 19,
+    MATIC: 20,
+  };
+  return ranks[base] || 9999;
+}
 
-    if (!candles.length) {
-      ctx.fillStyle = "rgba(231,238,249,.65)";
-      ctx.font = "600 13px ui-sans-serif,system-ui";
-      ctx.fillText("Loading chart…", 18, 28);
-      return;
+function buildReportStats(list) {
+  const totalTrades = list.length;
+  const wins = list.filter((h) => h.status === "won").length;
+  const losses = list.filter((h) => h.status === "lost").length;
+  const net = list.reduce((sum, h) => sum + Number(h.pnl || 0), 0);
+  const totalInvested = list.reduce((sum, h) => sum + Number(h.amount || 0), 0);
+  const winRate = totalTrades ? ((wins / totalTrades) * 100).toFixed(2) : "0.00";
+
+  const sortedByPnl = [...list].sort((a, b) => Number(b.pnl || 0) - Number(a.pnl || 0));
+
+  return {
+    totalTrades,
+    wins,
+    losses,
+    net,
+    totalInvested,
+    winRate,
+    bestTrade: sortedByPnl[0] || null,
+    worstTrade: sortedByPnl[sortedByPnl.length - 1] || null,
+  };
+}
+
+function Icon({ name }) {
+  const common = {
+    width: 18,
+    height: 18,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+  };
+
+  switch (name) {
+    case "menu":
+      return (
+        <svg {...common}>
+          <path d="M4 7h16" />
+          <path d="M4 12h16" />
+          <path d="M4 17h16" />
+        </svg>
+      );
+    case "trade":
+      return (
+        <svg {...common}>
+          <rect x="4" y="5" width="16" height="12" rx="2" />
+          <path d="M7 13l3-3 2 2 5-5" />
+        </svg>
+      );
+    case "support":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M9.5 9a2.5 2.5 0 1 1 4.5 1.5c-.8.8-1.8 1.3-2 2.5" />
+          <path d="M12 17h.01" />
+        </svg>
+      );
+    case "account":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 20a8 8 0 0 1 16 0" />
+        </svg>
+      );
+    case "trophy":
+      return (
+        <svg {...common}>
+          <path d="M8 21h8" />
+          <path d="M12 17v4" />
+          <path d="M7 4h10v4a5 5 0 0 1-10 0V4Z" />
+          <path d="M17 5h2a1 1 0 0 1 1 1v1a4 4 0 0 1-4 4" />
+          <path d="M7 5H5a1 1 0 0 0-1 1v1a4 4 0 0 0 4 4" />
+        </svg>
+      );
+    case "market":
+      return (
+        <svg {...common}>
+          <path d="M4 19h16" />
+          <path d="M7 15V9" />
+          <path d="M12 15V5" />
+          <path d="M17 15v-7" />
+        </svg>
+      );
+    case "dots":
+      return (
+        <svg {...common}>
+          <circle cx="6" cy="12" r="1.5" fill="currentColor" stroke="none" />
+          <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
+          <circle cx="18" cy="12" r="1.5" fill="currentColor" stroke="none" />
+        </svg>
+      );
+    case "bell":
+      return (
+        <svg {...common}>
+          <path d="M6 8a6 6 0 1 1 12 0c0 6 3 6 3 8H3c0-2 3-2 3-8" />
+          <path d="M10 20a2 2 0 0 0 4 0" />
+        </svg>
+      );
+    case "plus":
+      return (
+        <svg {...common}>
+          <path d="M12 5v14" />
+          <path d="M5 12h14" />
+        </svg>
+      );
+    case "minus":
+      return (
+        <svg {...common}>
+          <path d="M5 12h14" />
+        </svg>
+      );
+    case "up":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 16V8" />
+          <path d="m8.5 11.5 3.5-3.5 3.5 3.5" />
+        </svg>
+      );
+    case "down":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 8v8" />
+          <path d="m8.5 12.5 3.5 3.5 3.5-3.5" />
+        </svg>
+      );
+    case "clock":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+      );
+    case "pen":
+      return (
+        <svg {...common}>
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" />
+        </svg>
+      );
+    case "cross":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="5" />
+          <path d="M12 2v3" />
+          <path d="M12 19v3" />
+          <path d="M2 12h3" />
+          <path d="M19 12h3" />
+        </svg>
+      );
+    case "wave":
+      return (
+        <svg {...common}>
+          <path d="M4 15c2-6 4 6 8 0s6 6 8 0" />
+        </svg>
+      );
+    case "mute":
+      return (
+        <svg {...common}>
+          <path d="M11 5 6 9H3v6h3l5 4V5Z" />
+          <path d="m17 9 4 6" />
+          <path d="m21 9-4 6" />
+        </svg>
+      );
+    case "history":
+      return (
+        <svg {...common}>
+          <path d="M3 12a9 9 0 1 0 3-6.7" />
+          <path d="M3 4v5h5" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+      );
+    case "wallet":
+      return (
+        <svg {...common}>
+          <path d="M3 7h17a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H3z" />
+          <path d="M3 7V6a2 2 0 0 1 2-2h13" />
+          <path d="M16 12h5" />
+        </svg>
+      );
+    case "star":
+      return (
+        <svg {...common}>
+          <path d="m12 3 2.8 5.67 6.26.91-4.53 4.42 1.07 6.25L12 17.27 6.4 20.25l1.07-6.25L2.94 9.58l6.26-.91L12 3Z" />
+        </svg>
+      );
+    case "search":
+      return (
+        <svg {...common}>
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+function SideMenu({ activeMenu, setActiveMenu, mobileOpen, setMobileOpen }) {
+  const getIcon = (key) => {
+    switch (key) {
+      case "trade":
+        return "trade";
+      case "support":
+        return "support";
+      case "account":
+        return "account";
+      case "tournaments":
+        return "trophy";
+      case "market":
+        return "market";
+      default:
+        return "dots";
     }
-
-    const padL = 46;
-    const padR = 16;
-    const padT = 16;
-    const padB = 28;
-
-    const innerW = Math.max(10, w - padL - padR);
-    const innerH = Math.max(10, h - padT - padB);
-
-    const lows = candles.map((x) => x.l);
-    const highs = candles.map((x) => x.h);
-    const min = Math.min(...lows);
-    const max = Math.max(...highs);
-    const span = max - min || 1;
-
-    const yOf = (price) => padT + ((max - price) / span) * innerH;
-
-    // grid lines
-    ctx.strokeStyle = "rgba(255,255,255,0.06)";
-    ctx.lineWidth = 1;
-    for (let i = 0; i <= 5; i++) {
-      const yy = padT + (i * innerH) / 5;
-      ctx.beginPath();
-      ctx.moveTo(padL, yy);
-      ctx.lineTo(w - padR, yy);
-      ctx.stroke();
-    }
-    for (let i = 0; i <= 6; i++) {
-      const xx = padL + (i * innerW) / 6;
-      ctx.beginPath();
-      ctx.moveTo(xx, padT);
-      ctx.lineTo(xx, h - padB);
-      ctx.stroke();
-    }
-
-    // Y labels (max/mid/min)
-    ctx.fillStyle = "rgba(231,238,249,.55)";
-    ctx.font = "700 11px ui-sans-serif,system-ui";
-    const mid = (min + max) / 2;
-    ctx.fillText(String(nfmt(max, 2)), 10, padT + 10);
-    ctx.fillText(String(nfmt(mid, 2)), 10, yOf(mid) + 4);
-    ctx.fillText(String(nfmt(min, 2)), 10, h - padB);
-
-    const N = candles.length;
-    const step = innerW / N;
-    const bodyW = Math.max(4, Math.min(10, step * 0.62));
-
-    // draw candles
-    for (let i = 0; i < N; i++) {
-      const x = padL + i * step + step * 0.5;
-      const cd = candles[i];
-
-      const yH = yOf(cd.h);
-      const yL = yOf(cd.l);
-      const yO = yOf(cd.o);
-      const yC = yOf(cd.c);
-
-      const up = cd.c >= cd.o;
-      const color = up ? "rgba(0,231,156,0.98)" : "rgba(255,77,79,0.98)";
-      const soft = up ? "rgba(0,231,156,0.16)" : "rgba(255,77,79,0.16)";
-
-      // wick
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.moveTo(x, yH);
-      ctx.lineTo(x, yL);
-      ctx.stroke();
-
-      // body
-      const top = Math.min(yO, yC);
-      const bot = Math.max(yO, yC);
-      const bh = Math.max(2.5, bot - top);
-
-      ctx.fillStyle = soft;
-      ctx.fillRect(x - bodyW / 2, top, bodyW, bh);
-
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.2;
-      ctx.strokeRect(x - bodyW / 2, top, bodyW, bh);
-    }
-
-    // current live price line
-    if (livePrice) {
-      const yy = yOf(livePrice);
-      ctx.setLineDash([6, 6]);
-      ctx.strokeStyle = isUp ? "rgba(0,231,156,0.42)" : "rgba(255,77,79,0.42)";
-      ctx.lineWidth = 1.1;
-      ctx.beginPath();
-      ctx.moveTo(padL, yy);
-      ctx.lineTo(w - padR, yy);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // price tag
-      const tag = nfmt(livePrice, 4);
-      ctx.fillStyle = isUp ? "rgba(0,231,156,0.16)" : "rgba(255,77,79,0.16)";
-      ctx.strokeStyle = isUp ? "rgba(0,231,156,0.30)" : "rgba(255,77,79,0.30)";
-      ctx.lineWidth = 1;
-      const tw = ctx.measureText(tag).width + 14;
-      const tx = w - padR - tw;
-      const ty = Math.max(padT + 6, Math.min(h - padB - 18, yy - 10));
-      ctx.beginPath();
-      ctx.roundRect(tx, ty, tw, 18, 9);
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = "rgba(231,238,249,.92)";
-      ctx.fillText(tag, tx + 7, ty + 13);
-    }
-
-    // hover crosshair
-    if (hoverIdx != null && candles[hoverIdx]) {
-      const x = padL + hoverIdx * step + step * 0.5;
-      const cd = candles[hoverIdx];
-
-      ctx.strokeStyle = "rgba(255,255,255,0.25)";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(x, padT);
-      ctx.lineTo(x, h - padB);
-      ctx.stroke();
-
-      const yy = yOf(cd.c);
-      ctx.beginPath();
-      ctx.moveTo(padL, yy);
-      ctx.lineTo(w - padR, yy);
-      ctx.stroke();
-
-      // dot
-      ctx.fillStyle = "rgba(231,238,249,0.95)";
-      ctx.beginPath();
-      ctx.arc(x, yy, 3.5, 0, Math.PI * 2);
-      ctx.fill();
-
-      // tooltip
-      const lines = [
-        fmtTime(cd.t),
-        `O ${nfmt(cd.o, 4)}  H ${nfmt(cd.h, 4)}`,
-        `L ${nfmt(cd.l, 4)}  C ${nfmt(cd.c, 4)}`,
-      ];
-      ctx.font = "800 11px ui-sans-serif,system-ui";
-      const maxW = Math.max(...lines.map((s) => ctx.measureText(s).width));
-      const bw = maxW + 16;
-      const bh = 50;
-
-      let bx = x + 12;
-      if (bx + bw > w - padR) bx = x - 12 - bw;
-      let by = padT + 10;
-      if (by + bh > h - padB) by = h - padB - bh - 8;
-
-      ctx.fillStyle = "rgba(12,18,26,0.92)";
-      ctx.strokeStyle = "rgba(255,255,255,0.10)";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.roundRect(bx, by, bw, bh, 12);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = "rgba(231,238,249,.92)";
-      ctx.fillText(lines[0], bx + 8, by + 16);
-      ctx.fillStyle = "rgba(231,238,249,.78)";
-      ctx.fillText(lines[1], bx + 8, by + 32);
-      ctx.fillText(lines[2], bx + 8, by + 46);
-    }
-  }, [candles, livePrice, isUp, hoverIdx]);
-
-  useEffect(() => {
-    draw();
-    const onResize = () => draw();
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [draw]);
-
-  useEffect(() => {
-    if (typeof onHover !== "function") return;
-    if (hoverIdx == null) onHover(null);
-    else onHover(candles[hoverIdx] || null);
-  }, [hoverIdx, candles, onHover]);
+  };
 
   return (
-    <canvas
-      className="tpCanvas"
-      ref={ref}
-      onMouseMove={(e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = e.clientX - rect.left;
+    <>
+      <aside className={cls("tpSidebar", mobileOpen && "mobileOpen")}>
+        <div className="tpSidebarTop">
+          <button className="tpIconBtn" onClick={() => setMobileOpen(false)}>
+            <Icon name="menu" />
+          </button>
+        </div>
 
-        const padL = 46;
-        const padR = 16;
-        const innerW = Math.max(10, rect.width - padL - padR);
+        <div className="tpSidebarNav">
+          {MENU_ITEMS.map((item) => (
+            <button
+              key={item.key}
+              className={cls("tpSideNav", activeMenu === item.key && "active")}
+              onClick={() => {
+                setActiveMenu(item.key);
+                setMobileOpen(false);
+              }}
+            >
+              <Icon name={getIcon(item.key)} />
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </div>
 
-        const rx = Math.max(0, Math.min(innerW, x - padL));
-        const idx = Math.floor((rx / innerW) * candles.length);
-        const clamped = Math.max(0, Math.min(candles.length - 1, idx));
-        setHoverIdx(clamped);
-      }}
-      onMouseLeave={() => setHoverIdx(null)}
-      onTouchMove={(e) => {
-        const t = e.touches?.[0];
-        if (!t) return;
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = t.clientX - rect.left;
+        <div className="tpSidebarBottom">
+          <div className="tpBottomToolRow">
+            <button className="tpIconBtn">
+              <Icon name="cross" />
+            </button>
+            <button className="tpIconBtn">
+              <Icon name="mute" />
+            </button>
+          </div>
+          <button className="tpHelpBtn">Help</button>
+        </div>
+      </aside>
 
-        const padL = 46;
-        const padR = 16;
-        const innerW = Math.max(10, rect.width - padL - padR);
-
-        const rx = Math.max(0, Math.min(innerW, x - padL));
-        const idx = Math.floor((rx / innerW) * candles.length);
-        const clamped = Math.max(0, Math.min(candles.length - 1, idx));
-        setHoverIdx(clamped);
-      }}
-      onTouchEnd={() => setHoverIdx(null)}
-    />
+      {mobileOpen && <div className="tpSidebarBackdrop" onClick={() => setMobileOpen(false)} />}
+    </>
   );
 }
 
-/* ---------------- main component ---------------- */
+function CandleChart({
+  candles,
+  price,
+  pairLabel,
+  payout,
+  indicators,
+  openTrades,
+  onToggleIndicator,
+}) {
+  const wrapRef = useRef(null);
+  const { width, height } = useElementSize(wrapRef);
+  const [hoverIndex, setHoverIndex] = useState(null);
+  const [smoothPrice, setSmoothPrice] = useState(price || 0);
 
-function tfToInterval(tf) {
-  return tf; // 15m, 1h, 4h, 1d
+  useEffect(() => {
+    if (!price) return;
+    let raf = 0;
+
+    const animate = () => {
+      setSmoothPrice((prev) => {
+        const next = prev + (price - prev) * 0.18;
+        if (Math.abs(price - next) < 0.000001) return price;
+        return next;
+      });
+      raf = requestAnimationFrame(animate);
+    };
+
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
+  }, [price]);
+
+  const digits = getDigits(price);
+  const visibleCount = 70;
+  const visibleStart = Math.max(0, candles.length - visibleCount);
+  const visible = candles.slice(visibleStart);
+  const fullCloses = candles.map((c) => c.close);
+
+  const leftPad = 12;
+  const rightPad = width < 700 ? 88 : 120;
+  const topPad = width < 700 ? 134 : 146;
+  const bottomPad = width < 700 ? 66 : 64;
+
+  const chartW = Math.max(100, width - leftPad - rightPad);
+  const chartH = Math.max(100, height - topPad - bottomPad);
+  const step = chartW / Math.max(visible.length, 1);
+
+  const fullEma9 = calcEMA(fullCloses, 9);
+  const fullEma21 = calcEMA(fullCloses, 21);
+  const fullSma20 = calcSMA(fullCloses, 20);
+  const fullBb = calcBollinger(fullCloses, 20, 2);
+  const fullZigZags = calcZigZag(candles, 0.003);
+
+  const ema9 = fullEma9.slice(visibleStart);
+  const ema21 = fullEma21.slice(visibleStart);
+  const sma20 = fullSma20.slice(visibleStart);
+  const bb = {
+    upper: fullBb.upper.slice(visibleStart),
+    lower: fullBb.lower.slice(visibleStart),
+    mid: fullBb.mid.slice(visibleStart),
+  };
+
+  const zigzags = fullZigZags
+    .filter((z) => z.index >= visibleStart)
+    .map((z) => ({ ...z, visibleIndex: z.index - visibleStart }));
+
+  const indicatorValues = [
+    ...ema9.filter((v) => v != null),
+    ...ema21.filter((v) => v != null),
+    ...sma20.filter((v) => v != null),
+    ...bb.upper.filter((v) => v != null),
+    ...bb.lower.filter((v) => v != null),
+    ...zigzags.map((z) => z.price),
+  ];
+
+  const rawHigh = Math.max(...visible.map((c) => c.high), ...indicatorValues, smoothPrice || 0);
+  const rawLow = Math.min(...visible.map((c) => c.low), ...indicatorValues, smoothPrice || Number.MAX_SAFE_INTEGER);
+  const range = Math.max(rawHigh - rawLow, Math.abs(rawHigh || 1) * 0.002 || 1);
+  const yMax = rawHigh + range * 0.12;
+  const yMin = rawLow - range * 0.12;
+
+  const y = (v) => topPad + ((yMax - v) / (yMax - yMin || 1)) * chartH;
+  const x = (i) => leftPad + i * step + step / 2;
+
+  const activeIndex = hoverIndex == null ? visible.length - 1 : hoverIndex;
+  const activeCandle = visible[Math.max(0, Math.min(activeIndex, visible.length - 1))];
+
+  const gridY = 8;
+  const gridX = Math.min(10, Math.max(5, Math.floor(width / 120)));
+
+  const handleMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const xx = e.clientX - rect.left - leftPad;
+    const i = Math.floor(xx / step);
+    if (i >= 0 && i < visible.length) setHoverIndex(i);
+  };
+
+  const handleLeave = () => setHoverIndex(null);
+
+  const ema9Points = ema9.map((v, i) => (v == null ? null : { x: x(i), y: y(v) }));
+  const ema21Points = ema21.map((v, i) => (v == null ? null : { x: x(i), y: y(v) }));
+  const sma20Points = sma20.map((v, i) => (v == null ? null : { x: x(i), y: y(v) }));
+  const bbUpperPoints = bb.upper.map((v, i) => (v == null ? null : { x: x(i), y: y(v) }));
+  const bbLowerPoints = bb.lower.map((v, i) => (v == null ? null : { x: x(i), y: y(v) }));
+  const bbMidPoints = bb.mid.map((v, i) => (v == null ? null : { x: x(i), y: y(v) }));
+  const zigzagPoints = zigzags.map((z) => ({ x: x(z.visibleIndex), y: y(z.price) }));
+
+  const activeIndicatorItems = [
+    indicators.bb && {
+      key: "bb",
+      title: "BOLLINGER BANDS",
+      values: ["20", "2.00"],
+      dotClass: "is-bb",
+    },
+    indicators.ema9 && {
+      key: "ema9",
+      title: "MOVING AVERAGE",
+      values: ["EMA", "9"],
+      dotClass: "is-ema9",
+    },
+    indicators.ema21 && {
+      key: "ema21",
+      title: "MOVING AVERAGE",
+      values: ["EMA", "21"],
+      dotClass: "is-ema21",
+    },
+    indicators.sma20 && {
+      key: "sma20",
+      title: "MOVING AVERAGE",
+      values: ["SMA", "20"],
+      dotClass: "is-sma20",
+    },
+    indicators.zigzag && {
+      key: "zigzag",
+      title: "ZIG ZAG",
+      values: ["5", "12", "3"],
+      dotClass: "is-zigzag",
+    },
+  ].filter(Boolean);
+
+  return (
+    <div ref={wrapRef} className="tpChart">
+      <div className="tpChartTopRow">
+        <div className="tpChartTopLeft">
+          <div className="tpChartPercent">{payout}%</div>
+          <div className="tpChartNow">• {formatClock(Date.now())} UTC</div>
+        </div>
+
+        <div className="tpChartTopRight">
+          <div className="tpMiniStat positive">▲ 0.00%</div>
+          <div className="tpMiniStat">Vol {compact(activeCandle?.volume || 0)}</div>
+          <div className="tpMiniStat">Price {Number(smoothPrice || 0).toFixed(digits)}</div>
+        </div>
+      </div>
+
+      <div className="tpChartSubRow">
+        <span className="tpDot" />
+        <span>{formatClock(Date.now())} UTC</span>
+        <strong>{pairLabel}</strong>
+      </div>
+
+      <div className="tpPairInfoBadge">
+        <span className="tpPairInfoBadgeIcon">i</span>
+        <span>PAIR INFORMATION</span>
+      </div>
+
+      <div className="tpIndicatorTopBar">
+        {activeIndicatorItems.map((item) => (
+          <div key={item.key} className="tpIndicatorTopItem">
+            <span className="tpIndicatorTopTitle">{item.title}</span>
+            <span className={cls("tpIndicatorTopDot", item.dotClass)} />
+            <div className="tpIndicatorTopVals">
+              {item.values.map((v, i) => (
+                <span key={`${item.key}-${i}`} className="tpIndicatorTopVal">
+                  {v}
+                </span>
+              ))}
+            </div>
+            <button
+              className="tpIndicatorTopClose"
+              onClick={() => onToggleIndicator(item.key)}
+              aria-label={`Hide ${item.title}`}
+            >
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div className="tpChartSideTools">
+        <button className="tpTool">
+          <Icon name="pen" />
+        </button>
+        <button className="tpTool">
+          <Icon name="wave" />
+        </button>
+        <button className="tpTool">
+          <Icon name="cross" />
+        </button>
+        <button className="tpTool tpTf">1m</button>
+      </div>
+
+      <svg
+        className="tpChartSvg"
+        width={width}
+        height={height}
+        viewBox={`0 0 ${width} ${height}`}
+        onMouseMove={handleMove}
+        onMouseLeave={handleLeave}
+      >
+        <defs>
+          <linearGradient id="bbFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="rgba(122,132,255,0.18)" />
+            <stop offset="100%" stopColor="rgba(122,132,255,0.03)" />
+          </linearGradient>
+        </defs>
+
+        {Array.from({ length: gridY + 1 }).map((_, i) => {
+          const yy = topPad + (chartH / gridY) * i;
+          return <line key={`gy-${i}`} x1={leftPad} y1={yy} x2={width - rightPad} y2={yy} className="tpGridLine" />;
+        })}
+
+        {Array.from({ length: gridX + 1 }).map((_, i) => {
+          const xx = leftPad + (chartW / gridX) * i;
+          return (
+            <line
+              key={`gx-${i}`}
+              x1={xx}
+              y1={topPad}
+              x2={xx}
+              y2={height - bottomPad}
+              className="tpGridLine tpGridV"
+            />
+          );
+        })}
+
+        {Array.from({ length: gridY + 1 }).map((_, i) => {
+          const val = yMax - ((yMax - yMin) / gridY) * i;
+          const yy = topPad + (chartH / gridY) * i;
+          return (
+            <text key={`yl-${i}`} x={width - rightPad + 10} y={yy + 4} className="tpAxisText">
+              {Number(val).toFixed(digits)}
+            </text>
+          );
+        })}
+
+        {indicators.bb && (
+          <>
+            <path d={areaPath(bbUpperPoints, bbLowerPoints)} className="tpBbArea tpAnimLine" />
+            <path d={linePath(bbUpperPoints)} className="tpLine tpBbLine tpAnimLine" />
+            <path d={linePath(bbLowerPoints)} className="tpLine tpBbLine tpAnimLine" />
+            <path d={linePath(bbMidPoints)} className="tpLine tpBbMid tpAnimLine" />
+          </>
+        )}
+
+        {indicators.ema9 && <path d={linePath(ema9Points)} className="tpLine tpEma9 tpAnimLine" />}
+        {indicators.ema21 && <path d={linePath(ema21Points)} className="tpLine tpEma21 tpAnimLine" />}
+        {indicators.sma20 && <path d={linePath(sma20Points)} className="tpLine tpSma20 tpAnimLine" />}
+
+        {visible.map((c, i) => {
+          const green = c.close >= c.open;
+          const bodyW = Math.max(4, step * 0.62);
+          const xx = x(i);
+          const yOpen = y(c.open);
+          const yClose = y(c.close);
+          const yHigh = y(c.high);
+          const yLow = y(c.low);
+          const bodyY = Math.min(yOpen, yClose);
+          const bodyH = Math.max(2, Math.abs(yClose - yOpen));
+
+          return (
+            <g key={c.openTime} className="tpCandleGroup">
+              <line
+                x1={xx}
+                y1={yHigh}
+                x2={xx}
+                y2={yLow}
+                className={cls(green ? "tpWickUp" : "tpWickDown", "tpCandleWick")}
+              />
+              <rect
+                x={xx - bodyW / 2}
+                y={bodyY}
+                width={bodyW}
+                height={bodyH}
+                rx="1.4"
+                className={cls(green ? "tpBodyUp" : "tpBodyDown", "tpCandleBody")}
+              />
+            </g>
+          );
+        })}
+
+        {indicators.zigzag && zigzagPoints.length > 1 && <path d={linePath(zigzagPoints)} className="tpLine tpZigZag tpAnimLine" />}
+
+        {hoverIndex != null && activeCandle && (
+          <>
+            <line x1={x(hoverIndex)} y1={topPad} x2={x(hoverIndex)} y2={height - bottomPad} className="tpCrossHair" />
+            <line
+              x1={leftPad}
+              y1={y(activeCandle.close)}
+              x2={width - rightPad}
+              y2={y(activeCandle.close)}
+              className="tpCrossHair"
+            />
+          </>
+        )}
+
+        {openTrades.map((t, idx) => {
+          const yy = y(t.entryPrice);
+          return (
+            <g key={t.id}>
+              <line
+                x1={leftPad}
+                y1={yy}
+                x2={width - rightPad}
+                y2={yy}
+                className={t.side === "up" ? "tpTradeLineUp" : "tpTradeLineDown"}
+              />
+              <foreignObject x={leftPad + 6 + idx * 104} y={yy - 14} width="98" height="28">
+                <div className={cls("tpTradeMarker", t.side === "up" ? "up" : "down")}>
+                  <span>{t.side === "up" ? "↑" : "↓"}</span>
+                  <span>${t.amount}</span>
+                  <span>{formatCountdown(t.remainingMs / 1000)}</span>
+                </div>
+              </foreignObject>
+            </g>
+          );
+        })}
+
+        {!!smoothPrice && (
+          <>
+            <line x1={leftPad} y1={y(smoothPrice)} x2={width - rightPad} y2={y(smoothPrice)} className="tpPriceLine tpAnimPrice" />
+            <rect
+              x={width - rightPad + 3}
+              y={y(smoothPrice) - 12}
+              width={width < 700 ? 72 : 90}
+              height="24"
+              rx="11"
+              className="tpPriceBox tpAnimPrice"
+            />
+            <text
+              x={width - rightPad + (width < 700 ? 39 : 48)}
+              y={y(smoothPrice) + 4}
+              textAnchor="middle"
+              className="tpPriceText"
+            >
+              {Number(smoothPrice).toFixed(digits)}
+            </text>
+          </>
+        )}
+
+        {visible
+          .filter((_, i) => i % Math.max(1, Math.floor(visible.length / 8)) === 0)
+          .map((c, indexFromFilter, arr) => {
+            const realIndex = visible.findIndex((v) => v.openTime === c.openTime);
+            const d = new Date(c.openTime);
+            return (
+              <text key={`xl-${c.openTime}-${indexFromFilter}-${arr.length}`} x={x(realIndex)} y={height - 12} textAnchor="middle" className="tpAxisText">
+                {`${pad2(d.getHours())}:${pad2(d.getMinutes())}`}
+              </text>
+            );
+          })}
+      </svg>
+
+      <div className="tpOHLC">
+        <span>O {activeCandle ? activeCandle.open.toFixed(digits) : "--"}</span>
+        <span>H {activeCandle ? activeCandle.high.toFixed(digits) : "--"}</span>
+        <span>L {activeCandle ? activeCandle.low.toFixed(digits) : "--"}</span>
+        <span>C {activeCandle ? activeCandle.close.toFixed(digits) : "--"}</span>
+      </div>
+    </div>
+  );
+}
+
+function SupportPanel() {
+  return (
+    <div className="tpContentCard">
+      <div className="tpSectionTitle">Support Center</div>
+      <div className="tpGridInfo">
+        <div className="tpInfoBox">
+          <strong>Live Chat</strong>
+          <p>Connect with an operator for platform, deposit, withdrawal, and trading support.</p>
+        </div>
+        <div className="tpInfoBox">
+          <strong>FAQ</strong>
+          <p>Find quick answers about indicators, trade settlement, payout logic, and market timing.</p>
+        </div>
+        <div className="tpInfoBox">
+          <strong>Risk Notice</strong>
+          <p>Digital trading carries risk. Review market conditions carefully before opening trades.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ReportModal({ open, title, type = "summary", data, onClose }) {
+  if (!open || !data) return null;
+
+  return (
+    <div className="tpReportOverlay" onClick={onClose}>
+      <div className="tpReportModal" onClick={(e) => e.stopPropagation()}>
+        <div className="tpReportHead">
+          <div>
+            <div className="tpReportEyebrow">Professional Report</div>
+            <h3>{title}</h3>
+          </div>
+
+          <button className="tpReportClose" onClick={onClose} type="button">
+            ×
+          </button>
+        </div>
+
+        {type === "trade" ? (
+          <div className="tpReportGrid">
+
+            <div className="tpReportCard is-primary">
+              <span>Status</span>
+              <strong className={data.status === "won" ? "positive" : "negative"}>
+                {String(data.status || "").toUpperCase()}
+              </strong>
+            </div>
+
+            <div className="tpReportCard is-pair">
+              <span>Pair</span>
+              <strong>{data.pair}</strong>
+            </div>
+
+            <div className="tpReportCard is-direction">
+              <span>Direction</span>
+              <strong>{data.side === "up" ? "BUY" : "SELL"}</strong>
+            </div>
+
+            <div className="tpReportCard">
+              <span>Investment</span>
+              <strong>${nfmt(data.amount, 2)}</strong>
+            </div>
+
+            <div className="tpReportCard">
+              <span>Payout</span>
+              <strong>{data.payout}%</strong>
+            </div>
+
+            <div className={cls("tpReportCard", Number(data.pnl) >= 0 ? "is-profit" : "is-loss")}>
+              <span>Profit / Loss</span>
+              <strong className={Number(data.pnl) >= 0 ? "positive" : "negative"}>
+                {Number(data.pnl) >= 0 ? "+" : ""}${nfmt(data.pnl, 2)}
+              </strong>
+            </div>
+
+            <div className="tpReportCard">
+              <span>Entry Price</span>
+              <strong>{data.entryPriceFormatted}</strong>
+            </div>
+
+            <div className="tpReportCard">
+              <span>Exit Price</span>
+              <strong>{data.exitPriceFormatted}</strong>
+            </div>
+
+            <div className="tpReportCard wide">
+              <span>Opened At</span>
+              <strong>{formatDateTime(data.openedAt)}</strong>
+            </div>
+
+            <div className="tpReportCard wide">
+              <span>Closed At</span>
+              <strong>{formatDateTime(data.closedAt)}</strong>
+            </div>
+
+            <div className="tpReportCard wide">
+              <span>Trade ID</span>
+              <strong>{data.id}</strong>
+            </div>
+
+          </div>
+        ) : (
+          <div className="tpReportGrid">
+
+            <div className="tpReportCard">
+              <span>Total Trades</span>
+              <strong>{data.totalTrades}</strong>
+            </div>
+
+            <div className="tpReportCard">
+              <span>Wins</span>
+              <strong className="positive">{data.wins}</strong>
+            </div>
+
+            <div className="tpReportCard">
+              <span>Losses</span>
+              <strong className="negative">{data.losses}</strong>
+            </div>
+
+            <div className="tpReportCard">
+              <span>Win Rate</span>
+              <strong>{data.winRate}%</strong>
+            </div>
+
+            <div className="tpReportCard">
+              <span>Total Invested</span>
+              <strong>${nfmt(data.totalInvested, 2)}</strong>
+            </div>
+
+            <div className={cls("tpReportCard", Number(data.net) >= 0 ? "is-profit" : "is-loss")}>
+              <span>Net P/L</span>
+              <strong className={Number(data.net) >= 0 ? "positive" : "negative"}>
+                {Number(data.net) >= 0 ? "+" : ""}${nfmt(data.net, 2)}
+              </strong>
+            </div>
+
+            <div className="tpReportCard wide">
+              <span>Best Trade</span>
+              <strong>
+                {data.bestTrade
+                  ? `${data.bestTrade.pair} • ${
+                      Number(data.bestTrade.pnl) >= 0 ? "+" : ""
+                    }$${nfmt(data.bestTrade.pnl, 2)}`
+                  : "No data"}
+              </strong>
+            </div>
+
+            <div className="tpReportCard wide">
+              <span>Worst Trade</span>
+              <strong>
+                {data.worstTrade
+                  ? `${data.worstTrade.pair} • ${
+                      Number(data.worstTrade.pnl) >= 0 ? "+" : ""
+                    }$${nfmt(data.worstTrade.pnl, 2)}`
+                  : "No data"}
+              </strong>
+            </div>
+
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AccountPanel({ balance, history, onOpenReport }) {
+  const now = Date.now();
+  const oneDay = 24 * 60 * 60 * 1000;
+  const oneMonth = 30 * oneDay;
+
+  const totalStats = buildReportStats(history);
+  const dailyStats = buildReportStats(history.filter((h) => now - h.closedAt <= oneDay));
+  const monthlyStats = buildReportStats(history.filter((h) => now - h.closedAt <= oneMonth));
+
+  return (
+    <div className="tpContentCard">
+      <div className="tpSectionTitle">Account Overview</div>
+      <div className="tpStatsGrid">
+        <div className="tpStatCard">
+          <span>Balance</span>
+          <strong>${nfmt(balance, 2)}</strong>
+        </div>
+
+        <button
+          className="tpStatCard tpStatCardBtn"
+          type="button"
+          onClick={() => onOpenReport("Daily Report", "summary", dailyStats)}
+        >
+          <span>Daily Record</span>
+          <strong>{dailyStats.totalTrades} Trades</strong>
+        </button>
+
+        <button
+          className="tpStatCard tpStatCardBtn"
+          type="button"
+          onClick={() => onOpenReport("Monthly Report", "summary", monthlyStats)}
+        >
+          <span>Monthly Record</span>
+          <strong>{monthlyStats.totalTrades} Trades</strong>
+        </button>
+
+        <button
+          className="tpStatCard tpStatCardBtn"
+          type="button"
+          onClick={() => onOpenReport("Total Report", "summary", totalStats)}
+        >
+          <span>Total Record</span>
+          <strong>{totalStats.totalTrades} Trades</strong>
+        </button>
+
+        <div className="tpStatCard wide">
+          <span>Net P/L</span>
+          <strong className={totalStats.net >= 0 ? "positive" : "negative"}>
+            {totalStats.net >= 0 ? "+" : ""}${nfmt(totalStats.net, 2)}
+          </strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MarketPanel({ pair, price, candles }) {
+  const last = candles[candles.length - 1];
+  const prev = candles[candles.length - 2];
+  const change = last && prev ? last.close - prev.close : 0;
+  const digits = getDigits(price);
+
+  return (
+    <div className="tpContentCard">
+      <div className="tpSectionTitle">Market Snapshot</div>
+      <div className="tpGridInfo">
+        <div className="tpInfoBox">
+          <strong>Selected Pair</strong>
+          <p>{pair.label}</p>
+        </div>
+        <div className="tpInfoBox">
+          <strong>Current Price</strong>
+          <p>{Number(price || 0).toFixed(digits)}</p>
+        </div>
+        <div className="tpInfoBox">
+          <strong>Last Candle Change</strong>
+          <p className={change >= 0 ? "positive" : "negative"}>
+            {change >= 0 ? "+" : ""}
+            {change.toFixed(digits)}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TournamentsPanel() {
+  return (
+    <div className="tpContentCard">
+      <div className="tpSectionTitle">Tournaments</div>
+      <div className="tpGridInfo">
+        <div className="tpInfoBox">
+          <strong>Weekly Challenge</strong>
+          <p>Compete on return percentage and consistency with limited virtual capital.</p>
+        </div>
+        <div className="tpInfoBox">
+          <strong>Rank Rewards</strong>
+          <p>Premium competition layout for leaderboards, trading streaks, and result summaries.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MorePanel() {
+  return (
+    <div className="tpContentCard">
+      <div className="tpSectionTitle">More Options</div>
+      <div className="tpGridInfo">
+        <div className="tpInfoBox">
+          <strong>Platform Settings</strong>
+          <p>Customize chart visibility, trade panel behavior, and history display preferences.</p>
+        </div>
+        <div className="tpInfoBox">
+          <strong>Notifications</strong>
+          <p>Enable alerts for trade results, market activity, and account balance changes.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TradeHistoryPanel({ history, selectedId, setSelectedId, clearHistory, onOpenReport }) {
+  const selected = history.find((h) => h.id === selectedId) || history[0] || null;
+
+  return (
+    <div className="tpHistoryWrap">
+      <div className="tpHistoryHeader">
+        <div className="tpHistoryTitle">
+          <Icon name="history" />
+          <strong>Professional Trade History</strong>
+        </div>
+        <button className="tpClearBtn" onClick={clearHistory}>
+          Clear History
+        </button>
+      </div>
+
+      <div className="tpHistoryGrid">
+        <div className="tpHistoryList">
+          {!history.length ? (
+            <div className="tpEmptyTrades">No recorded trades yet.</div>
+          ) : (
+            history.map((item) => (
+              <button
+                key={item.id}
+                className={cls("tpHistoryItem", selected?.id === item.id && "active")}
+                onClick={() => {
+                  setSelectedId(item.id);
+                  onOpenReport("Finished Trade Report", "trade", item);
+                }}
+              >
+                <div className="tpHistoryItemTop">
+                  <strong>{item.pair}</strong>
+                  <span className={item.status === "won" ? "positive" : "negative"}>
+                    {item.status.toUpperCase()}
+                  </span>
+                </div>
+                <div className="tpHistoryItemMid">
+                  <span>{item.side === "up" ? "BUY" : "SELL"}</span>
+                  <span>${nfmt(item.amount, 2)}</span>
+                </div>
+                <div className="tpHistoryItemBot">
+                  <span>{formatDateTime(item.closedAt)}</span>
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+
+        <div className="tpHistoryDetails">
+          {!selected ? (
+            <div className="tpEmptyTrades">Select a trade record to view details.</div>
+          ) : (
+            <>
+              <div className="tpDetailHead">
+                <strong>{selected.pair}</strong>
+                <span className={selected.status === "won" ? "positive" : "negative"}>
+                  {selected.status.toUpperCase()}
+                </span>
+              </div>
+
+              <div className="tpDetailGrid">
+                <div className="tpDetailBox">
+                  <span>Trade ID</span>
+                  <strong>{selected.id}</strong>
+                </div>
+                <div className="tpDetailBox">
+                  <span>Direction</span>
+                  <strong>{selected.side === "up" ? "BUY" : "SELL"}</strong>
+                </div>
+                <div className="tpDetailBox">
+                  <span>Investment</span>
+                  <strong>${nfmt(selected.amount, 2)}</strong>
+                </div>
+                <div className="tpDetailBox">
+                  <span>Payout %</span>
+                  <strong>{selected.payout}%</strong>
+                </div>
+                <div className="tpDetailBox">
+                  <span>Entry Price</span>
+                  <strong>{selected.entryPriceFormatted}</strong>
+                </div>
+                <div className="tpDetailBox">
+                  <span>Exit Price</span>
+                  <strong>{selected.exitPriceFormatted}</strong>
+                </div>
+                <div className="tpDetailBox">
+                  <span>Opened At</span>
+                  <strong>{formatDateTime(selected.openedAt)}</strong>
+                </div>
+                <div className="tpDetailBox">
+                  <span>Closed At</span>
+                  <strong>{formatDateTime(selected.closedAt)}</strong>
+                </div>
+                <div className="tpDetailBox wide">
+                  <span>Profit / Loss</span>
+                  <strong className={selected.pnl >= 0 ? "positive" : "negative"}>
+                    {selected.pnl >= 0 ? "+" : ""}${nfmt(selected.pnl, 2)}
+                  </strong>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function TradingPro() {
-  const USER = { balance: 97280.12, currency: "USDT" };
+  const [allPairs] = useState(PAIRS);
+  const [pairIndex, setPairIndex] = useState(0);
+  const pair = allPairs[pairIndex] || allPairs[0] || PAIRS[0];
 
-  const [drawer, setDrawer] = useState(false);
-
-  // Scroll to top on mount
-  useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-  }, []);
-
-  // Market list
-  const [coins, setCoins] = useState([]);
-  const [q, setQ] = useState("");
-  const [selected, setSelected] = useState("ETHUSDT");
-  const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState("");
-
-  // Chart / price
-  const [tf, setTf] = useState("15m");
-  const [tickerMap, setTickerMap] = useState({});
-  const [candles, setCandles] = useState([]); // [{t,o,h,l,c}]
-  const wsRef = useRef(null);
-
-  // hover candle info
-  const [hoverCandle, setHoverCandle] = useState(null);
-
-  // ✅ price blink
-  const [blink, setBlink] = useState(""); // "up" | "down" | ""
-  const prevLastRef = useRef(null);
-
-  // ✅ best bid/ask + spread (depth meter)
-  const [bookTop, setBookTop] = useState({ bid: 0, ask: 0 });
-
-  // ✅ order book ladder
-  const [ob, setOb] = useState({ bids: [], asks: [] }); // arrays of [price, qty]
-
-  // Trade
-  const [side, setSide] = useState("buy"); // buy | sell
-  const [orderType, setOrderType] = useState("market"); // market | limit
-  const [amount, setAmount] = useState(""); // USDT amount
-  const [limitPrice, setLimitPrice] = useState("");
-  const [leverage, setLeverage] = useState(5);
-
-  // Activity
-  const [tab, setTab] = useState("open");
-  const [openOrders, setOpenOrders] = useState([
-    { id: "OD-1102", sym: "ETHUSDT", side: "buy", type: "limit", price: 3620.5, amount: 150, status: "Open" },
-  ]);
-  const [history, setHistory] = useState([
-    { id: "TR-2003", sym: "BTCUSDT", side: "sell", type: "market", price: 61234.1, amount: 200, status: "Filled" },
-  ]);
-
-  // ✅ Manual trade time + popup simulation
-  const [tradeTime, setTradeTime] = useState(60); // 30/60/90/120
-  const [timeMenu, setTimeMenu] = useState(false);
-
-  const [tradePop, setTradePop] = useState({
-    open: false,
-    stage: "countdown", // "countdown" | "done"
-    left: 0,
-    amount: 0,
-    profit: 0,
-    sym: "",
+  const [candles, setCandles] = useState([]);
+  const [price, setPrice] = useState(0);
+  const [balance, setBalance] = useState(12794.26);
+  const [tradeSeconds, setTradeSeconds] = useState(15);
+  const [investment, setInvestment] = useState(15);
+  const [trades, setTrades] = useState([]);
+  const [history, setHistory] = useState(() => getStoredHistory());
+  const [selectedHistoryId, setSelectedHistoryId] = useState(null);
+  const [pendingTradeEnabled, setPendingTradeEnabled] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [activeMenu, setActiveMenu] = useState("trade");
+  const [showPairSelector, setShowPairSelector] = useState(false);
+  const [pairSearch, setPairSearch] = useState("");
+  const [favorites, setFavorites] = useState(() => getStoredFavorites());
+  const [marketStats, setMarketStats] = useState({});
+  const [quoteFilter, setQuoteFilter] = useState("ALL");
+  const [sortMode, setSortMode] = useState("marketcap");
+  const [indicators, setIndicators] = useState({
+    ema9: true,
+    ema21: true,
+    sma20: true,
+    bb: true,
+    zigzag: true,
   });
 
-  function goDashboard() {
-    window.location.assign("/TradingDashboardGoldMiracle");
-  }
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportTitle, setReportTitle] = useState("");
+  const [reportType, setReportType] = useState("summary");
+  const [reportData, setReportData] = useState(null);
 
-  // ✅ countdown logic
+  const wsRef = useRef(null);
+  const fallbackTickRef = useRef(null);
+
   useEffect(() => {
-    if (!tradePop.open || tradePop.stage !== "countdown") return;
+    saveHistory(history);
+    if (!selectedHistoryId && history.length) {
+      setSelectedHistoryId(history[0].id);
+    }
+  }, [history, selectedHistoryId]);
 
-    const t = setInterval(() => {
-      setTradePop((p) => {
-        const next = Math.max(0, (p.left || 0) - 1);
-        if (next === 0) {
-          const profit = Number(p.amount || 0) * 0.2; // 20% profit
-          return { ...p, left: 0, stage: "done", profit };
+  useEffect(() => {
+    saveFavorites(favorites);
+  }, [favorites]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadTickerStats() {
+      try {
+        const res = await fetch(`${REST_BASE}/ticker/24hr`);
+        if (!res.ok) throw new Error("Failed ticker stats");
+        const data = await res.json();
+
+        const next = {};
+        for (const item of data) {
+          next[item.symbol] = {
+            lastPrice: Number(item.lastPrice),
+            priceChangePercent: Number(item.priceChangePercent),
+            quoteVolume: Number(item.quoteVolume),
+          };
         }
-        return { ...p, left: next };
-      });
-    }, 1000);
 
-    return () => clearInterval(t);
-  }, [tradePop.open, tradePop.stage]);
-
-  // Load tickers (top volume)
-  useEffect(() => {
-    const ac = new AbortController();
-    let tmr = null;
-
-    async function loadTickers() {
-      try {
-        setErr("");
-        setLoading(true);
-
-        const all = await jget(`${API}/api/v3/ticker/24hr`, ac.signal);
-
-                const usdt = all
-          .filter((t) => t.symbol.endsWith("USDT") && !t.symbol.includes("UPUSDT") && !t.symbol.includes("DOWNUSDT"))
-          .map((t) => ({
-            symbol: t.symbol,
-            last: Number(t.lastPrice),
-            chg: Number(t.priceChangePercent),
-            high: Number(t.highPrice),
-            low: Number(t.lowPrice),
-            vol: Number(t.quoteVolume),
-            changeAbs: Number(t.priceChange),
-          }))
-          .sort((a, b) => b.vol - a.vol); // ✅ keep sorted, but show ALL (no slice)
-
-        // ✅ Insert XAUUSD as 3rd item
-        const xau = {
-          symbol: "XAUUSD",
-          last: 0,
-          chg: 0,
-          high: 0,
-          low: 0,
-          vol: 0,
-          changeAbs: 0,
-        };
-
-        usdt.splice(2, 0, xau);
-
-        setCoins(usdt);
-
-        const map = {};
-        usdt.forEach((x) => (map[x.symbol] = x));
-        setTickerMap(map);
-
-        if (!map[selected] && usdt[0]?.symbol) setSelected(usdt[0].symbol);
-      } catch {
-        setErr("Market data failed to load. Please check your internet.");
-      } finally {
-        setLoading(false);
+        if (!ignore) setMarketStats(next);
+      } catch (err) {
+        console.error("Failed ticker stats", err);
       }
     }
 
-    loadTickers();
-    tmr = setInterval(loadTickers, 12000);
+    loadTickerStats();
+    const id = setInterval(loadTickerStats, 15000);
 
     return () => {
-      ac.abort();
-      if (tmr) clearInterval(tmr);
+      ignore = true;
+      clearInterval(id);
     };
-  }, [selected]);
+  }, []);
 
-  const selectedTicker = tickerMap[selected];
-  const last = selectedTicker?.last || 0;
-  const chgUp = (selectedTicker?.chg ?? 0) >= 0;
-  const priceDecimals = last >= 1000 ? 2 : 4;
+  const filteredPairs = useMemo(() => {
+    const q = pairSearch.trim().toLowerCase();
 
-  // ✅ smooth number (animated last price)
-  const animatedLast = useAnimatedNumber(last, 420);
+    let list = allPairs.filter((p) => {
+      if (quoteFilter !== "ALL" && p.quoteAsset !== quoteFilter) return false;
 
-  // ✅ blink when price changes
-  useEffect(() => {
-    const prev = prevLastRef.current;
-    if (prev == null) {
-      prevLastRef.current = last;
-      return;
-    }
-    if (last !== prev && last > 0) {
-      const dir = last > prev ? "up" : "down";
-      setBlink(dir);
-      const t = setTimeout(() => setBlink(""), 320);
-      prevLastRef.current = last;
-      return () => clearTimeout(t);
-    }
-    prevLastRef.current = last;
-  }, [last]);
-
-  /* ---------------- Candles: REST initial + WebSocket live ---------------- */
-
-  useEffect(() => {
-    const ac = new AbortController();
-
-    async function loadInitialCandles() {
-      try {
-        const interval = tfToInterval(tf);
-        const k = await jget(`${API}/api/v3/klines?symbol=${selected}&interval=${interval}&limit=120`, ac.signal);
-
-        const cs = (k || []).map((r) => ({
-          t: Number(r[0]),
-          o: Number(r[1]),
-          h: Number(r[2]),
-          l: Number(r[3]),
-          c: Number(r[4]),
-          x: Boolean(r[6]),
-        }));
-
-        setCandles(cs);
-
-        const lastClose = cs[cs.length - 1]?.c;
-        if (lastClose) setLimitPrice(String(lastClose));
-      } catch {
-        setCandles([]);
-      }
-    }
-
-        if (selected && selected !== "XAUUSD") loadInitialCandles();
-    return () => ac.abort();
-  }, [selected, tf]);
-
-  useEffect(() => {
-       if (!selected || selected === "XAUUSD") return;
-
-    const interval = tfToInterval(tf);
-    const stream = `${selected.toLowerCase()}@kline_${interval}`;
-    const url = `wss://stream.binance.com:9443/ws/${stream}`;
-
-    try {
-      if (wsRef.current) wsRef.current.close();
-    } catch {}
-
-    const ws = new WebSocket(url);
-    wsRef.current = ws;
-
-    ws.onmessage = (ev) => {
-      try {
-        const msg = JSON.parse(ev.data);
-        const k = msg?.k;
-        if (!k) return;
-
-        const candle = {
-          t: Number(k.t),
-          o: Number(k.o),
-          h: Number(k.h),
-          l: Number(k.l),
-          c: Number(k.c),
-          x: Boolean(k.x),
-        };
-
-        setLimitPrice((p) => (orderType === "limit" ? p : String(candle.c)));
-
-        setCandles((prev) => {
-          if (!prev || prev.length === 0) return [candle];
-
-          const lastT = prev[prev.length - 1]?.t;
-
-          if (lastT === candle.t) {
-            const copy = prev.slice();
-            copy[copy.length - 1] = candle;
-            return copy;
-          }
-
-          const next = [...prev, candle];
-          return next.slice(-120);
-        });
-      } catch {}
-    };
-
-    return () => {
-      try {
-        ws.close();
-      } catch {}
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, tf]);
-
-  /* ---------------- Order book polling (light) ---------------- */
-  useEffect(() => {
-    const ac = new AbortController();
-    let tmr = null;
-
-    async function loadBook() {
-      try {
-        const bt = await jget(`${API}/api/v3/ticker/bookTicker?symbol=${selected}`, ac.signal);
-        setBookTop({ bid: Number(bt.bidPrice), ask: Number(bt.askPrice) });
-
-        const d = await jget(`${API}/api/v3/depth?symbol=${selected}&limit=20`, ac.signal);
-        setOb({
-          bids: (d.bids || []).slice(0, 12).map((x) => [Number(x[0]), Number(x[1])]),
-          asks: (d.asks || []).slice(0, 12).map((x) => [Number(x[0]), Number(x[1])]),
-        });
-      } catch {}
-    }
-
-        if (selected && selected !== "XAUUSD") loadBook();
-    tmr = setInterval(loadBook, 1600);
-
-    return () => {
-      ac.abort();
-      if (tmr) clearInterval(tmr);
-    };
-  }, [selected]);
-
-  const filteredCoins = useMemo(() => {
-    const qq = q.trim().toUpperCase();
-    if (!qq) return coins;
-    return coins.filter((c) => c.symbol.includes(qq));
-  }, [coins, q]);
-
-  // ✅ manual trade coin list (separate search inside trade panel)
-  const [tradeQ, setTradeQ] = useState("");
-  const tradeCoins = useMemo(() => {
-    const qq = tradeQ.trim().toUpperCase();
-    if (!qq) return coins;
-    return coins.filter((c) => c.symbol.includes(qq));
-  }, [coins, tradeQ]);
-
-  // depth meter calc
-  const depthInfo = useMemo(() => {
-    const bid = Number(bookTop.bid || 0);
-    const ask = Number(bookTop.ask || 0);
-    const mid = bid && ask ? (bid + ask) / 2 : 0;
-    const spread = bid && ask ? ask - bid : 0;
-    const spreadPct = mid ? (spread / mid) * 100 : 0;
-
-    const bidQty = ob.bids.reduce((s, x) => s + (x[1] || 0), 0);
-    const askQty = ob.asks.reduce((s, x) => s + (x[1] || 0), 0);
-    const total = bidQty + askQty || 1;
-    const bidPct = (bidQty / total) * 100;
-    const askPct = 100 - bidPct;
-
-    return { bid, ask, mid, spread, spreadPct, bidPct, askPct };
-  }, [bookTop, ob]);
-
-  /* ===========================
-     ✅ Amount is USDT (not coin)
-  =========================== */
-  const notionalUSDT = useMemo(() => {
-    const usdt = Number(amount || 0);
-    return usdt > 0 ? usdt : 0;
-  }, [amount]);
-
-  const qty = useMemo(() => {
-    const px = orderType === "market" ? last : Number(limitPrice || 0);
-    if (!px) return 0;
-    return notionalUSDT / px;
-  }, [notionalUSDT, orderType, last, limitPrice]);
-
-  const fee = notionalUSDT * 0.001;
-  const total = side === "buy" ? notionalUSDT + fee : Math.max(notionalUSDT - fee, 0);
-
-  const canSubmit = useMemo(() => {
-    const usdt = Number(amount || 0);
-    if (!usdt || usdt <= 0) return false;
-    if (orderType === "limit") {
-      const p = Number(limitPrice || 0);
-      if (!p || p <= 0) return false;
-    }
-    if (side === "buy") return total <= USER.balance;
-    return true;
-  }, [amount, orderType, limitPrice, side, total, USER.balance]);
-
-  function placeOrder() {
-    if (!canSubmit) return;
-    const amt = Number(amount || 0);
-    const px = orderType === "market" ? last : Number(limitPrice);
-
-    if (orderType === "market") {
-      setHistory((h) => [
-        {
-          id: `TR-${Math.floor(2000 + Math.random() * 8000)}`,
-          sym: selected,
-          side,
-          type: orderType,
-          price: px,
-          amount: Number(amount),
-          status: "Filled",
-        },
-        ...h,
-      ]);
-    } else {
-      setOpenOrders((o) => [
-        {
-          id: `OD-${Math.floor(1000 + Math.random() * 9000)}`,
-          sym: selected,
-          side,
-          type: orderType,
-          price: px,
-          amount: Number(amount),
-          status: "Open",
-        },
-        ...o,
-      ]);
-    }
-
-    // ✅ Start popup timer
-    setTradePop({
-      open: true,
-      stage: "countdown",
-      left: tradeTime,
-      amount: amt,
-      profit: 0,
-      sym: selected,
+      if (!q) return true;
+      return (
+        p.symbol.toLowerCase().includes(q) ||
+        p.label.toLowerCase().includes(q) ||
+        p.baseAsset?.toLowerCase().includes(q) ||
+        p.quoteAsset?.toLowerCase().includes(q)
+      );
     });
 
-    setAmount("");
-  }
+    if (sortMode === "favorites") {
+      list = list
+        .slice()
+        .sort((a, b) => {
+          const af = favorites.includes(a.symbol) ? 1 : 0;
+          const bf = favorites.includes(b.symbol) ? 1 : 0;
+          if (bf !== af) return bf - af;
+          return a.label.localeCompare(b.label);
+        });
+    } else if (sortMode === "volume") {
+      list = list
+        .slice()
+        .sort(
+          (a, b) =>
+            Number(marketStats[b.symbol]?.quoteVolume || 0) - Number(marketStats[a.symbol]?.quoteVolume || 0)
+        );
+    } else if (sortMode === "marketcap") {
+      list = list
+        .slice()
+        .sort((a, b) => marketCapRank(a.baseAsset) - marketCapRank(b.baseAsset));
+    } else {
+      list = list.slice().sort((a, b) => a.label.localeCompare(b.label));
+    }
 
-  function cancelOrder(id) {
-    setOpenOrders((o) => o.filter((x) => x.id !== id));
-  }
+    return list;
+  }, [allPairs, pairSearch, quoteFilter, sortMode, favorites, marketStats]);
 
-  const obMaxQty = useMemo(() => {
-    const all = [...ob.bids, ...ob.asks].map((x) => x[1] || 0);
-    return Math.max(1, ...all);
-  }, [ob]);
-
-  /* ---------------- Manual Trade renderer (used twice) ---------------- */
-  const ManualTrade = (
-    <div className="tpPanel tpOrderPanel tpOrderPanel--light">
-      <div className="tpPanelHead">
-        <div className="tpPanelTitle">Manual Trade</div>
-
-        <div className="tpModePills">
-          <button className={cls("tpMode", orderType === "market" && "active")} onClick={() => setOrderType("market")} type="button">
-            Market
-          </button>
-          <button className={cls("tpMode", orderType === "limit" && "active")} onClick={() => setOrderType("limit")} type="button">
-            Limit
-          </button>
-        </div>
-      </div>
-
-      {/* Coin selector inside Manual Trade */}
-      <div className="tpCoinPick">
-        <div className="tpCoinPickTop">
-          <div className="tpCoinPickLabel">Coin</div>
-          <div className="tpCoinPickNow">
-            <b>{selected.replace("USDT", "")}</b> <span>/{USER.currency}</span>
-          </div>
-        </div>
-
-        <div className="tpCoinPickRow">
-          <input
-            className="tpCoinPickSearch"
-            value={tradeQ}
-            onChange={(e) => setTradeQ(e.target.value)}
-            placeholder="Search (BTC, ETH...)"
-          />
-
-          <select
-            className="tpCoinPickSelect"
-            value={selected}
-            onChange={(e) => {
-              setSelected(e.target.value);
-              setTradeQ("");
-            }}
-          >
-            {(tradeCoins.length ? tradeCoins : coins).map((c) => (
-              <option key={c.symbol} value={c.symbol}>
-                {c.symbol.replace("USDT", "")}/{USER.currency}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Buy then Sell */}
-      <div className="tpSideBtns">
-        <button className={cls("tpSideBtn", side === "buy" && "active long")} onClick={() => setSide("buy")} type="button">
-          Buy / Long
-        </button>
-        <button className={cls("tpSideBtn", side === "sell" && "active short")} onClick={() => setSide("sell")} type="button">
-          Sell / Short
-        </button>
-      </div>
-
-      <div className="tpField">
-        <div className="tpFieldLabel">Leverage</div>
-        <div className="tpLevRow">
-          <button className="tpLevBtn" onClick={() => setLeverage((v) => Math.max(1, v - 1))} type="button">
-            -
-          </button>
-          <div className="tpLevVal">{leverage}x</div>
-          <button className="tpLevBtn" onClick={() => setLeverage((v) => Math.min(50, v + 1))} type="button">
-            +
-          </button>
-        </div>
-        <input className="tpRange" type="range" min="1" max="50" value={leverage} onChange={(e) => setLeverage(Number(e.target.value))} />
-      </div>
-
-      {orderType === "limit" ? (
-        <div className="tpField">
-          <div className="tpFieldLabel">Limit Price (USDT)</div>
-          <input className="tpInput" value={limitPrice} onChange={(e) => setLimitPrice(e.target.value)} inputMode="decimal" />
-        </div>
-      ) : (
-        <div className="tpInfo">
-          Current Price: <b>{selectedTicker ? nfmt(last, priceDecimals) : "—"} USDT</b>
-        </div>
-      )}
-
-      <div className="tpField">
-        <div className="tpFieldLabel">Amount (USDT)</div>
-        <input className="tpInput" value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="0.00 USDT" />
-      </div>
-
-      <div className="tpInfo">
-        Est. Qty: <b>{qty ? nfmt(qty, 6) : "—"} {selected.replace("USDT", "")}</b>
-      </div>
-
-      <div className="tpSummary">
-        <div className="r">
-          <span>Value</span>
-          <b>{nfmt(notionalUSDT, 2)} USDT</b>
-        </div>
-        <div className="r">
-          <span>Fee</span>
-          <b>{nfmt(fee, 2)} USDT</b>
-        </div>
-        <div className="r total">
-          <span>{side === "buy" ? "Total Cost" : "Est. Receive"}</span>
-          <b>{nfmt(total, 2)} USDT</b>
-        </div>
-      </div>
-
-            {/* Trade Time (popup modal) */}
-      <div className="tpTimeRow">
-        <div className="tpTimeLeft">
-          <div className="tpTimeLabel">Trade Time</div>
-          <div className="tpTimeVal">{tradeTime} sec</div>
-        </div>
-
-        <div className="tpTimeRight">
-          <button
-            className="tpTimeBtn"
-            onClick={() => setTimeMenu(true)}
-            type="button"
-          >
-            Set Time
-          </button>
-        </div>
-      </div>
-
-      {/* ✅ Time Picker Popup */}
-      {timeMenu ? (
-        <div
-          className="tpTimePopWrap"
-          onClick={() => setTimeMenu(false)}
-          role="presentation"
-        >
-          <div
-            className="tpTimePop"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Set Trade Time"
-          >
-            <div className="tpTimePopTop">
-              <div className="tpTimePopTitle">Set Trade Time</div>
-              <button
-                className="tpTimePopClose"
-                onClick={() => setTimeMenu(false)}
-                type="button"
-                aria-label="Close"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="tpTimePopBody">
-              {[30, 60, 90, 120].map((s) => (
-                <button
-                  key={s}
-                  className={cls("tpTimePopOpt", tradeTime === s && "active")}
-                  onClick={() => {
-                    setTradeTime(s);
-                    setTimeMenu(false);
-                  }}
-                  type="button"
-                >
-                  {s} sec
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      <button
-        className={cls("tpSubmit", side === "sell" ? "short" : "long", !canSubmit && "disabled")}
-        disabled={!canSubmit}
-        onClick={placeOrder}
-        type="button"
-      >
-        Place Order
-      </button>
-
-      {!canSubmit ? <div className="tpWarn">Enter a valid amount{orderType === "limit" ? " and limit price" : ""}. Buy requires enough balance.</div> : null}
-      
-      <div className="tpFine">Use the + / − buttons or slider to adjust leverage (e.g., 5x).
-Higher leverage increases potential profit but also increases risk. Choose your preferred Trade Time (e.g., 60 seconds).
-The position will automatically close when the selected duration ends. </div>
-    </div>
+  const favoritePairs = useMemo(
+    () =>
+      allPairs
+        .filter((p) => favorites.includes(p.symbol))
+        .filter((p) => quoteFilter === "ALL" || p.quoteAsset === quoteFilter)
+        .slice(0, 12),
+    [allPairs, favorites, quoteFilter]
   );
+
+  const trendingPairs = useMemo(() => {
+    return allPairs
+      .filter((p) => marketStats[p.symbol])
+      .filter((p) => quoteFilter === "ALL" || p.quoteAsset === quoteFilter)
+      .slice()
+      .sort(
+        (a, b) =>
+          Math.abs(marketStats[b.symbol]?.priceChangePercent || 0) -
+          Math.abs(marketStats[a.symbol]?.priceChangePercent || 0)
+      )
+      .slice(0, 10);
+  }, [allPairs, marketStats, quoteFilter]);
+
+  const topVolumePairs = useMemo(() => {
+    return allPairs
+      .filter((p) => marketStats[p.symbol])
+      .filter((p) => quoteFilter === "ALL" || p.quoteAsset === quoteFilter)
+      .slice()
+      .sort(
+        (a, b) =>
+          Number(marketStats[b.symbol]?.quoteVolume || 0) - Number(marketStats[a.symbol]?.quoteVolume || 0)
+      )
+      .slice(0, 10);
+  }, [allPairs, marketStats, quoteFilter]);
+
+  const topVisiblePairs = useMemo(() => {
+    const current = pair ? [pair] : [];
+    const extras = allPairs.filter((p) => p.symbol !== pair?.symbol).slice(0, 4);
+    return [...current, ...extras];
+  }, [allPairs, pair]);
+
+  const liveTrades = useMemo(
+    () => trades.filter((t) => t.symbol === pair.symbol).slice().reverse(),
+    [trades, pair.symbol]
+  );
+
+  useEffect(() => {
+    let ignore = false;
+    const controller = new AbortController();
+
+    async function loadData() {
+      setIsLoading(true);
+
+      try {
+        const res = await fetch(`${REST_BASE}/klines?symbol=${pair.symbol}&interval=1m&limit=160`, {
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error("Failed kline fetch");
+        const data = await res.json();
+
+        if (!ignore && Array.isArray(data) && data.length) {
+          const parsed = data.map(normalizeKline);
+          setCandles(parsed);
+          setPrice(parsed[parsed.length - 1].close);
+          setIsLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+
+      if (!ignore) {
+        const fallback = createFallbackCandles(140, pair.seed);
+        setCandles(fallback);
+        setPrice(fallback[fallback.length - 1].close);
+        setIsLoading(false);
+      }
+    }
+
+    function startFallbackAnimation() {
+      clearInterval(fallbackTickRef.current);
+      fallbackTickRef.current = setInterval(() => {
+        setCandles((prev) => {
+          if (!prev.length) return prev;
+          const copy = [...prev];
+          const last = copy[copy.length - 1];
+          const now = Date.now();
+          const currentMinute = Math.floor(now / 60000) * 60000;
+
+          if (last.openTime === currentMinute) {
+            const drift = (Math.random() - 0.5) * last.close * 0.0008;
+            const close = Math.max(0.0001, last.close + drift);
+            copy[copy.length - 1] = {
+              ...last,
+              high: Math.max(last.high, close),
+              low: Math.min(last.low, close),
+              close,
+              closeTime: now,
+            };
+            setPrice(close);
+          } else {
+            const open = last.close;
+            const close = Math.max(0.0001, open + (Math.random() - 0.5) * open * 0.0012);
+            copy.push({
+              openTime: currentMinute,
+              open,
+              high: Math.max(open, close),
+              low: Math.min(open, close),
+              close,
+              volume: 120 + Math.random() * 500,
+              closeTime: currentMinute + 59_999,
+            });
+            setPrice(close);
+          }
+
+          return copy.slice(-180);
+        });
+      }, 1000);
+    }
+
+    function startWebSocket() {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+
+      try {
+        const ws = new WebSocket(`${WS_BASE}/${pair.symbol.toLowerCase()}@kline_1m`);
+        wsRef.current = ws;
+
+        ws.onmessage = (event) => {
+          const msg = JSON.parse(event.data);
+          const k = msg.k;
+
+          const candle = {
+            openTime: Number(k.t),
+            open: Number(k.o),
+            high: Number(k.h),
+            low: Number(k.l),
+            close: Number(k.c),
+            volume: Number(k.v),
+            closeTime: Number(k.T),
+          };
+
+          clearInterval(fallbackTickRef.current);
+
+          setCandles((prev) => {
+            const copy = [...prev];
+            if (!copy.length) return [candle];
+
+            const last = copy[copy.length - 1];
+            if (last.openTime === candle.openTime) {
+              copy[copy.length - 1] = {
+                ...last,
+                ...candle,
+              };
+            } else {
+              copy.push(candle);
+            }
+
+            return copy.slice(-180);
+          });
+
+          setPrice(candle.close);
+        };
+
+        ws.onerror = () => startFallbackAnimation();
+        ws.onclose = () => startFallbackAnimation();
+      } catch (e) {
+        console.error(e);
+        startFallbackAnimation();
+      }
+    }
+
+    loadData().then(startWebSocket);
+
+    return () => {
+      ignore = true;
+      controller.abort();
+      if (wsRef.current) wsRef.current.close();
+      clearInterval(fallbackTickRef.current);
+    };
+  }, [pair.symbol, pair.seed]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTrades((prev) =>
+        prev.map((t) => {
+          if (t.status !== "open") return t;
+
+          const remainingMs = Math.max(0, t.expiresAt - Date.now());
+          if (remainingMs <= 0) {
+            const won = t.side === "up" ? price > t.entryPrice : price < t.entryPrice;
+            const payoutGain = won ? t.amount * (t.payout / 100) : -t.amount;
+            const digits = getDigits(t.entryPrice);
+
+            if (!t.settled) {
+              setBalance((b) => Number((b + t.amount + payoutGain).toFixed(2)));
+
+              const record = {
+                id: t.id,
+                pair: t.pair,
+                symbol: t.symbol,
+                side: t.side,
+                amount: t.amount,
+                payout: t.payout,
+                status: won ? "won" : "lost",
+                pnl: Number(payoutGain.toFixed(2)),
+                openedAt: t.openedAt,
+                closedAt: Date.now(),
+                entryPrice: t.entryPrice,
+                exitPrice: price,
+                entryPriceFormatted: Number(t.entryPrice).toFixed(digits),
+                exitPriceFormatted: Number(price).toFixed(digits),
+              };
+
+              setHistory((prevHistory) => [record, ...prevHistory]);
+              setSelectedHistoryId(record.id);
+            }
+
+            return {
+              ...t,
+              remainingMs: 0,
+              status: won ? "won" : "lost",
+              settled: true,
+              pnl: payoutGain,
+            };
+          }
+
+          return { ...t, remainingMs };
+        })
+      );
+    }, 250);
+
+    return () => clearInterval(timer);
+  }, [price]);
+
+  const payoutAmount = useMemo(
+    () => Number((Number(investment || 0) * (pair.payout / 100)).toFixed(2)),
+    [investment, pair.payout]
+  );
+
+  function openReport(title, type, data) {
+    setReportTitle(title);
+    setReportType(type);
+    setReportData(data);
+    setReportOpen(true);
+  }
+
+  function placeTrade(side) {
+    const investNum = Number(investment || 0);
+    if (!price || balance < investNum || investNum <= 0) return;
+
+    setBalance((b) => Number((b - investNum).toFixed(2)));
+
+    const trade = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      symbol: pair.symbol,
+      pair: pair.label,
+      side,
+      amount: investNum,
+      payout: pair.payout,
+      entryPrice: price,
+      status: "open",
+      openedAt: Date.now(),
+      expiresAt: Date.now() + tradeSeconds * 1000,
+      remainingMs: tradeSeconds * 1000,
+      pnl: 0,
+      settled: false,
+    };
+
+    setTrades((prev) => [...prev, trade]);
+  }
+
+  function toggleIndicator(key) {
+    setIndicators((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
+
+  function clearHistory() {
+    setHistory([]);
+    setSelectedHistoryId(null);
+    saveHistory([]);
+  }
+
+  function toggleFavorite(symbol) {
+    setFavorites((prev) =>
+      prev.includes(symbol)
+        ? prev.filter((s) => s !== symbol)
+        : [symbol, ...prev].slice(0, 20)
+    );
+  }
+
+  function selectPairBySymbol(symbol) {
+    const realIndex = allPairs.findIndex((x) => x.symbol === symbol);
+    if (realIndex >= 0) {
+      setPairIndex(realIndex);
+      setShowPairSelector(false);
+      setPairSearch("");
+    }
+  }
+
+  function renderCoinLogo(baseAsset) {
+    return (
+      <div className="tpCoinLogoWrap">
+        <img
+          src={coinLogoUrl(baseAsset)}
+          alt={baseAsset}
+          className="tpCoinLogo"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+            const next = e.currentTarget.nextSibling;
+            if (next) next.style.display = "grid";
+          }}
+        />
+        <span className="tpCoinLogoFallback">{String(baseAsset || "?").slice(0, 2)}</span>
+      </div>
+    );
+  }
+
+  function renderSelectorItem(p, compactView = false) {
+    const stat = marketStats[p.symbol];
+    const digits = getDigits(stat?.lastPrice || p.seed);
+    const isFav = favorites.includes(p.symbol);
+    const isActive = pair.symbol === p.symbol;
+    const change = Number(stat?.priceChangePercent || 0);
+
+    return (
+      <button
+        key={p.symbol}
+        className={cls("tpPairSelectorItem", isActive && "active", compactView && "compact")}
+        onClick={() => selectPairBySymbol(p.symbol)}
+      >
+        <div className="tpPairSelectorLeft">
+          <button
+            type="button"
+            className={cls("tpFavBtn", isFav && "active")}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFavorite(p.symbol);
+            }}
+            aria-label={isFav ? "Remove favorite" : "Add favorite"}
+          >
+            <Icon name="star" />
+          </button>
+
+          {renderCoinLogo(p.baseAsset)}
+
+          <div className="tpPairText">
+            <strong>{p.label}</strong>
+            <span>{p.symbol}</span>
+          </div>
+        </div>
+
+        <div className="tpPairSelectorMeta">
+          <span className="tpPairListPrice">
+            {stat?.lastPrice ? Number(stat.lastPrice).toFixed(digits) : "--"}
+          </span>
+          <span className={cls("tpPairListChange", change >= 0 ? "positive" : "negative")}>
+            {change >= 0 ? "+" : ""}
+            {change.toFixed(2)}%
+          </span>
+        </div>
+
+        <div className="tpPairSelectorRight">
+          <span>{p.payout}%</span>
+        </div>
+      </button>
+    );
+  }
+
+  function renderMainContent() {
+    if (activeMenu === "support") return <SupportPanel />;
+    if (activeMenu === "account") {
+      return <AccountPanel balance={balance} history={history} onOpenReport={openReport} />;
+    }
+    if (activeMenu === "tournaments") return <TournamentsPanel />;
+    if (activeMenu === "market") return <MarketPanel pair={pair} price={price} candles={candles} />;
+    if (activeMenu === "more") return <MorePanel />;
+
+    return (
+      <>
+        <div className="tpPairsBarWrap">
+          <div className="tpPairsBar">
+            <button
+              className="tpPairAddBtn"
+              onClick={() => setShowPairSelector((v) => !v)}
+            >
+              <Icon name="plus" />
+            </button>
+
+            {topVisiblePairs.map((p) => {
+              const realIndex = allPairs.findIndex((x) => x.symbol === p.symbol);
+              const stat = marketStats[p.symbol];
+              const tabDigits = getDigits(stat?.lastPrice || p.seed);
+              const tabChange = Number(stat?.priceChangePercent || 0);
+
+              return (
+                <button
+                  key={p.symbol}
+                  className={cls("tpPairTab", p.symbol === pair.symbol && "active")}
+                  onClick={() => {
+                    if (realIndex >= 0) setPairIndex(realIndex);
+                    setShowPairSelector(false);
+                  }}
+                >
+                  {renderCoinLogo(p.baseAsset)}
+
+                  <div className="tpPairTabContent">
+                    <div className="tpPairTabTop">
+                      <strong>{p.label}</strong>
+                      {p.symbol === pair.symbol && <div className="tpLiveBadge">+LIVE</div>}
+                    </div>
+
+                    <div className="tpPairTabBottom">
+                      <span className="tpPairTabPayout">{p.payout}%</span>
+                      <span className="tpPairTabPrice">
+                        {stat?.lastPrice ? Number(stat.lastPrice).toFixed(tabDigits) : "--"}
+                      </span>
+                      <span className={cls("tpPairTabChange", tabChange >= 0 ? "positive" : "negative")}>
+                        {tabChange >= 0 ? "+" : ""}
+                        {tabChange.toFixed(2)}%
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {showPairSelector && (
+            <div className="tpPairSelector">
+              <div className="tpPairSelectorHead">
+                <strong>Select Coin Pair</strong>
+                <button
+                  className="tpPairSelectorClose"
+                  onClick={() => setShowPairSelector(false)}
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="tpPairSearchWrap">
+                <span className="tpPairSearchIcon">
+                  <Icon name="search" />
+                </span>
+                <input
+                  className="tpPairSearch"
+                  type="text"
+                  placeholder="Search coin pair..."
+                  value={pairSearch}
+                  onChange={(e) => setPairSearch(e.target.value)}
+                />
+              </div>
+
+              <div className="tpSelectorSection">
+                <div className="tpSelectorSectionTitle">Quote Filter</div>
+                <div className="tpSelectorTabs">
+                  {QUOTE_FILTERS.map((item) => (
+                    <button
+                      key={item}
+                      className={cls("tpSelectorTab", quoteFilter === item && "active")}
+                      onClick={() => setQuoteFilter(item)}
+                      type="button"
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="tpSelectorSection">
+                <div className="tpSelectorSectionTitle">Sort By</div>
+                <div className="tpSelectorTabs">
+                  {SORT_OPTIONS.map((item) => (
+                    <button
+                      key={item.key}
+                      className={cls("tpSelectorTab", sortMode === item.key && "active")}
+                      onClick={() => setSortMode(item.key)}
+                      type="button"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {!pairSearch && favoritePairs.length > 0 && (
+                <div className="tpSelectorSection">
+                  <div className="tpSelectorSectionTitle">Favorites</div>
+                  <div className="tpSelectorMiniList">
+                    {favoritePairs.slice(0, 6).map((p) => renderSelectorItem(p, true))}
+                  </div>
+                </div>
+              )}
+
+              {!pairSearch && topVolumePairs.length > 0 && (
+                <div className="tpSelectorSection">
+                  <div className="tpSelectorSectionTitle">Top Volume Coins</div>
+                  <div className="tpSelectorMiniList">
+                    {topVolumePairs.slice(0, 6).map((p) => renderSelectorItem(p, true))}
+                  </div>
+                </div>
+              )}
+
+              {!pairSearch && trendingPairs.length > 0 && (
+                <div className="tpSelectorSection">
+                  <div className="tpSelectorSectionTitle">Trending</div>
+                  <div className="tpSelectorMiniList">
+                    {trendingPairs.map((p) => renderSelectorItem(p, true))}
+                  </div>
+                </div>
+              )}
+
+              <div className="tpSelectorSection">
+                <div className="tpSelectorSectionTitle">
+                  {pairSearch ? "Search Results" : "All Coins"}
+                </div>
+
+                <div className="tpPairSelectorList">
+                  {filteredPairs.length ? (
+                    filteredPairs.map((p) => renderSelectorItem(p))
+                  ) : (
+                    <div className="tpEmptyTrades">No coin pair found.</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="tpIndicatorsBar">
+          {INDICATORS.map((ind) => (
+            <button
+              key={ind.key}
+              className={cls("tpIndicatorBtn", indicators[ind.key] && "active")}
+              onClick={() => toggleIndicator(ind.key)}
+            >
+              {ind.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="tpChartPanel">
+          {candles.length > 0 ? (
+            <CandleChart
+              candles={candles}
+              price={price}
+              pairLabel={pair.label}
+              payout={pair.payout}
+              indicators={indicators}
+              openTrades={trades.filter((t) => t.symbol === pair.symbol && t.status === "open")}
+              onToggleIndicator={toggleIndicator}
+            />
+          ) : (
+            <div className="tpLoadingBox">{isLoading ? "Loading market data..." : "No chart data"}</div>
+          )}
+        </div>
+
+        <TradeHistoryPanel
+          history={history}
+          selectedId={selectedHistoryId}
+          setSelectedId={setSelectedHistoryId}
+          clearHistory={clearHistory}
+          onOpenReport={openReport}
+        />
+      </>
+    );
+  }
 
   return (
     <div className="tpPage">
-      <header className="tpTop">
-        <button className="tpBackBtn" type="button" onClick={() => navigate(-1)} aria-label="Go back" title="Back to previous page">
-          <svg viewBox="0 0 24 24" width="18" height="18">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-          <span>Back</span>
-        </button>
+      <SideMenu
+        activeMenu={activeMenu}
+        setActiveMenu={setActiveMenu}
+        mobileOpen={mobileOpen}
+        setMobileOpen={setMobileOpen}
+      />
 
-        {/* <button className="tpBurger" onClick={() => setDrawer(true)} aria-label="Open markets">
-          <span />
-          <span />
-          <span />
-        </button> */}
-
-        <div className="tpBrand">
-          <div className="tpMark" />
-          <div className="tpBrandText">
-            <div className="tpName">GoldMiracle</div>
-            <div className="tpHint">Professional Trading</div>
-          </div>
-        </div>
-
-        <div className="tpTopRight">
-          <button className="tpDashBtn" onClick={goDashboard} type="button">
-            My Dashboard
-          </button>
-
-          <div className="tpWallet">
-            <div className="tpWL">Balance</div>
-            <div className="tpWV">
-              {nfmt(USER.balance, 2)} <span>{USER.currency}</span>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="tpShell">
-        <aside className={cls("tpSide", drawer && "open")}>
-          <div className="tpSideTop">
-            <div className="tpSideTitle">Markets</div>
-            <button className="tpClose" onClick={() => setDrawer(false)} aria-label="Close" type="button">
-              ✕
+      <div className="tpBody">
+        <header className="tpHeader">
+          <div className="tpHeaderLeft">
+            <button className="tpMobileMenu" onClick={() => setMobileOpen(true)}>
+              <Icon name="menu" />
             </button>
-          </div>
 
-          <div className="tpSearch">
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search coin (BTC, ETH…)" />
-          </div>
-
-          <div className="tpSideMeta">
-            {loading ? <span className="tpPill">Updating…</span> : <span className="tpPill ok">Live</span>}
-            {err ? <span className="tpPill warn">Issue</span> : null}
-          </div>
-
-          <div className="tpCoinList">
-            {filteredCoins.map((c) => (
-              <button
-                key={c.symbol}
-                className={cls("tpCoin", selected === c.symbol && "active")}
-                onClick={() => {
-                  setSelected(c.symbol);
-                  setDrawer(false);
-                }}
-                type="button"
-              >
-                <div className="tpCoinL">
-                  <div className="tpCoinSym">{c.symbol.replace("USDT", "")}</div>
-                  <div className="tpCoinSub">/{USER.currency}</div>
-                </div>
-
-                <div className="tpCoinM">
-                  <div className="tpCoinPrice">{nfmt(c.last, c.last >= 1000 ? 2 : 4)}</div>
-                  <div className="tpCoinVol">Vol {compact(c.vol)}</div>
-                </div>
-
-                <div className={cls("tpCoinR", c.chg >= 0 ? "up" : "down")}>
-                  {c.chg >= 0 ? "+" : ""}
-                  {c.chg.toFixed(2)}%
-                </div>
-              </button>
-            ))}
-          </div>
-
-          <div className="tpSideFoot">
-            <div className="tpNote">Top volume coins are shown by default.</div>
-          </div>
-        </aside>
-
-        {drawer && <div className="tpBackdrop" onClick={() => setDrawer(false)} />}
-
-        <main className="tpMain">
-          <div className="tpMainTop tpMainTop--compact">
-            <div className="tpPairBlock">
-              <div className="tpPairSym">
-                {selected.replace("USDT", "")} / {USER.currency}
-              </div>
-
-              <div className={cls("tpPairChg", chgUp ? "up" : "down")}>
-                {selectedTicker ? (selectedTicker.chg >= 0 ? "+" : "") + selectedTicker.chg.toFixed(2) + "%" : "—"}
-              </div>
-            </div>
-
-            <div className="tpPriceBlock">
-              <div className="tpPriceLabel">Last Price</div>
-
-              <div className={cls("tpPriceVal", blink && `blink ${blink}`)}>{selectedTicker ? nfmt(animatedLast, priceDecimals) : "—"}</div>
-
-              <div className="tpMiniBA">
-                <span>Bid</span>
-                <b className="g">{depthInfo.bid ? nfmt(depthInfo.bid, priceDecimals) : "—"}</b>
-
-                <span className="sep" />
-
-                <span>Ask</span>
-                <b className="r">{depthInfo.ask ? nfmt(depthInfo.ask, priceDecimals) : "—"}</b>
-              </div>
-            </div>
-
-            <div className="tpStatGrid">
-              <div className="tpStatBox">
-                <div className="k">24h High</div>
-                <div className="v">{selectedTicker ? nfmt(selectedTicker.high, 2) : "—"}</div>
-              </div>
-
-              <div className="tpStatBox">
-                <div className="k">24h Low</div>
-                <div className="v">{selectedTicker ? nfmt(selectedTicker.low, 2) : "—"}</div>
-              </div>
-
-              <div className="tpStatBox">
-                <div className="k">24h Change</div>
-                <div className={cls("v", chgUp ? "upTxt" : "downTxt")}>
-                  {selectedTicker ? (selectedTicker.changeAbs >= 0 ? "+" : "") + nfmt(selectedTicker.changeAbs, priceDecimals) : "—"}
-                </div>
-              </div>
-
-              <div className="tpStatBox">
-                <div className="k">24h Volume</div>
-                <div className="v">{selectedTicker ? compact(selectedTicker.vol) : "—"}</div>
+            <div className="tpLogoBlock">
+              <div className="tpLogo">◫</div>
+              <div className="tpBrand">
+                <strong>TRADING PRO</strong>
+                <span>WEB TRADING PLATFORM</span>
               </div>
             </div>
           </div>
 
-          <section className="tpPanel tpChartPanel">
-            <div className="tpPanelHead">
-              <div className="tpPanelTitle">Price Chart</div>
+          <div className="tpHeaderRight">
+            <button className="tpBell">
+              <Icon name="bell" />
+              <span className="tpBellDot">1</span>
+            </button>
 
-              <div className="tpTfRow">
-                {["15m", "1h", "4h", "1d"].map((x) => (
-                  <button key={x} className={cls("tpTf", tf === x && "active")} onClick={() => setTf(x)} type="button">
-                    {x.toUpperCase()}
-                  </button>
-                ))}
-              </div>
+            <div className="tpBalanceCard">
+              <small>LIVE ACCOUNT</small>
+              <strong>${nfmt(balance, 2)}</strong>
             </div>
 
-            <div className="tpChartBox tpChartBox--candle">
-              <CandleCanvas candles={candles} livePrice={candles[candles.length - 1]?.c || last} isUp={chgUp} onHover={(c) => setHoverCandle(c)} />
-            </div>
-          </section>
+            <button className="tpDepositBtn">+ Deposit</button>
+            <button className="tpWithdrawBtn">Withdrawal</button>
+          </div>
+        </header>
 
-          <div className="tpMobileTrade">{ManualTrade}</div>
+        <div className="tpContent">
+          <section className="tpMainArea">{renderMainContent()}</section>
 
-          <section className="tpPanel tpOBPanel">
-            <div className="tpPanelHead">
-              <div className="tpPanelTitle">Order Book</div>
-
-              <div className="tpOBMeta">
-                <span className="m">
-                  Spread: <b>{depthInfo.spread ? nfmt(depthInfo.spread, priceDecimals) : "—"}</b>
-                </span>
-                <span className="m">
-                  Spread%: <b>{depthInfo.spreadPct ? depthInfo.spreadPct.toFixed(3) + "%" : "—"}</b>
-                </span>
-              </div>
-            </div>
-
-            <div className="tpDepth">
-              <div className="tpDepthTop">
-                <div className="tpDepthLbl">
-                  Depth Meter <span>(Bids vs Asks)</span>
-                </div>
-                <div className="tpDepthVal">
-                  <span className="g">{depthInfo.bidPct.toFixed(0)}%</span>
-                  <span className="mut"> / </span>
-                  <span className="r">{depthInfo.askPct.toFixed(0)}%</span>
-                </div>
+          <aside className="tpRightPanel">
+            <div className="tpOrderHeader">
+              <div className="tpOrderPair">
+                {renderCoinLogo(pair.baseAsset)}
+                <strong>{pair.label}</strong>
+                <span>{pair.payout}%</span>
               </div>
 
-              <div className="tpDepthBar">
-                <div className="tpDepthBid" style={{ width: `${Math.max(0, Math.min(100, depthInfo.bidPct))}%` }} />
-                <div className="tpDepthAsk" style={{ width: `${Math.max(0, Math.min(100, depthInfo.askPct))}%` }} />
-              </div>
-
-              <div className="tpDepthFoot">
-                <div className="g">Bids</div>
-                <div className="r">Asks</div>
-              </div>
+              <label className="tpSwitch">
+                <input
+                  type="checkbox"
+                  checked={pendingTradeEnabled}
+                  onChange={(e) => setPendingTradeEnabled(e.target.checked)}
+                />
+                <span className="tpSlider" />
+              </label>
             </div>
 
-            <div className="tpOBGrid">
-              <div className="tpOBCol">
-                <div className="tpOBHead">
-                  <span>Bid</span>
-                  <span>Qty</span>
-                </div>
+            <div className="tpPendingText">PENDING TRADE</div>
 
-                <div className="tpOBList">
-                  {ob.bids.map(([p, q], i) => {
-                    const w = Math.round((q / obMaxQty) * 100);
-                    return (
-                      <div className="tpOBRow bid" key={`b${i}`}>
-                        <div className="bar" style={{ width: `${w}%` }} />
-                        <div className="price">{nfmt(p, priceDecimals)}</div>
-                        <div className="qty">{nfmt(q, 4)}</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="tpOBMid">
-                <div className="tpOBMidPrice">
-                  <span className="mut">Mark</span>
-                  <b className={cls("mk", chgUp ? "g" : "r")}>{selectedTicker ? nfmt(last, priceDecimals) : "—"}</b>
-                </div>
-              </div>
-
-              <div className="tpOBCol">
-                <div className="tpOBHead right">
-                  <span>Ask</span>
-                  <span>Qty</span>
-                </div>
-
-                <div className="tpOBList">
-                  {ob.asks.map(([p, q], i) => {
-                    const w = Math.round((q / obMaxQty) * 100);
-                    return (
-                      <div className="tpOBRow ask" key={`a${i}`}>
-                        <div className="bar" style={{ width: `${w}%` }} />
-                        <div className="price">{nfmt(p, priceDecimals)}</div>
-                        <div className="qty">{nfmt(q, 4)}</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section className="tpPanel tpBottomPanel">
-            <div className="tpPanelHead">
-              <div className="tpTabs">
-                <button className={cls("tpTab", tab === "open" && "active")} onClick={() => setTab("open")} type="button">
-                  Open Orders
+            <div className="tpInputBox">
+              <label>Time</label>
+              <div className="tpInputControl">
+                <button onClick={() => setTradeSeconds((v) => Math.max(5, v - 5))}>
+                  <Icon name="minus" />
                 </button>
-                <button className={cls("tpTab", tab === "history" && "active")} onClick={() => setTab("history")} type="button">
-                  History
+                <div>{formatCountdown(tradeSeconds)}</div>
+                <button onClick={() => setTradeSeconds((v) => Math.min(3600, v + 5))}>
+                  <Icon name="plus" />
                 </button>
               </div>
-
-              <div className="tpSmallHint">Simple view</div>
+              <button className="tpSwitchLink">SWITCH TIME</button>
             </div>
 
-            <div className="tpCards">
-              {tab === "open" ? (
-                openOrders.length ? (
-                  openOrders.map((o) => (
-                    <div className="tpCard" key={o.id}>
-                      <div className="tpCardRow">
-                        <div className="tpCardTitle">{o.sym.replace("USDT", "")}/USDT</div>
-                        <div className={cls("tpBadge", o.side)}>{o.side === "buy" ? "BUY" : "SELL"}</div>
-                      </div>
-                      <div className="tpCardRow">
-                        <div className="tpKV">
-                          <span>Type</span>
-                          <b>{o.type.toUpperCase()}</b>
-                        </div>
-                        <div className="tpKV">
-                          <span>Price</span>
-                          <b>{nfmt(o.price, 2)}</b>
-                        </div>
-                        <div className="tpKV">
-                          <span>Amount</span>
-                          <b>{nfmt(o.amount, 2)} USDT</b>
-                        </div>
-                      </div>
-                      <div className="tpCardRow">
-                        <div className="tpStatus">{o.status}</div>
-                        <button className="tpCancel" onClick={() => cancelOrder(o.id)} type="button">
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="tpEmpty">No open orders.</div>
-                )
-              ) : history.length ? (
-                history.map((h) => (
-                  <div className="tpCard" key={h.id}>
-                    <div className="tpCardRow">
-                      <div className="tpCardTitle">{h.sym.replace("USDT", "")}/USDT</div>
-                      <div className={cls("tpBadge", h.side)}>{h.side === "buy" ? "BUY" : "SELL"}</div>
-                    </div>
-                    <div className="tpCardRow">
-                      <div className="tpKV">
-                        <span>Type</span>
-                        <b>{h.type.toUpperCase()}</b>
-                      </div>
-                      <div className="tpKV">
-                        <span>Price</span>
-                        <b>{nfmt(h.price, 2)}</b>
-                      </div>
-                      <div className="tpKV">
-                        <span>Amount</span>
-                        <b>{nfmt(h.amount, 2)} USDT</b>
-                      </div>
-                    </div>
-                    <div className="tpCardRow">
-                      <div className="tpStatus ok">{h.status}</div>
-                      <div className="tpMuted">{h.id}</div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="tpEmpty">No history yet.</div>
-              )}
-            </div>
-          </section>
-        </main>
+            <div className="tpInputBox tpInputBoxInvestment">
+              <label>Investment</label>
+              <div className="tpInputControl tpInputControlInvestment">
+                <button onClick={() => setInvestment((v) => Math.max(1, Number(v || 0) - 1))} type="button">
+                  <Icon name="minus" />
+                </button>
 
-        <aside className="tpRight">
-          {ManualTrade}
-        </aside>
-      </div>
-
-      {tradePop.open ? (
-        <div className="tpPopWrap" onClick={() => setTradePop((p) => ({ ...p, open: false }))}>
-          <div className="tpPop" onClick={(e) => e.stopPropagation()}>
-            <div className="tpPopTop">
-              <div className="tpPopTitle">Trade Processing</div>
-              <button className="tpPopClose" onClick={() => setTradePop((p) => ({ ...p, open: false }))} type="button">
-                ✕
-              </button>
-            </div>
-
-            {tradePop.stage === "countdown" ? (
-              <div className="tpPopBody">
-                <div className="tpPopK">Time Remaining</div>
-                <div className="tpPopTimerWrap">
-                  <div className="tpPopTimer">{tradePop.left}s</div>
-                </div>
-                <div className="tpPopHint">
-                  {tradePop.sym.replace("USDT", "")}/USDT • {side === "buy" ? "Long" : "Short"} • {orderType.toUpperCase()}
-                </div>
-                
-                <div className="tpPopDetails">
-                  <div className="tpPopDetailRow">
-                    <div className="tpPopDetailLabel">Amount</div>
-                    <div className="tpPopDetailValue">{nfmt(tradePop.amount, 2)} USDT</div>
-                  </div>
-                  <div className="tpPopDetailRow">
-                    <div className="tpPopDetailLabel">Leverage</div>
-                    <div className="tpPopDetailValue">{leverage}x</div>
-                  </div>
-                  <div className="tpPopDetailRow">
-                    <div className="tpPopDetailLabel">Entry Price</div>
-                    <div className="tpPopDetailValue">{nfmt(orderType === "market" ? last : Number(limitPrice || 0), priceDecimals)} USDT</div>
-                  </div>
-                  <div className="tpPopDetailRow">
-                    <div className="tpPopDetailLabel">Expected Return</div>
-                    <div className="tpPopDetailValue">+{nfmt(tradePop.amount * 0.2, 2)} USDT</div>
-                  </div>
-                </div>
-
-                <div className="tpPopBar">
-                  <div
-                    className="tpPopBarFill"
-                    style={{
-                      width: `${Math.max(0, Math.min(100, (1 - tradePop.left / Math.max(1, tradeTime)) * 100))}%`,
+                <div className="tpInvestmentField">
+                  <span className="tpInvestmentPrefix">$</span>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    inputMode="numeric"
+                    className="tpInvestmentInput"
+                    value={investment}
+                    onChange={(e) => {
+                      const next = e.target.value;
+                      if (next === "") {
+                        setInvestment("");
+                        return;
+                      }
+                      const num = Number(next);
+                      if (!Number.isNaN(num) && num >= 0) {
+                        setInvestment(next);
+                      }
+                    }}
+                    onBlur={() => {
+                      const normalized = Math.max(1, Number(investment || 1));
+                      setInvestment(normalized);
                     }}
                   />
                 </div>
-              </div>
-            ) : (
-              <div className="tpPopBody">
-                <div className="tpPopCongrats">
-                  <div className="tpPopCongratsTitle">🎉 Congratulations!</div>
-                  <div className="tpPopCongratsMsg">
-                    Your trade completed successfully and profit has been added to your balance.
-                  </div>
-                </div>
 
-                <div className="tpPopSuccess">
-                  <div className="tpPopTick" aria-hidden="true">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M20 6L9 17l-5-5" />
-                    </svg>
-                  </div>
-
-                  <div className="tpPopSuccessText">
-                    Trade executed successfully!
-                    <div className="tpPopSuccessSmall">
-                      Profit: <b>+{nfmt(tradePop.profit, 2)} USDT</b> • Return: <b>20%</b>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="tpPopTradeInfo">
-                  <div className="tpPopInfoRow">
-                    <span>Pair</span>
-                    <b>{tradePop.sym.replace("USDT", "")}/USDT</b>
-                  </div>
-                  <div className="tpPopInfoRow">
-                    <span>Direction</span>
-                    <b>{side === "buy" ? "Long" : "Short"}</b>
-                  </div>
-                  <div className="tpPopInfoRow">
-                    <span>Amount</span>
-                    <b>{nfmt(tradePop.amount, 2)} USDT</b>
-                  </div>
-                  <div className="tpPopInfoRow">
-                    <span>Leverage</span>
-                    <b>{leverage}x</b>
-                  </div>
-                  <div className="tpPopInfoRow">
-                    <span>Entry Price</span>
-                    <b>{nfmt(orderType === "market" ? last : Number(limitPrice || 0), priceDecimals)} USDT</b>
-                  </div>
-                  <div className="tpPopInfoRow highlight">
-                    <span>Profit</span>
-                    <b className="profit">+{nfmt(tradePop.profit, 2)} USDT</b>
-                  </div>
-                </div>
-
-                <button className="tpPopDone" onClick={() => setTradePop((p) => ({ ...p, open: false }))} type="button">
-                  Done
+                <button onClick={() => setInvestment((v) => Math.min(9999, Number(v || 0) + 1))} type="button">
+                  <Icon name="plus" />
                 </button>
               </div>
-            )}
+              <button className="tpSwitchLink">SWITCH</button>
+            </div>
+
+            <button className="tpBtnUp tpDesktopTradeBtn" onClick={() => placeTrade("up")}>
+              <span>Buy</span>
+              <Icon name="up" />
+            </button>
+
+            <div className="tpPayout tpDesktopPayout">Your payout: {nfmt(payoutAmount, 2)} $</div>
+
+            <button className="tpBtnDown tpDesktopTradeBtn" onClick={() => placeTrade("down")}>
+              <span>Sell</span>
+              <Icon name="down" />
+            </button>
+
+            <div className="tpTradesCard">
+              <div className="tpTradesHead">
+                <div className="tpTradesTitle">
+                  <strong>Open Trades</strong>
+                  <span className="tpCounter">{liveTrades.length}</span>
+                </div>
+
+                <div className="tpTradesMeta">
+                  <Icon name="clock" />
+                  <span className="tpCounter dark">
+                    {liveTrades.filter((t) => t.status === "open").length}
+                  </span>
+                </div>
+              </div>
+
+              <div className="tpTradesList">
+                {!liveTrades.length ? (
+                  <div className="tpEmptyTrades">No live trades right now.</div>
+                ) : (
+                  liveTrades.map((t) => (
+                    <div key={t.id} className="tpTradeItem">
+                      <div className="tpTradeItemTop">
+                        <strong>{t.pair}</strong>
+                        <span>
+                          {t.status === "open"
+                            ? formatCountdown(t.remainingMs / 1000)
+                            : t.status.toUpperCase()}
+                        </span>
+                      </div>
+
+                      <div className="tpTradeItemBottom">
+                        <div className={cls("tpTradeSide", t.side === "up" ? "up" : "down")}>
+                          {t.side === "up" ? "↑" : "↓"} {t.amount} $
+                        </div>
+
+                        <div className="tpTradePnl neutral">LIVE</div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="tpQuickStats">
+              <div className="tpQuickStat">
+                <Icon name="wallet" />
+                <div>
+                  <span>Balance</span>
+                  <strong>${nfmt(balance, 2)}</strong>
+                </div>
+              </div>
+              <div className="tpQuickStat">
+                <Icon name="history" />
+                <div>
+                  <span>History</span>
+                  <strong>{history.length} records</strong>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <div className="tpMobileTradeBar">
+            <div className="tpMobileTradeRow">
+              <button className="tpBtnUp tpBtnHalf" onClick={() => placeTrade("up")} type="button">
+                <span>Buy</span>
+                <Icon name="up" />
+              </button>
+
+              <button className="tpBtnDown tpBtnHalf" onClick={() => placeTrade("down")} type="button">
+                <span>Sell</span>
+                <Icon name="down" />
+              </button>
+            </div>
+
+            <div className="tpMobileTradeBottom">
+              <div className="tpMobilePayout">Payout: {nfmt(payoutAmount, 2)} $</div>
+              <button className="tpMobileTradeToggle" type="button">
+                Trade Panel
+              </button>
+            </div>
           </div>
         </div>
-      ) : null}
+      </div>
+
+      <ReportModal
+        open={reportOpen}
+        title={reportTitle}
+        type={reportType}
+        data={reportData}
+        onClose={() => setReportOpen(false)}
+      />
     </div>
   );
 }

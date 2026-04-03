@@ -314,11 +314,11 @@ export default function MemberWallet() {
                 </div>
                 <div className="dpRow">
                   <span className="dpLabel">{r.kind === "deposit" ? "Network" : "Method"}</span>
-                  <span>{r.kind === "deposit" ? r.network : r.method}</span>
+                  <span className="dpLabel">{r.kind === "deposit" ? r.network : r.method}</span>
                 </div>
                 <div className="dpRow">
                   <span className="dpLabel">Date</span>
-                  <span>{r.date}</span>
+                  <span className="dpLabel">{r.date}</span>
                 </div>
                 <div className="dpRow">
                   <span className="dpLabel">Status</span>

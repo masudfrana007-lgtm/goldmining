@@ -197,6 +197,47 @@ function upsertJsonLd(id, json) {
   el.textContent = JSON.stringify(json);
 }
 
+function normalizePackage(item, index) {
+  if (!item || typeof item !== "object") return null;
+
+  return {
+    id: item.id || item.packageId || item.code || `PK-GM-${String(index + 1).padStart(2, "0")}`,
+    name: item.name || item.title || item.packageName || "Mining Package",
+    range: item.range || item.limit || item.amountRange || "Custom",
+    daily: Number(item.daily ?? item.dailyPercent ?? item.dailyReturn ?? 0),
+    status: item.status || "Running",
+    progress: Math.max(0, Math.min(100, Number(item.progress ?? item.cycleProgress ?? 0))),
+    img: item.img || item.image || item.thumbnail || "/gm/rig-gold.png",
+  };
+}
+
+function readSubscribedPackages() {
+  const possibleKeys = [
+    "gm_subscribed_packages",
+    "gm_packages",
+    "goldmiracle_packages",
+    "goldmiracle_subscribed_packages",
+    "member_packages",
+    "subscribedPackages",
+  ];
+
+  for (const key of possibleKeys) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed.map(normalizePackage).filter(Boolean);
+      }
+      if (Array.isArray(parsed?.packages)) {
+        return parsed.packages.map(normalizePackage).filter(Boolean);
+      }
+    } catch (e) {}
+  }
+
+  return [];
+}
+
 export default function DashboardGoldMiracle() {
   const nav = useNavigate();
 
@@ -229,20 +270,17 @@ export default function DashboardGoldMiracle() {
     const title = "GoldMiracle Dashboard | Wallet, Mining Packages, Profits & Withdrawals";
     const description =
       "Access your GoldMiracle dashboard to view wallet balance, mining packages, 7-day analytics, deposits, withdrawals, and account security in one place.";
-    // Optional: create this image for better social previews
     const ogImage = `${baseUrl}/gm/og-dashboard.png`;
     return { baseUrl, canonical, title, description, ogImage };
   }, []);
 
   useEffect(() => {
-    // ✅ Basic SEO tags
     document.title = seo.title;
 
     upsertMeta("description", seo.description);
     upsertMeta("robots", "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1");
     upsertLink("canonical", seo.canonical);
 
-    // ✅ Open Graph
     upsertMeta("og:type", "website", true);
     upsertMeta("og:site_name", "GoldMiracle", true);
     upsertMeta("og:title", seo.title, true);
@@ -250,13 +288,11 @@ export default function DashboardGoldMiracle() {
     upsertMeta("og:url", seo.canonical, true);
     upsertMeta("og:image", seo.ogImage, true);
 
-    // ✅ Twitter cards
     upsertMeta("twitter:card", "summary_large_image");
     upsertMeta("twitter:title", seo.title);
     upsertMeta("twitter:description", seo.description);
     upsertMeta("twitter:image", seo.ogImage);
 
-    // ✅ Structured data (JSON-LD)
     upsertJsonLd("website", {
       "@context": "https://schema.org",
       "@type": "WebSite",
@@ -367,7 +403,7 @@ export default function DashboardGoldMiracle() {
     setTip((s) => ({ ...s, show: false }));
   }
 
-  const packages = useMemo(
+  const fallbackPackages = useMemo(
     () => [
       {
         id: "PK-GM-01",
@@ -399,6 +435,27 @@ export default function DashboardGoldMiracle() {
     ],
     []
   );
+
+  const [packages, setPackages] = useState(() => {
+    const stored = readSubscribedPackages();
+    return stored.length ? stored : fallbackPackages;
+  });
+
+  useEffect(() => {
+    function loadPackages() {
+      const stored = readSubscribedPackages();
+      setPackages(stored.length ? stored : fallbackPackages);
+    }
+
+    loadPackages();
+    window.addEventListener("storage", loadPackages);
+    window.addEventListener("gm-packages-updated", loadPackages);
+
+    return () => {
+      window.removeEventListener("storage", loadPackages);
+      window.removeEventListener("gm-packages-updated", loadPackages);
+    };
+  }, [fallbackPackages]);
 
   const activity = useMemo(
     () => [
@@ -518,7 +575,6 @@ export default function DashboardGoldMiracle() {
   const tipValue = activeValues[tip.i] ?? 0;
   const tipDay = activeLabels[tip.i] ?? "";
 
-  // ✅ Visually-hidden style (no CSS file changes)
   const srOnly = {
     position: "absolute",
     width: 1,
@@ -533,7 +589,6 @@ export default function DashboardGoldMiracle() {
 
   return (
     <div className="gmDash">
-      {/* ✅ SEO heading + intro (invisible; does not change layout) */}
       <h1 style={srOnly}>GoldMiracle Dashboard</h1>
       <p style={srOnly}>
         GoldMiracle is a digital finance dashboard to manage wallet balance, track mining packages, review 7-day analytics for profits,
@@ -648,33 +703,44 @@ export default function DashboardGoldMiracle() {
                 Available: <b>{money(balance.available)} USDT</b> &nbsp;&nbsp; Locked: <b>{money(balance.locked)} USDT</b>
               </div>
 
-              <div className="gmWalletActions" aria-label="Wallet actions">
-                <button className="gmWAction" type="button" onClick={() => go("/deposit")} title="Add funds" aria-label="Deposit funds">
+              <div className="gmWalletActions gmWalletActions3" aria-label="Wallet actions">
+                <button
+                  className="gmWAction"
+                  type="button"
+                  onClick={() => go("/Member/Deposit")}
+                  title="Add funds"
+                  aria-label="Add funds"
+                >
                   <span className="gmWActionIcon" aria-hidden="true">
                     <Icon name="plus" />
                   </span>
-                  <span className="gmWActionText">Add</span>
+                  <span className="gmWActionText">Add Funds</span>
                 </button>
 
-                <button className="gmWAction" type="button" onClick={() => go("/transfer")} title="Send" aria-label="Transfer funds">
-                  <span className="gmWActionIcon" aria-hidden="true">
-                    <Icon name="send" />
-                  </span>
-                  <span className="gmWActionText">Send</span>
-                </button>
-
-                <button className="gmWAction" type="button" onClick={() => go("/withdraw")} title="Request payout" aria-label="Withdraw funds">
+                <button
+                  className="gmWAction"
+                  type="button"
+                  onClick={() => go("/member/withdrawal-method")}
+                  title="Withdraw"
+                  aria-label="Withdraw funds"
+                >
                   <span className="gmWActionIcon" aria-hidden="true">
                     <Icon name="request" />
                   </span>
-                  <span className="gmWActionText">Request</span>
+                  <span className="gmWActionText">Withdraw</span>
                 </button>
 
-                <button className="gmWAction" type="button" onClick={() => go("/transactions")} title="Bills" aria-label="View transactions">
+                <button
+                  className="gmWAction"
+                  type="button"
+                  onClick={() => go("/transactions")}
+                  title="Records"
+                  aria-label="View records"
+                >
                   <span className="gmWActionIcon" aria-hidden="true">
                     <Icon name="bill" />
                   </span>
-                  <span className="gmWActionText">Bill</span>
+                  <span className="gmWActionText">Records</span>
                 </button>
               </div>
 
@@ -702,7 +768,7 @@ export default function DashboardGoldMiracle() {
 
                 <div className="gmWStat">
                   <div className="gmWStatK">Active packages</div>
-                  <div className="gmWStatV">{market.activePackages}</div>
+                  <div className="gmWStatV">{packages.length}</div>
                 </div>
 
                 <div className="gmWStat">
@@ -977,51 +1043,61 @@ export default function DashboardGoldMiracle() {
           </div>
 
           <div className="gmPkgGrid">
-            {packages.map((p) => (
-              <div className="gmCard gmPkg" key={p.id}>
-                <div className="gmPkgTop">
-                  <div className="gmPkgThumb">
-                    <img
-                      src={p.img}
-                      alt={`${p.name} mining package`}
-                      loading="lazy"
-                      onError={(e) => (e.currentTarget.style.display = "none")}
-                    />
-                    <div className="gmThumbGlow" />
-                  </div>
-
-                  <div className="gmPkgInfo">
-                    <div className="gmPkgName">{p.name}</div>
-                    <div className="gmPkgMeta">
-                      Limit: {p.range} • Daily: <b>{p.daily}%</b>
+            {packages.length > 0 ? (
+              packages.map((p) => (
+                <div className="gmCard gmPkg" key={p.id}>
+                  <div className="gmPkgTop">
+                    <div className="gmPkgThumb">
+                      <img
+                        src={p.img}
+                        alt={`${p.name} mining package`}
+                        loading="lazy"
+                        onError={(e) => (e.currentTarget.style.display = "none")}
+                      />
+                      <div className="gmThumbGlow" />
                     </div>
 
-                    <div className="gmPkgBadges">
-                      <span className={cls("gmPill", p.status === "Running" ? "run" : "pause")}>{p.status}</span>
-                      <span className="gmPill soft">ID: {p.id}</span>
+                    <div className="gmPkgInfo">
+                      <div className="gmPkgName">{p.name}</div>
+                      <div className="gmPkgMeta">
+                        Limit: {p.range} • Daily: <b>{p.daily}%</b>
+                      </div>
+
+                      <div className="gmPkgBadges">
+                        <span className={cls("gmPill", p.status === "Running" ? "run" : "pause")}>{p.status}</span>
+                        <span className="gmPill soft">ID: {p.id}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="gmProgRow">
-                  <div className="gmProgLabel">Cycle progress</div>
-                  <div className="gmProgVal">{p.progress}%</div>
-                </div>
-                <div className="gmProgBar">
-                  <div className="gmProgFill" style={{ width: `${p.progress}%` }} />
-                </div>
+                  <div className="gmProgRow">
+                    <div className="gmProgLabel">Cycle progress</div>
+                    <div className="gmProgVal">{p.progress}%</div>
+                  </div>
+                  <div className="gmProgBar">
+                    <div className="gmProgFill" style={{ width: `${p.progress}%` }} />
+                  </div>
 
-                <div className="gmPkgBtns">
-                  <button className="gmGhostBtn dex" onClick={() => go(`/mining/${p.id}`)} type="button" aria-label={`View details for ${p.name}`}>
-                    Details
-                  </button>
+                  <div className="gmPkgBtns">
+                    <button className="gmGhostBtn dex" onClick={() => go(`/mining/${p.id}`)} type="button" aria-label={`View details for ${p.name}`}>
+                      Details
+                    </button>
 
-                  <button className="gmPrimaryBtn dexYellow" onClick={() => go("/withdraw")} type="button" aria-label="Withdraw from wallet">
-                    Withdraw
-                  </button>
+                    <button className="gmPrimaryBtn dexYellow" onClick={() => go("/WithdrawalMethod")} type="button" aria-label="Withdraw from wallet">
+                      Withdraw
+                    </button>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="gmCard gmPkgEmpty">
+                <div className="gmPkgEmptyTitle">No active packages yet</div>
+                <div className="gmPkgEmptySub">Subscribed mining packages will appear here automatically.</div>
+                <button className="gmGhostBtn dex" onClick={() => go("/mining")} type="button">
+                  Browse packages
+                </button>
               </div>
-            ))}
+            )}
           </div>
         </section>
 

@@ -10,10 +10,9 @@
 
   --blue:#5bb2ff;
 
-  /* NEW premium purple tone */
-  --p1:#7c3aed;     /* violet */
-  --p2:#4c1d95;     /* deep purple */
-  --p3:#312e81;     /* indigo */
+  --p1:#7c3aed;
+  --p2:#4c1d95;
+  --p3:#312e81;
   --pGlow: rgba(124,58,237,.28);
 
   --ok:#3ddc97;
@@ -26,7 +25,6 @@
   --shadow: 0 18px 48px rgba(0,0,0,.58);
   --shadow2: 0 12px 26px rgba(0,0,0,.45);
 
-  /* ✅ Bybit-like solid yellow */
   --bybitYellow:#f5c400;
   --bybitYellow2:#ffd84a;
   --bybitText:#1a1300;
@@ -58,14 +56,13 @@
   opacity:.9;
 }
 
-/* Top bar */
 .gmTop{
   position:sticky;
   top:0;
   z-index:5;
   display:flex;
   align-items:center;
-  justify-content:space-between; /* ✅ allow right button */
+  justify-content:space-between;
   gap:12px;
   padding:12px 16px;
   border-bottom:1px solid rgba(255,255,255,.08);
@@ -132,7 +129,6 @@
   text-overflow:ellipsis;
 }
 
-/* ✅ Customer Support button (Bybit yellow, NO glass) */
 .gmSupportBtn{
   border:none;
   background: var(--bybitYellow);
@@ -163,7 +159,6 @@
 .gmSupportBtn:hover{
   filter: brightness(1.03);
   transform: translateY(-1px);
-  /* ✅ subtle Bybit glow */
   box-shadow:
     0 18px 38px rgba(0,0,0,.42),
     0 14px 30px rgba(245,196,0,.28),
@@ -171,14 +166,12 @@
 }
 .gmSupportBtn:active{ transform: translateY(0); }
 
-/* Layout wrapper */
 .gmWrap{
   width: min(1240px, calc(100% - 28px));
   margin: 12px auto 34px;
   position:relative;
 }
 
-/* Cards */
 .gmCard{
   background: linear-gradient(180deg, rgba(255,255,255,.055), rgba(0,0,0,.22));
   border: 1px solid var(--stroke);
@@ -188,7 +181,6 @@
 }
 .gmCard:hover{ border-color: var(--stroke2); }
 
-/* Welcome */
 .gmWelcome{
   display:flex;
   align-items:center;
@@ -228,7 +220,6 @@
     radial-gradient(18px 18px at 80% 80%, rgba(124,58,237,.12), transparent 60%);
 }
 
-/* Buttons */
 .gmGhostBtn{
   border:1px solid rgba(255,255,255,.12);
   background: rgba(255,255,255,.04);
@@ -267,7 +258,6 @@
     0 14px 34px rgba(255,216,74,.22);
 }
 
-/* Hero grid */
 .gmHeroRow{
   display:grid;
   grid-template-columns: 1.45fr .85fr;
@@ -277,9 +267,6 @@
 .gmCol{ display:grid; gap:14px; }
 .gmLeftCol{ display:grid; gap:14px; align-items:start; }
 
-/* =========================
-   Wallet Card
-   ========================= */
 .gmWallet{
   padding: 14px;
   overflow:hidden;
@@ -431,6 +418,10 @@
   gap:10px;
 }
 
+.gmWalletActions3{
+  grid-template-columns: repeat(3, 1fr);
+}
+
 .gmWAction{
   border: 1px solid rgba(255,255,255,.12);
   background: rgba(255,255,255,.05);
@@ -445,6 +436,7 @@
   justify-content:center;
   gap:8px;
   text-align:center;
+  min-height: 92px;
 }
 .gmWAction:hover{
   transform: translateY(-1px);
@@ -514,7 +506,6 @@
   border-color: rgba(124,58,237,.30);
 }
 
-/* ✅ bottom mini grid (Image 2 requirement) */
 .gmWalletMiniGrid{
   margin-top: 12px;
   display:grid;
@@ -531,7 +522,6 @@
 .gmWStatK{ font-size: 12px; color: rgba(234,240,255,.70); }
 .gmWStatV{ margin-top: 7px; font-size: 14px; font-weight: 850; }
 
-/* Sections spacing */
 .gmSection{ margin-top: 18px; }
 .gmSectionHead{
   display:flex;
@@ -559,7 +549,6 @@
 }
 .gmLinkBtn:hover{ text-decoration: underline; }
 
-/* Notices */
 .gmNotices{ padding-bottom:12px; }
 .gmNoticeList{
   list-style:none;
@@ -585,7 +574,6 @@
 .gmBullet.blue{ background: var(--blue); box-shadow: 0 0 0 4px rgba(91,178,255,.12); }
 .gmBullet.gray{ background: rgba(255,255,255,.45); box-shadow: 0 0 0 4px rgba(255,255,255,.10); }
 
-/* Market */
 .gmMarketPanel{ padding-bottom:12px; }
 .gmMarketUpdate{ margin-top:4px; font-size:11px; color: rgba(234,240,255,.62); }
 .gmMarketMiniGrid{
@@ -638,7 +626,6 @@
 .tone-gold{ border-color: rgba(255,255,255,.18); background: rgba(255,255,255,.05); }
 .tone-net{ border-color: rgba(61,220,151,.20); background: rgba(61,220,151,.06); }
 
-/* Packages */
 .gmPkgGrid{
   display:grid;
   grid-template-columns: repeat(3, 1fr);
@@ -706,7 +693,30 @@
 }
 .gmPkgBtns{ margin-top:12px; display:flex; gap:10px; }
 
-/* Tools */
+.gmPkgEmpty{
+  grid-column: 1 / -1;
+  padding: 24px;
+  border-radius: 20px;
+  text-align: center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  min-height: 170px;
+}
+.gmPkgEmptyTitle{
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+.gmPkgEmptySub{
+  font-size: 13px;
+  color: rgba(234,240,255,.72);
+  max-width: 420px;
+  line-height: 1.5;
+}
+
 .gmToolGrid{
   display:grid;
   grid-template-columns: repeat(4, 1fr);
@@ -756,7 +766,6 @@
 .gmTool.tone-purple{ border-color: rgba(124,58,237,.20); }
 .gmTool.tone-gray{ border-color: rgba(255,255,255,.10); }
 
-/* Activity */
 .gmActivity{ padding: 6px 10px; }
 .gmActRow{
   display:grid;
@@ -803,7 +812,6 @@
 .gmAmtMain.muted{ color: rgba(234,240,255,.55); font-weight:750; }
 .gmAmtSub{ margin-top:2px; font-size:11px; color: rgba(234,240,255,.65); }
 
-/* Profit card */
 .gmProfitCard{
   padding:14px;
   position:relative;
@@ -831,7 +839,6 @@
 .gmProfitTitle{ font-weight:850; letter-spacing:.2px; }
 .gmProfitSub{ margin-top:4px; font-size:12px; color: rgba(234,240,255,.70); }
 
-/* Tabs */
 .gmTabs{
   display:flex;
   gap:8px;
@@ -859,7 +866,6 @@
   box-shadow: 0 14px 30px rgba(255,216,74,.16);
 }
 
-/* Stats row */
 .gmProfitStatsRow{
   margin-top:10px;
   display:flex;
@@ -929,7 +935,6 @@
   background: rgba(124,58,237,.06);
 }
 
-/* Tooltip */
 .gmTip{
   position:absolute;
   width:160px;
@@ -961,7 +966,6 @@
 .gmTipUnit{ font-size:12px; opacity:.75; font-weight:800; }
 .gmTipHint{ margin-top:6px; font-size:11px; opacity:.7; line-height:1.35; }
 
-/* Payments strip */
 .gmStrip{ margin-top:18px; }
 .gmStripCard{
   border-radius:18px;
@@ -981,7 +985,6 @@
 }
 .gmPay img{ max-width:80%; max-height:70%; opacity:.92; }
 
-/* Responsive */
 @media (max-width: 1180px){
   .gmPkgGrid{ grid-template-columns: repeat(2, 1fr); }
   .gmToolGrid{ grid-template-columns: repeat(3, 1fr); }
@@ -1004,16 +1007,15 @@
 }
 
 @media (max-width: 520px){
-  /* ✅ MOBILE: keep Support button small and top-right (like marked place) */
   .gmTop{
     padding: 10px 12px;
-    flex-wrap: nowrap;            /* keep one row */
+    flex-wrap: nowrap;
     align-items: center;
     justify-content: space-between;
   }
 
   .gmTopRight{
-    width: auto;                  /* not full width */
+    width: auto;
     flex: 0 0 auto;
     margin-left: auto;
     display:flex;
@@ -1022,9 +1024,9 @@
   }
 
   .gmSupportBtn{
-    width: auto;                  /* ✅ small */
+    width: auto;
     min-width: 0;
-    padding: 8px 10px;            /* ✅ smaller */
+    padding: 8px 10px;
     font-size: 11px;
     line-height: 1;
     border-radius: 999px;
@@ -1041,11 +1043,14 @@
   .gmWrap{ width: calc(100% - 18px); margin-top: 10px; }
 
   .gmWalletAmt{ font-size: 28px; }
-  .gmWalletActions{ grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .gmWAction{ padding: 10px 8px; border-radius: 15px; }
+  .gmWalletActions,
+  .gmWalletActions3{
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .gmWAction{ padding: 10px 8px; border-radius: 15px; min-height: 88px; }
   .gmWActionIcon{ width: 36px; height: 36px; }
 
-  /* ✅ Image 2: MOBILE GRID VIEW (2x2) */
   .gmWalletMiniGrid{ grid-template-columns: repeat(2, 1fr); }
 
   .gmActRow{ grid-template-columns: 42px 1fr 92px; }
@@ -1053,4 +1058,5 @@
   .gmMarketMiniGrid{ grid-template-columns: 1fr; }
   .gmChartLabels{ grid-template-columns: repeat(3, 1fr); }
 }
+
 button:disabled{ opacity:.7; cursor:not-allowed; }

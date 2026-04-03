@@ -1,1900 +1,3423 @@
-/* TradingPro.css */
-
-/* =========================================
-   TRADINGPRO ONLY (SCOPED)
-   NOTHING GLOBAL LEAKS OUTSIDE .tpPage
-========================================= */
-
-.tpPage{
-  /* vars scoped ONLY to this page */
-  --bg:#0b0f16;
-  --bg2:#0a0d13;
-
-  --panel: rgba(17,24,35,.72);
-  --panelManual: rgba(12,18,26,.95);
-
-  --line: rgba(255,255,255,.08);
-  --line2: rgba(255,255,255,.12);
-
-  --txt: #e7eef9;
-  --mut: rgba(231,238,249,.65);
-
-  --green:#00e79c;
-  --greenSoft: rgba(0,231,156,.12);
-  --greenLine: rgba(0,231,156,.25);
-
-  --red:#ff4d4f;
-  --redSoft: rgba(255,77,79,.12);
-  --redLine: rgba(255,77,79,.25);
-
-  --shadowSoft: 0 10px 40px rgba(0,0,0,.35);
-  --r: 18px;
-
-  --fs-11: clamp(10px, .85vw, 11px);
-  --fs-12: clamp(11px, .95vw, 12px);
-  --fs-13: clamp(12px, 1.05vw, 13px);
-  --fs-14: clamp(13px, 1.15vw, 14px);
-  --fs-16: clamp(14px, 1.25vw, 16px);
-  --fs-18: clamp(16px, 1.5vw, 18px);
-  --fs-22: clamp(18px, 1.9vw, 22px);
-  --fs-28: clamp(22px, 2.4vw, 28px);
-
-  min-height:100vh;
-  width:100%;
-
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  background:
-    radial-gradient(1000px 600px at 60% 0%, rgba(0,231,156,.06), transparent 60%),
-    linear-gradient(180deg, var(--bg), var(--bg2));
-
-  color: var(--txt);
-  padding: clamp(10px, 2vw, 16px);
-  position: relative;
+:root {
+  --bg: #060d1a;
+  --bg2: #091224;
+  --panel: #101a31;
+  --panel2: #111d37;
+  --panel3: #16233f;
+  --line: rgba(255, 255, 255, 0.08);
+  --line2: rgba(255, 255, 255, 0.12);
+  --text: #f4f7ff;
+  --muted: #94a2c5;
+  --muted2: #bec8df;
+  --blue: #1b8cff;
+  --blue2: #2d6fff;
+  --green: #1bc864;
+  --red: #ff5b4c;
+  --orange: #ffb020;
+  --purple: #7d6bff;
+  --cyan: #43c7ff;
+  --gold: #ffd44d;
+  --pink: #ff71d1;
+  --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  --radius: 16px;
 }
 
-.tpPage,
-.tpPage *{
+* {
   box-sizing: border-box;
 }
 
-/* prevent random global styles from other pages */
-.tpPage button,
-.tpPage input,
-.tpPage select{
-  font: inherit;
-  color: inherit;
-}
-
-/* Center header and shell with a max width */
-.tpPage .tpTop,
-.tpPage .tpShell{
-  max-width: 1480px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* TOP BAR */
-.tpPage .tpTop{
-  display:flex;
-  align-items:center;
-  justify-content: space-between;
-  gap: 12px;
-
-  padding: 8px 14px !important;
-  min-height: 60px !important;
-  border-radius: 18px !important;
-
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
   background:
-    linear-gradient(180deg, rgba(10,16,26,0.98), rgba(8,13,22,0.98)) !important;
-
-  border: 1px solid rgba(255,255,255,0.06) !important;
-
-  box-shadow:
-    0 6px 24px rgba(0,0,0,0.35),
-    0 1px 0 rgba(0,231,156,0.05) inset !important;
-
-  backdrop-filter: blur(10px);
-  position: relative;
-  z-index: 10;
+    radial-gradient(circle at top center, rgba(29, 111, 255, 0.12), transparent 25%),
+    radial-gradient(circle at right center, rgba(67, 199, 255, 0.05), transparent 20%),
+    linear-gradient(180deg, #050b16 0%, #091120 100%);
+  color: var(--text);
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 }
 
-.tpPage .tpBurger{
-  width: 40px !important;
-  height: 40px !important;
-  border-radius:14px;
-  border:1px solid var(--line2);
-  background:rgba(255,255,255,.03);
-  display:grid;
-  place-content:center;
-  gap:4px;
-  cursor:pointer;
-  flex: 0 0 auto;
-}
-.tpPage .tpBurger span{
-  width: 16px !important;
-  height:2px;
-  background:var(--txt);
-  display:block;
-  opacity:.9;
+button,
+input {
+  font: inherit;
 }
 
-.tpPage .tpBackBtn{
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border: 1px solid rgba(0,231,156,.22);
-  background: rgba(0,231,156,.08);
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 900;
-  font-size: 13px;
-  color: rgba(0,231,156,.95);
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,.25);
-  flex-shrink: 0;
+button {
+  min-width: 0;
 }
 
-.tpPage .tpBackBtn svg{
-  flex-shrink: 0;
-}
-
-.tpPage .tpBackBtn svg path{
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.tpPage .tpBackBtn:hover{
-  background: rgba(0,231,156,.14);
-  border-color: rgba(0,231,156,.40);
-  transform: translateX(-2px);
-  box-shadow: 
-    0 3px 12px rgba(0,231,156,.25),
-    0 0 20px rgba(0,231,156,.15);
-}
-
-.tpPage .tpBackBtn:active{
-  transform: translateX(-1px);
-  box-shadow: 0 1px 4px rgba(0,0,0,.3);
-}
-
-.tpPage .tpBrand{ display:flex; align-items:center; gap: 10px !important; min-width: 0; }
-.tpPage .tpMark{
-  width: 28px !important;
-  height: 28px !important;
-  border-radius:12px;
-  background: radial-gradient(circle at 30% 30%, var(--green), rgba(0,231,156,.15));
-  box-shadow:0 0 20px rgba(0,231,156,.25);
-  flex: 0 0 auto;
-}
-.tpPage .tpBrandText{ min-width:0; }
-.tpPage .tpName{ font-weight:950; font-size: 14px !important; letter-spacing:.2px; }
-.tpPage .tpHint{ font-size: 11px !important; color:var(--mut); margin-top:2px; }
-
-.tpPage .tpTopRight{ display:flex; align-items:center; gap:10px; flex: 0 0 auto; }
-.tpPage .tpWallet{
-  border:1px solid var(--line);
-  background:rgba(255,255,255,.03);
-  border-radius:14px !important;
-  padding: 8px 12px !important;
-  text-align:right;
-}
-.tpPage .tpWL{ font-size: 10px !important; color:var(--mut); }
-.tpPage .tpWV{ font-size: 14px !important; font-weight:950; }
-.tpPage .tpWV span{ color: rgba(0,231,156,.95); font-size: var(--fs-11); margin-left:6px; }
-
-/* LAYOUT */
-.tpPage .tpShell{
-  margin-top: clamp(10px, 2vw, 14px);
-  display:grid !important;
-  grid-template-columns: 320px minmax(0, 1fr) 360px !important;
-  gap: 16px !important;
-  align-items:start;
-  position: relative;
-  z-index: 1;
-}
-
-/* SIDEBAR */
-.tpPage .tpSide{
-  border:1px solid var(--line);
-  background:var(--panel);
-  border-radius:var(--r);
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  height: calc(100vh - 140px);
-  position: sticky;
-  top: 14px;
-  z-index: 5;
-}
-.tpPage .tpSideTop{
-  padding: 14px 14px 12px;
-  display:flex;
-  justify-content:space-between;
-  border-bottom:1px solid rgba(255,255,255,.08);
-  font-weight:950;
-}
-.tpPage .tpSideTitle{ font-size: var(--fs-13); letter-spacing:.2px; }
-.tpPage .tpClose{
-  display:none;
-  border:1px solid var(--line2);
-  background:rgba(255,255,255,.03);
-  color:var(--txt);
-  border-radius:12px;
-  padding:8px 10px;
-  cursor:pointer;
-}
-
-.tpPage .tpSearch{ padding: 12px 14px; }
-.tpPage .tpSearch input{
-  width:100%;
-  padding: 11px 12px;
-  border-radius:14px;
-  border:1px solid var(--line2);
-  background:rgba(255,255,255,.03);
-  outline:none;
-  font-size: var(--fs-13);
-}
-.tpPage .tpSearch input:focus{
-  border-color: var(--greenLine);
-  box-shadow: 0 0 0 4px rgba(0,231,156,.08);
-}
-
-.tpPage .tpSideMeta{
-  padding: 0 14px 12px;
-  display:flex; gap:8px; flex-wrap:wrap;
-}
-.tpPage .tpPill{
-  font-size: var(--fs-12);
-  font-weight:950;
-  padding:6px 10px;
-  border-radius:999px;
-  border:1px solid var(--line);
-  background:rgba(255,255,255,.03);
-}
-.tpPage .tpPill.ok{ border-color:var(--greenLine); background:var(--greenSoft); color:var(--green); }
-.tpPage .tpPill.warn{ border-color:var(--redLine); background:var(--redSoft); color:var(--red); }
-
-.tpPage .tpCoinList{
-  padding: 0 14px 14px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  overflow:auto;
-}
-.tpPage .tpCoin{
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,.08);
-  background:rgba(255,255,255,.02);
-  padding: 10px 12px;
-  display:grid;
-  grid-template-columns: 1fr 1fr auto;
-  gap:10px;
-  align-items:center;
-  cursor:pointer;
-  transition:.15s;
-}
-.tpPage .tpCoin:hover{ border-color:rgba(255,255,255,.18); transform:translateY(-1px); }
-.tpPage .tpCoin.active{ border-color:var(--greenLine); background:rgba(0,231,156,.08); }
-
-.tpPage .tpCoinL{ display:flex; align-items:baseline; gap:7px; min-width:0; }
-.tpPage .tpCoinSym{ font-weight:950; font-size: var(--fs-13); }
-.tpPage .tpCoinSub{ font-size: var(--fs-12); color:var(--mut); }
-.tpPage .tpCoinM{ text-align:right; min-width:0; }
-.tpPage .tpCoinPrice{ font-weight:950; font-size: var(--fs-13); }
-.tpPage .tpCoinVol{ font-size: var(--fs-11); color:var(--mut); margin-top:3px; }
-
-.tpPage .tpCoinR{
-  font-size: var(--fs-12);
-  font-weight:950;
-  padding:6px 9px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.02);
-}
-.tpPage .tpCoinR.up{ background:var(--greenSoft); color:var(--green); border-color:var(--greenLine); }
-.tpPage .tpCoinR.down{ background:var(--redSoft); color:var(--red); border-color:var(--redLine); }
-
-.tpPage .tpSideFoot{
-  margin-top:auto;
-  padding: 10px 14px 14px;
-  border-top:1px solid rgba(255,255,255,.08);
-}
-.tpPage .tpNote{ color:var(--mut); font-size: var(--fs-12); }
-
-/* MAIN */
-.tpPage .tpMain{ 
-  min-width:0 !important; 
-  display:flex; 
-  flex-direction:column; 
-  gap: clamp(10px, 2vw, 14px); 
-  position: relative;
-  z-index: 2;
-}
-
-/* TOP STATS */
-.tpPage .tpMainTop.tpMainTop--compact{
-  display: grid !important;
-  grid-template-columns: auto auto 1fr !important;
-  align-items: center !important;
-  gap: 16px !important;
-  padding: 8px 12px !important;
-}
-
-.tpPage .tpPairBlock{ display:flex; flex-direction:column; gap:6px; }
-.tpPage .tpPairSym{
-  font-size: clamp(16px, 1.6vw, 18px) !important;
-  line-height: 1.05 !important;
-  font-weight:980;
-  letter-spacing:.2px;
-}
-.tpPage .tpPairChg{
-  margin-top: 6px !important;
-  padding: 5px 9px !important;
-  font-size: 11px !important;
-  font-weight:980;
-  border-radius:999px;
-  display:inline-block;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.02);
-}
-.tpPage .tpPairChg.up{ background:var(--greenSoft); color:var(--green); border-color:var(--greenLine); }
-.tpPage .tpPairChg.down{ background:var(--redSoft); color:var(--red); border-color:var(--redLine); }
-
-.tpPage .tpPriceBlock{
-  text-align:right;
-  display:flex;
-  flex-direction:column;
-  align-items:flex-end;
-  gap:6px;
-  min-width:220px;
-}
-.tpPage .tpPriceLabel{ font-size: 10px !important; color:var(--mut); line-height: 1.1 !important; }
-.tpPage .tpPriceVal{
-  margin-top: 2px !important;
-  line-height:1.05 !important;
-  font-size: clamp(20px,2.2vw,26px) !important;
-  font-weight: 990;
-  letter-spacing: .2px;
-}
-
-.tpPage .tpMiniBA{
-  margin-top: 4px !important;
-  display:inline-flex;
-  align-items:center;
-  gap:10px;
-  padding: 5px 10px !important;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.02);
-  font-size: 10px !important;
-  color:var(--mut);
-}
-.tpPage .tpMiniBA b{ font-weight:980; }
-.tpPage .tpMiniBA .g{ color:var(--green); }
-.tpPage .tpMiniBA .r{ color:var(--red); }
-.tpPage .tpMiniBA .sep{ width:1px; height:12px !important; background:rgba(255,255,255,.12); display:inline-block; }
-
-.tpPage .tpStatGrid{
-  display:grid !important;
-  grid-template-columns: repeat(4, minmax(120px,1fr)) !important;
-  gap: 10px !important;
-}
-.tpPage .tpStatBox{
-  border:1px solid rgba(255,255,255,.08);
-  background:rgba(255,255,255,.02);
-  border-radius: 13px !important;
-  padding: 8px 9px !important;
-  text-align:right;
-}
-.tpPage .tpStatBox .k{ font-size: 9.5px !important; color:var(--mut); line-height:1.1 !important; }
-.tpPage .tpStatBox .v{ font-size: 12px !important; font-weight:980; margin-top:3px !important; line-height:1.1 !important; }
-.tpPage .upTxt{ color:var(--green); }
-.tpPage .downTxt{ color:var(--red); }
-
-/* PANELS */
-.tpPage .tpPanel{
-  border:1px solid var(--line);
-  background:var(--panel);
-  border-radius:var(--r);
-  overflow:hidden;
-  position: relative;
-  z-index: auto;
-}
-.tpPage .tpPanelHead{
-  padding: 14px 16px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  border-bottom:1px solid rgba(255,255,255,.08);
-  gap: 10px;
-}
-.tpPage .tpPanelTitle{ font-weight:980; font-size: var(--fs-13); letter-spacing:.2px; }
-
-.tpPage .tpTfRow{ display:flex; gap:8px; }
-.tpPage .tpTf{
-  border-radius:14px;
-  padding: 9px 12px;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.02);
-  font-weight:950;
-  font-size: var(--fs-12);
-  cursor:pointer;
-}
-.tpPage .tpTf.active{ background:var(--greenSoft); border-color:var(--greenLine); color:var(--green); }
-
-.tpPage .tpChartBox{
-  height: clamp(240px, 34vh, 360px);
-  background:linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.06));
-}
-.tpPage .tpCanvas{ width:100%; height:100%; display:block; }
-
-/* BLINK */
-.tpPage .blink{ animation: tpBlink .32s ease; }
-@keyframes tpBlink{
-  0%{ transform: translateY(0); }
-  30%{ transform: translateY(-1px); }
-  100%{ transform: translateY(0); }
-}
-.tpPage .blink.up{ text-shadow: 0 0 22px rgba(0,231,156,.18); }
-.tpPage .blink.down{ text-shadow: 0 0 22px rgba(255,77,79,.18); }
-
-/* ORDER BOOK */
-.tpPage .tpOBMeta{ display:flex; gap:10px; flex-wrap:wrap; }
-.tpPage .tpOBMeta .m{ font-size: var(--fs-12); color:var(--mut); font-weight:900; }
-.tpPage .tpOBMeta b{ color:var(--txt); font-weight:980; }
-
-.tpPage .tpDepth{
-  padding: 12px 16px 14px;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-}
-.tpPage .tpDepthTop{
-  display:flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 10px;
-}
-.tpPage .tpDepthLbl{ font-weight:980; font-size: var(--fs-12); }
-.tpPage .tpDepthLbl span{ color: var(--mut); font-weight:900; margin-left:6px; }
-.tpPage .tpDepthVal{ font-size: var(--fs-12); font-weight:980; }
-.tpPage .tpDepthVal .g{ color:var(--green); }
-.tpPage .tpDepthVal .r{ color:var(--red); }
-.tpPage .tpDepthVal .mut{ color:var(--mut); }
-
-.tpPage .tpDepthBar{
-  margin-top:10px;
-  height: 12px;
-  border-radius: 999px;
-  overflow:hidden;
-  display:flex;
-  border:1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.02);
-}
-.tpPage .tpDepthBid{ background: linear-gradient(90deg, rgba(0,231,156,.42), rgba(0,231,156,.18)); }
-.tpPage .tpDepthAsk{ background: linear-gradient(90deg, rgba(255,77,79,.18), rgba(255,77,79,.42)); }
-.tpPage .tpDepthFoot{
-  margin-top:8px;
-  display:flex;
-  justify-content: space-between;
-  font-size: var(--fs-12);
-  font-weight:950;
-}
-.tpPage .tpDepthFoot .g{ color:var(--green); }
-.tpPage .tpDepthFoot .r{ color:var(--red); }
-
-.tpPage .tpOBGrid{
-  display:grid;
-  grid-template-columns: 1fr 140px 1fr;
-  gap: 12px;
-  padding: 12px 16px 16px;
-}
-.tpPage .tpOBMid{ display:flex; align-items:center; justify-content:center; }
-.tpPage .tpOBMidPrice{
-  border:1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.02);
-  border-radius: 16px;
-  padding: 12px 10px;
-  text-align:center;
-  width:100%;
-}
-.tpPage .tpOBMidPrice .mk{ display:block; margin-top:8px; font-weight:990; font-size: var(--fs-14); }
-.tpPage .tpOBMidPrice .g{ color:var(--green); }
-.tpPage .tpOBMidPrice .r{ color:var(--red); }
-
-.tpPage .tpOBHead{
-  display:flex;
-  justify-content: space-between;
-  padding: 9px 10px;
-  border:1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,.02);
-  border-radius: 14px;
-  font-size: var(--fs-12);
-  font-weight: 980;
-  color: var(--mut);
-}
-.tpPage .tpOBList{
-  margin-top: 10px;
-  display:flex;
-  flex-direction:column;
-  gap: 7px;
-}
-.tpPage .tpOBRow{
-  position:relative;
-  display:flex;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 9px 10px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.06);
-  background: rgba(255,255,255,.015);
-  overflow:hidden;
-  font-size: var(--fs-12);
-  font-weight: 950;
-}
-.tpPage .tpOBRow .bar{
-  position:absolute;
-  top:0; bottom:0;
-  opacity:.65;
-}
-.tpPage .tpOBRow.bid .bar{
-  left:0;
-  background: linear-gradient(90deg, rgba(0,231,156,.22), rgba(0,231,156,.06));
-}
-.tpPage .tpOBRow.ask .bar{
-  right:0;
-  background: linear-gradient(270deg, rgba(255,77,79,.22), rgba(255,77,79,.06));
-}
-.tpPage .tpOBRow .price{ position:relative; z-index:1; }
-.tpPage .tpOBRow .qty{ position:relative; z-index:1; color: rgba(231,238,249,.78); }
-.tpPage .tpOBRow.bid .price{ color: var(--green); }
-.tpPage .tpOBRow.ask .price{ color: var(--red); }
-
-/* RIGHT PANEL */
-.tpPage .tpRight{
-  position: sticky;
-  top: 0;
-  margin-top: 115px;
-  max-height: 80%  !important;
-  display:flex;
-  flex-direction:column;
-  gap: clamp(10px, 2vw, 14px);
-  overflow-y: auto;
+.tpPage {
+  min-height: 100vh;
+  display: flex;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0)),
+    linear-gradient(180deg, #050b16, #091222);
   overflow-x: hidden;
-  z-index: 5;
 }
 
-/* Custom scrollbar for tpRight */
-.tpPage .tpRight::-webkit-scrollbar {
-  width: 8px;
-}
-.tpPage .tpRight::-webkit-scrollbar-track {
-  background: rgba(255,255,255,0.02);
-  border-radius: 4px;
-}
-.tpPage .tpRight::-webkit-scrollbar-thumb {
-  background: rgba(0,231,156,0.15);
-  border-radius: 4px;
-  transition: background 0.2s;
-}
-.tpPage .tpRight::-webkit-scrollbar-thumb:hover {
-  background: rgba(0,231,156,0.25);
+.tpSidebar {
+  width: 84px;
+  min-width: 84px;
+  background: linear-gradient(180deg, #050b18, #071022);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 10px 8px;
+  gap: 16px;
+  z-index: 50;
 }
 
-/* Highlight Manual Trade Panel */
-.tpPage .tpOrderPanel{
-  background: linear-gradient(180deg, rgba(6,16,26,0.98), rgba(4,12,20,0.98)) !important;
-  border: 1px solid rgba(0,231,156,0.12) !important;
-  box-shadow:
-    0 10px 30px rgba(0,0,0,0.45),
-    0 0 0 1px rgba(0,231,156,0.05) inset,
-    0 0 40px rgba(0,231,156,0.06);
-  border-radius: 20px !important;
-  flex-shrink: 0;
-  width: 100%;
-  min-width: 0;
-}
-.tpPage .tpOrderPanel .tpPanelHead{ border-bottom: 1px solid rgba(0,231,156,0.08) !important; }
-.tpPage .tpOrderPanel .tpPanelTitle{
-  color: rgba(0,231,156,0.9) !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.4px;
+.tpSidebarTop,
+.tpSidebarBottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
 
-/* ✅ Coin picker inside Manual Trade */
-.tpPage .tpCoinPick{
-  padding: 12px 14px 0;
-  min-width: 0;
-}
-.tpPage .tpCoinPickTop{
-  display:flex;
-  align-items:baseline;
-  justify-content:space-between;
-  gap:10px;
-  margin-bottom:8px;
-  flex-wrap: nowrap;
-}
-.tpPage .tpCoinPickLabel{
-  font-size: var(--fs-12);
-  color: var(--mut);
-  font-weight:900;
-  flex-shrink: 0;
-}
-.tpPage .tpCoinPickNow{
-  font-size: var(--fs-12);
-  color: rgba(231,238,249,.85);
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-.tpPage .tpCoinPickNow b{ 
-  color: var(--txt); 
-  font-weight:980; 
-}
-.tpPage .tpCoinPickNow span{ 
-  color: var(--mut); 
-  margin-left:6px; 
+.tpSidebarNav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
 }
 
-.tpPage .tpCoinPickRow{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:10px;
-}
-.tpPage .tpCoinPickSearch{
-  width:100%;
-  padding: 11px 12px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,.10);
-  background: rgba(0,0,0,0.28);
-  outline:none;
-  font-size: var(--fs-13);
-}
-.tpPage .tpCoinPickSearch:focus{
-  border-color: var(--greenLine);
-  box-shadow: 0 0 0 4px rgba(0,231,156,.08);
-}
-.tpPage .tpCoinPickSelect{
-  width:100%;
-  padding: 11px 12px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,.10);
-  background: rgba(0,0,0,0.28);
-  outline:none;
-  font-size: var(--fs-13);
+.tpSidebarBottom {
+  margin-top: auto;
 }
 
-/* Controls */
-.tpPage .tpModePills{ display:flex; gap:8px; }
-.tpPage .tpMode{
-  border-radius:14px;
-  padding: 9px 12px;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.02);
-  font-weight:950;
-  font-size: var(--fs-12);
-  cursor:pointer;
-}
-.tpPage .tpMode.active{ background:var(--greenSoft); border-color:var(--greenLine); color:var(--green); }
-
-.tpPage .tpSideBtns{ display:flex; gap:10px; padding: 12px 14px; }
-.tpPage .tpSideBtn{
-  flex:1;
-  padding: 13px 12px;
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.02);
-  font-weight:980;
-  font-size: var(--fs-13);
-  cursor:pointer;
-  letter-spacing:.6px;
-}
-.tpPage .tpSideBtn.active.long{ background:var(--greenSoft); border-color:var(--greenLine); color:var(--green); }
-.tpPage .tpSideBtn.active.short{ background:var(--redSoft); border-color:var(--redLine); color:var(--red); }
-
-.tpPage .tpField{ padding:0 14px 12px; }
-.tpPage .tpFieldLabel{ font-size: var(--fs-12); color:var(--mut); margin-bottom:6px; font-weight:900; }
-.tpPage .tpInput{
-  width:100%;
-  padding: 12px 12px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,.10);
-  background: rgba(0,0,0,0.28);
-  outline:none;
-  font-size: var(--fs-13);
-}
-.tpPage .tpInput:focus{
-  border-color: var(--greenLine);
-  box-shadow: 0 0 0 4px rgba(0,231,156,.08);
-}
-
-.tpPage .tpLevRow{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
-.tpPage .tpLevBtn{
-  width:42px; height:42px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.02);
-  font-weight:980;
-  cursor:pointer;
-}
-.tpPage .tpLevVal{ font-weight:990; color:var(--green); font-size: var(--fs-16); }
-.tpPage .tpRange{ width:100%; margin-top:10px; }
-
-.tpPage .tpInfo{
-  margin: 0 14px 12px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.02);
-  font-size: var(--fs-13);
-  color: rgba(231,238,249,.9);
-  font-weight: 900;
-}
-
-.tpPage .tpSummary{
-  margin: 0 14px 12px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,.02);
-  padding: 10px 12px;
-}
-.tpPage .tpSummary .r{
-  display:flex;
-  justify-content:space-between;
-  padding:8px 0;
-  font-size: var(--fs-13);
-}
-.tpPage .tpSummary .r span{ color:var(--mut); font-weight:900; }
-.tpPage .tpSummary .r b{ font-weight:980; }
-.tpPage .tpSummary .r.total{ border-top:1px solid rgba(255,255,255,.06); margin-top:6px; padding-top:10px; }
-
-.tpPage .tpSubmit{
-  margin: 14px;
-  padding: 13px 12px;
-  border-radius: 16px;
-  font-weight: 980;
-  font-size: var(--fs-14);
-  cursor:pointer;
-  border:none;
-  color:#07110c;
-  background:linear-gradient(180deg, var(--green), rgba(0,231,156,.82));
-}
-.tpPage .tpSubmit.short{ background:linear-gradient(180deg, var(--red), rgba(255,77,79,.82)); color:#1a0b0b; }
-.tpPage .tpSubmit.disabled{ opacity:.5; cursor:not-allowed; }
-
-.tpPage .tpWarn{ padding:0 14px 12px; color:var(--mut); font-size: var(--fs-12); }
-.tpPage .tpFine{ padding:10px 14px 12px; color:rgba(231,238,249,.55); font-size: var(--fs-12); line-height: 1.45; }
-
-/* ACTIVITY */
-.tpPage .tpTabs{ display:flex; gap:10px; }
-.tpPage .tpTab{
-  border-radius:14px;
-  padding: 9px 12px;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.02);
-  font-weight:950;
-  font-size: var(--fs-12);
-  cursor:pointer;
-}
-.tpPage .tpTab.active{ background:var(--greenSoft); border-color:var(--greenLine); color:var(--green); }
-.tpPage .tpSmallHint{ color:var(--mut); font-size: var(--fs-12); font-weight:950; }
-
-.tpPage .tpCards{ padding: 12px 16px 16px; display:flex; flex-direction:column; gap:10px; }
-.tpPage .tpCard{
-  border-radius: 16px;
-  border:1px solid rgba(255,255,255,.08);
-  background:rgba(255,255,255,.02);
-  padding: 12px;
-}
-.tpPage .tpCardRow{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
-.tpPage .tpCardTitle{ font-weight:980; font-size: var(--fs-13); }
-.tpPage .tpBadge{
-  font-weight:980;
-  font-size: var(--fs-11);
-  padding:6px 10px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.02);
-}
-.tpPage .tpBadge.up{ border-color:var(--greenLine); background:var(--greenSoft); color:var(--green); }
-.tpPage .tpBadge.down{ border-color:var(--redLine); background:var(--redSoft); color:var(--red); }
-
-.tpPage .tpKV{ display:flex; flex-direction:column; gap:4px; min-width: 90px; }
-.tpPage .tpKV span{ color:var(--mut); font-size: var(--fs-11); font-weight:900; }
-.tpPage .tpKV b{ font-weight:980; font-size: var(--fs-13); }
-.tpPage .tpStatus{ color:var(--mut); font-weight:950; font-size: var(--fs-12); }
-.tpPage .tpStatus.ok{ color:var(--green); }
-.tpPage .tpMuted{ color:var(--mut); font-size: var(--fs-12); font-weight:900; }
-
-.tpPage .tpCancel{
-  border-radius:14px;
-  border:1px solid var(--redLine);
-  background:var(--redSoft);
-  color:var(--red);
-  font-weight:980;
-  padding:9px 12px;
-  cursor:pointer;
-}
-.tpPage .tpEmpty{ padding:18px 12px; text-align:center; color:var(--mut); font-weight:950; }
-
-/* Mobile bar / Backdrop */
-.tpPage .tpMobileBar{ display:none; }
-.tpPage .tpBackdrop{ display:none; }
-
-.tpPage .tpMobileTrade{ display:none; }
-@media(max-width:980px){
-  .tpPage .tpRight{ display:none; }
-  .tpPage .tpMobileTrade{ display:block; }
-}
-
-/* ✅ RESPONSIVE */
-@media (max-width: 1100px){
-  .tpPage .tpShell{ grid-template-columns: 280px minmax(0, 1fr) 330px !important; }
-}
-
-@media (max-width: 980px){
-  .tpPage .tpTop{
-    padding: 6px 10px !important;
-    min-height: 54px !important;
-  }
-  .tpPage .tpWallet{ display:none !important; }
-
-  .tpPage .tpShell{ grid-template-columns: 1fr !important; }
-
-  .tpPage .tpSide{
-    position: fixed;
-    left: 14px;
-    top: 14px;
-    bottom: 14px;
-    width: min(380px, calc(100% - 28px));
-    transform: translateX(-120%);
-    transition: transform .18s ease;
-    z-index: 200;
-    background: rgba(12,18,26,.96);
-    height: auto;
-  }
-  .tpPage .tpSide.open{ transform: translateX(0); }
-  .tpPage .tpClose{ display:inline-flex; }
-
-  .tpPage .tpBackdrop{
-    display:block;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.55);
-    z-index: 150;
-  }
-
-  .tpPage .tpOBGrid{ grid-template-columns: 1fr; }
-  .tpPage .tpOBMid{ display:none; }
-
-  .tpPage .tpMainTop.tpMainTop--compact{
-    grid-template-columns: 1fr auto !important;
-    gap: 10px !important;
-  }
-
-  .tpPage .tpPriceBlock{
-    text-align: right !important;
-    align-items: flex-end !important;
-    min-width: 170px !important;
-  }
-
-  .tpPage .tpStatGrid{
-    grid-column: 1 / -1 !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    margin-top: 6px !important;
-  }
-
-  .tpPage .tpCoinPickRow{
-    grid-template-columns: 1fr;
-  }
-
-  .tpPage .tpMobileBar{
-    display:flex;
-    align-items:center;
-    justify-content: space-between;
-    gap: 10px;
-    border: 1px solid rgba(255,255,255,.10);
-    background: rgba(17,24,35,.78);
-    backdrop-filter: blur(10px);
-    border-radius: var(--r);
-    box-shadow: var(--shadowSoft);
-    padding: 10px 12px;
-  }
-  .tpPage .tpMBPair{ font-weight:980; font-size: var(--fs-13); }
-  .tpPage .tpMBChg{ font-weight:980; font-size: var(--fs-12); margin-top:4px; }
-  .tpPage .tpMBChg.up{ color: var(--green); }
-  .tpPage .tpMBChg.down{ color: var(--red); }
-
-  .tpPage .tpMBPrice{ font-weight:990; font-size: var(--fs-14); }
-
-  .tpPage .tpMBBtns{ display:flex; gap:8px; }
-  .tpPage .tpMB{
-    border-radius: 14px;
-    border: 1px solid rgba(255,255,255,.12);
-    background: rgba(255,255,255,.02);
-    font-weight: 980;
-    padding: 10px 12px;
-    cursor:pointer;
-    letter-spacing: .5px;
-    font-size: var(--fs-12);
-  }
-  .tpPage .tpMB.long{ border-color: var(--greenLine); background: rgba(0,231,156,.12); color: var(--green); }
-  .tpPage .tpMB.short{ border-color: var(--redLine); background: rgba(255,77,79,.12); color: var(--red); }
-}
-
-/* Premium Vertical Divider Glow (Desktop Only) */
-@media (min-width: 981px){
-  .tpPage .tpShell::after{
-    content: "";
-    position: absolute;
-    top: 20px;
-    bottom: 20px;
-    right: 360px;
-    width: 1px;
-    background: linear-gradient(
-      to bottom,
-      transparent,
-      rgba(0,231,156,0.25),
-      rgba(0,231,156,0.35),
-      rgba(0,231,156,0.25),
-      transparent
-    );
-    box-shadow:
-      0 0 12px rgba(0,231,156,0.25),
-      0 0 24px rgba(0,231,156,0.12);
-    pointer-events: none;
-  }
-}
-
-/* =========================
-   ✅ My Dashboard button (Top)
-========================= */
-.tpPage .tpDashBtn{
-  border: 1px solid rgba(131, 108, 255, 0.28);
-  background: linear-gradient(180deg, rgba(131,108,255,.95), rgba(72, 50, 200, .85));
-  color: #f2f1ff;
-  padding: 10px 14px;
-  border-radius: 14px;
-  font-weight: 980;
-  font-size: var(--fs-12);
-  cursor: pointer;
-  box-shadow:
-    0 10px 24px rgba(0,0,0,.28),
-    0 0 0 1px rgba(255,255,255,.08) inset;
-  transition: transform .15s ease, filter .15s ease;
-}
-.tpPage .tpDashBtn:hover{ transform: translateY(-1px); filter: brightness(1.05); }
-.tpPage .tpDashBtn:active{ transform: translateY(0); filter: brightness(0.98); }
-
-/* =========================
-   ✅ Manual Trade Time Picker
-========================= */
-.tpPage .tpTimeRow{
-  margin: 0 14px 12px;
-  padding: 10px 12px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.02);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 12px;
-}
-.tpPage .tpTimeLeft{ display:flex; flex-direction:column; gap:4px; }
-.tpPage .tpTimeLabel{ font-size: var(--fs-12); color: var(--mut); font-weight: 900; }
-.tpPage .tpTimeVal{ font-size: var(--fs-13); font-weight: 980; color: rgba(231,238,249,.92); }
-
-.tpPage .tpTimeRight{ position:relative; }
-.tpPage .tpTimeBtn{
-  border-radius: 14px;
-  padding: 10px 12px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(0,0,0,0.28);
-  font-weight: 980;
-  font-size: var(--fs-12);
-  cursor:pointer;
-}
-.tpPage .tpTimeBtn:hover{ border-color: rgba(255,255,255,.22); }
-
-.tpPage .tpTimeMenu{
-  position:absolute;
-  right:0;
-  top: calc(100% + 8px);
-  width: 180px;
-  padding: 10px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(12,18,26,.96);
-  box-shadow: 0 18px 44px rgba(0,0,0,.55);
-  display:grid;
-  gap: 8px;
-  z-index: 40;
-}
-.tpPage .tpTimeOpt{
-  width:100%;
-  text-align:left;
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.02);
-  font-weight: 980;
-  font-size: var(--fs-12);
-  cursor:pointer;
-}
-.tpPage .tpTimeOpt:hover{ border-color: rgba(255,255,255,.20); transform: translateY(-1px); }
-.tpPage .tpTimeOpt.active{
-  border-color: rgba(0,231,156,.30);
-  background: rgba(0,231,156,.10);
-  color: rgba(0,231,156,.95);
-}
-
-/* =========================
-   ✅ Trade Popup (Timer + Profit)
-========================= */
-/* ==========================================
-   TRADE PROCESSING MODAL - Enhanced Animations
-========================================== */
-
-@keyframes tpModalFadeIn {
-  0% {
-    opacity: 0;
-    backdrop-filter: blur(0px);
-  }
-  100% {
-    opacity: 1;
-    backdrop-filter: blur(4px);
-  }
-}
-
-@keyframes tpModalSlideUp {
-  0% {
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes tpTimerPulse {
-  0%, 100% {
-    transform: scale(1);
-    text-shadow: 0 0 20px rgba(0,231,156,0.3);
-  }
-  50% {
-    transform: scale(1.05);
-    text-shadow: 0 0 30px rgba(0,231,156,0.5);
-  }
-}
-
-@keyframes tpBarShimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-@keyframes tpCelebrate {
-  0% {
-    transform: scale(0.8) translateY(20px);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes tpProfitGlow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(0,231,156,0.2), 0 0 40px rgba(0,231,156,0.1);
-    border-color: rgba(0,231,156,.22);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(0,231,156,0.4), 0 0 60px rgba(0,231,156,0.2);
-    border-color: rgba(0,231,156,.35);
-  }
-}
-
-@keyframes tpShimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-@keyframes tpSpinner {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes tpFloat {
-  0%, 100% {
-    transform: translateY(0) translateX(0) scale(1);
-    opacity: 0.3;
-  }
-  50% {
-    transform: translateY(-20px) translateX(10px) scale(1.2);
-    opacity: 0.6;
-  }
-}
-
-.tpPage .tpPopWrap{
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.62);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index: 99999;
-  padding: 16px;
-  backdrop-filter: blur(4px);
-  animation: tpModalFadeIn 0.3s ease-out;
-}
-
-.tpPage .tpPopWrap::before,
-.tpPage .tpPopWrap::after{
-  content: '';
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  background: rgba(0,231,156,0.6);
-  border-radius: 50%;
-  box-shadow: 
-    0 0 20px rgba(0,231,156,0.8),
-    0 0 40px rgba(0,231,156,0.4);
-}
-
-.tpPage .tpPopWrap::before{
-  top: 15%;
-  left: 20%;
-  animation: tpFloat 3s ease-in-out infinite;
-}
-
-.tpPage .tpPopWrap::after{
-  bottom: 20%;
-  right: 25%;
-  animation: tpFloat 3s ease-in-out infinite 1.5s;
-}
-
-.tpPage .tpPop{
-  width: min(580px, 100%);
-  border-radius: 22px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: linear-gradient(180deg, rgba(12,18,26,.98), rgba(8,13,22,.98));
-  box-shadow: 
-    0 30px 80px rgba(0,0,0,.65),
-    0 0 0 1px rgba(0,231,156,0.08) inset;
-  overflow:hidden;
-  position: relative;
-  z-index: 100000;
-  animation: tpModalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.tpPage .tpPop::before{
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(0,231,156,0.6), 
-    transparent
-  );
-  animation: tpShimmer 3s ease-in-out infinite;
-}
-
-.tpPage .tpPopTop{
-  padding: 14px 16px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-  background: rgba(0,231,156,0.02);
-}
-
-.tpPage .tpPopTitle{
-  font-weight: 980;
-  letter-spacing: .2px;
-  font-size: var(--fs-13);
-  background: linear-gradient(135deg, rgba(0,231,156,0.95), rgba(0,231,156,0.7));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  position: relative;
-  padding-left: 24px;
-}
-
-.tpPage .tpPopTitle::before{
-  content: '⚡';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 16px;
-  animation: tpTimerPulse 2s ease-in-out infinite;
-}
-
-.tpPage .tpPopClose{
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.03);
-  border-radius: 12px;
+.tpIconBtn {
   width: 38px;
   height: 38px;
-  cursor:pointer;
-  transition: all 0.2s ease;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: #dce7ff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: 0.2s ease;
+  flex: 0 0 auto;
 }
 
-.tpPage .tpPopClose:hover{
-  background: rgba(255,77,79,.15);
-  border-color: rgba(255,77,79,.3);
-  transform: rotate(90deg);
+.tpIconBtn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
 }
 
-.tpPage .tpPopBody{
-  padding: 16px 20px 16px;
-  text-align:center;
+.tpBottomToolRow {
+  display: flex;
+  gap: 8px;
+}
+
+.tpSideNav {
+  width: 68px;
+  min-height: 58px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
   display: flex;
   flex-direction: column;
+  gap: 6px;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: 0.22s ease;
+  padding: 6px 4px;
 }
 
-.tpPage .tpPopK{
-  color: var(--mut);
-  font-weight: 900;
-  font-size: var(--fs-12);
-  text-transform: uppercase;
-  letter-spacing: 1px;
+.tpSideNav span {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  white-space: pre-line;
+  word-break: break-word;
 }
 
-.tpPage .tpPopTimerWrap{
+.tpSideNav.active {
+  background: linear-gradient(180deg, #208cff, #146cff);
+  color: white;
+  box-shadow: 0 14px 28px rgba(20, 108, 255, 0.28);
+}
+
+.tpSideNav:not(.active):hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--line);
+  color: white;
+}
+
+.tpHelpBtn {
+  width: 68px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(46, 255, 174, 0.18);
+  background: linear-gradient(180deg, rgba(25, 196, 99, 0.2), rgba(25, 196, 99, 0.08));
+  color: #a3ffd0;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.tpHelpBtn:hover {
+  transform: translateY(-1px);
+}
+
+.tpSidebarBackdrop {
+  display: none;
+}
+
+.tpBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.tpHeader {
+  min-height: 74px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  gap: 12px;
+  backdrop-filter: blur(8px);
+}
+
+.tpHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.tpMobileMenu {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: white;
+  cursor: pointer;
+}
+
+.tpLogoBlock {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.tpLogo {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, #141c31, #10192c);
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.tpBrand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.tpBrand strong {
+  font-size: 15px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.tpBrand span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.tpHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.tpBell {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: white;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
   position: relative;
-  display: inline-flex;
-  align-items: center;
+  flex: 0 0 auto;
+}
+
+.tpBellDot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #ff5b4d;
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+
+.tpBalanceCard {
+  min-height: 52px;
+  min-width: 185px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(127, 86, 255, 0.22);
+  background: linear-gradient(180deg, rgba(127, 86, 255, 0.18), rgba(127, 86, 255, 0.07));
+  display: flex;
+  flex-direction: column;
   justify-content: center;
-  margin-top: 12px;
-  margin-bottom: 8px;
-  width: 100px;
-  height: 100px;
 }
 
-.tpPage .tpPopTimerWrap::before{
-  content: '';
+.tpBalanceCard small {
+  color: #d9ccff;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.tpBalanceCard strong {
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.tpDepositBtn,
+.tpWithdrawBtn {
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 12px;
+  border: 0;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.2s ease;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.tpDepositBtn {
+  background: linear-gradient(180deg, #19c463, #13a750);
+  color: white;
+}
+
+.tpWithdrawBtn {
+  background: linear-gradient(180deg, #31394f, #272f43);
+  color: white;
+  border: 1px solid var(--line);
+}
+
+.tpDepositBtn:hover,
+.tpWithdrawBtn:hover {
+  transform: translateY(-1px);
+}
+
+.tpContent {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+}
+
+.tpMainArea {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  gap: 14px;
+}
+
+.tpPairsBar,
+.tpIndicatorsBar {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
+}
+
+.tpPairsBar::-webkit-scrollbar,
+.tpIndicatorsBar::-webkit-scrollbar {
+  height: 8px;
+}
+
+.tpPairsBar::-webkit-scrollbar-thumb,
+.tpIndicatorsBar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+
+.tpPairAddBtn {
+  flex: 0 0 auto;
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  border: 1px solid rgba(32, 140, 255, 0.25);
+  background: linear-gradient(180deg, #208cff, #146cff);
+  color: white;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.tpPairAddBtn:hover {
+  transform: translateY(-1px);
+}
+
+.tpPairTab {
+  min-width: 192px;
+  height: 54px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, #131c33, #10182d);
+  color: white;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  position: relative;
+  transition: 0.2s ease;
+  flex: 0 0 auto;
+}
+
+.tpPairTab:hover {
+  border-color: var(--line2);
+  transform: translateY(-1px);
+}
+
+.tpPairTab.active {
+  border-color: rgba(25, 196, 99, 0.38);
+  box-shadow: inset 3px 0 0 #19c463;
+}
+
+.tpPairFlag {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: white;
+  flex: 0 0 auto;
+}
+
+.tpPairFlag.small {
+  width: 22px;
+  height: 22px;
+  font-size: 10px;
+}
+
+.tpPairText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.15;
+  min-width: 0;
+}
+
+.tpPairText strong {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.tpPairText span {
+  color: var(--orange);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.tpLiveBadge {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 900;
+  color: #79ffb7;
+  background: rgba(25, 196, 99, 0.12);
+  padding: 4px 7px;
+  border-radius: 8px;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.tpPairTabContent {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.tpPairTabTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tpPairTabTop strong {
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.tpPairTabBottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: nowrap;
+}
+
+.tpPairTabPayout {
+  color: var(--orange);
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.tpPairTabPrice {
+  color: #d9e7ff;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.tpPairTabChange {
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.tpIndicatorBtn {
+  flex: 0 0 auto;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(54, 129, 255, 0.5);
+  background: rgba(28, 80, 170, 0.14);
+  color: #8fc1ff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+  white-space: nowrap;
+}
+
+.tpIndicatorBtn:hover {
+  background: rgba(31, 98, 217, 0.18);
+  color: #c8e0ff;
+}
+
+.tpIndicatorBtn.active {
+  background: linear-gradient(180deg, rgba(32, 140, 255, 0.26), rgba(20, 108, 255, 0.14));
+  border-color: rgba(85, 156, 255, 0.7);
+  color: #d8ebff;
+  box-shadow: 0 0 0 1px rgba(85, 156, 255, 0.15) inset;
+}
+
+.tpChartPanel,
+.tpContentCard,
+.tpHistoryWrap {
+  border-radius: 20px;
+  border: 1px solid rgba(99, 139, 255, 0.12);
+  background:
+    radial-gradient(circle at top left, rgba(47, 109, 255, 0.14), transparent 28%),
+    linear-gradient(90deg, rgba(31, 86, 220, 0.08), transparent 25%, transparent 75%, rgba(31, 86, 220, 0.05)),
+    linear-gradient(180deg, #10172d, #0d1528);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  position: relative;
+}
+
+.tpChartPanel::before {
+  content: "";
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 90px;
-  height: 90px;
-  margin-top: -45px;
-  margin-left: -45px;
-  border: 3px solid rgba(0,231,156,0.08);
-  border-top-color: rgba(0,231,156,0.7);
-  border-right-color: rgba(0,231,156,0.5);
-  border-radius: 50%;
-  animation: tpSpinner 1.5s linear infinite;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent 28%);
+  z-index: 0;
 }
 
-.tpPage .tpPopTimerWrap::after{
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 76px;
-  height: 76px;
-  margin-top: -38px;
-  margin-left: -38px;
-  border: 2px solid transparent;
-  border-bottom-color: rgba(0,255,179,0.4);
-  border-left-color: rgba(0,255,179,0.3);
-  border-radius: 50%;
-  animation: tpSpinner 2.5s linear infinite reverse;
-}
-
-.tpPage .tpPopTimer{
-  font-weight: 990;
-  font-size: clamp(26px, 4vw, 32px);
-  letter-spacing: .5px;
-  background: linear-gradient(135deg, #00e79c, #00ffb3);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: tpTimerPulse 1.5s ease-in-out infinite;
+.tpChartPanel > * {
   position: relative;
   z-index: 1;
 }
 
-.tpPage .tpPopHint{
-  margin-top: 6px;
-  color: rgba(231,238,249,.78);
-  font-size: var(--fs-12);
-  font-weight: 850;
-  line-height: 1.4;
+.tpChartPanel {
+  min-height: 0;
+  border-radius: 22px;
+  border: 1px solid rgba(96, 140, 255, 0.12);
+  background:
+    radial-gradient(circle at top left, rgba(47, 109, 255, 0.14), transparent 28%),
+    linear-gradient(90deg, rgba(31, 86, 220, 0.08), transparent 25%, transparent 75%, rgba(31, 86, 220, 0.05)),
+    linear-gradient(180deg, #10172d, #0d1528);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
-.tpPage .tpPopDetails{
-  margin-top: 10px;
+.tpChart {
+  position: relative;
   width: 100%;
-  max-width: 400px;
+  height: min(72vh, 760px);
+  min-height: 440px;
+  background:
+    radial-gradient(circle at top left, rgba(60, 120, 255, 0.08), transparent 22%),
+    linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0));
+}
+
+.tpChartSvg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.tpChartSvg * {
+  shape-rendering: geometricPrecision;
+}
+
+.tpLoadingBox {
+  min-height: 520px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+
+.tpChartTopRow {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  right: 16px;
+  z-index: 3;
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: nowrap;
+  pointer-events: none;
+}
+
+.tpChartTopLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.tpChartPercent {
+  font-size: 26px;
+  font-weight: 900;
+  color: white;
+}
+
+.tpChartNow {
+  color: #c5d1ee;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.tpChartTopRight {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  max-width: min(42%, 340px);
+  min-width: 0;
+  align-items: center;
+}
+
+.tpMiniStat {
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
+    rgba(12, 21, 39, 0.78);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 132px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+  backdrop-filter: blur(8px);
+}
+
+.tpMiniStat.positive {
+  color: #79ffb7;
+  border-color: rgba(25, 196, 99, 0.2);
+  background:
+    linear-gradient(180deg, rgba(25,196,99,0.14), rgba(25,196,99,0.06)),
+    rgba(8, 18, 18, 0.7);
+}
+
+.tpChartSubRow {
+  position: absolute;
+  top: 60px;
+  left: 16px;
+  right: 16px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #c5d1ee;
+  font-size: 13px;
+  font-weight: 700;
+  pointer-events: none;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.tpChartSubRow strong {
+  color: #7db4ff;
+}
+
+.tpDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #1dd16b;
+  box-shadow: 0 0 12px rgba(29, 209, 107, 0.65);
+  display: inline-block;
+  flex: 0 0 auto;
+}
+
+.tpPairInfoBadge {
+  position: absolute;
+  top: 92px;
+  left: 16px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(25, 135, 255, 0.13);
+  border: 1px solid rgba(25, 135, 255, 0.2);
+  color: #64aefe;
+  font-size: 12px;
+  font-weight: 900;
+  max-width: calc(100% - 32px);
+}
+
+.tpPairInfoBadgeIcon {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #1987ff;
+  color: white;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  flex: 0 0 auto;
+}
+
+.tpIndicatorTopBar {
+  position: absolute;
+  top: 126px;
+  left: 16px;
+  right: 16px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.tpIndicatorTopBar::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tpIndicatorTopBar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+
+.tpIndicatorTopItem {
+  flex: 0 0 auto;
+  min-height: 32px;
+  padding: 0 11px;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015)),
+    rgba(8, 14, 29, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  backdrop-filter: blur(10px);
+  white-space: nowrap;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.tpIndicatorTopTitle {
+  font-size: 11px;
+  font-weight: 800;
+  color: #d7e3fb;
+}
+
+.tpIndicatorTopDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  display: inline-block;
+  flex: 0 0 auto;
+}
+
+.tpIndicatorTopDot.is-bb {
+  background: #7d6bff;
+}
+
+.tpIndicatorTopDot.is-ema9 {
+  background: #ffd44d;
+}
+
+.tpIndicatorTopDot.is-ema21 {
+  background: #ff71d1;
+}
+
+.tpIndicatorTopDot.is-sma20 {
+  background: #43c7ff;
+}
+
+.tpIndicatorTopDot.is-zigzag {
+  background: #8df0ff;
+}
+
+.tpIndicatorTopVals {
+  display: inline-flex;
+  align-items: center;
   gap: 6px;
 }
 
-.tpPage .tpPopDetailRow{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 7px 12px;
-  border-radius: 10px;
-  background: rgba(0,231,156,0.04);
-  border: 1px solid rgba(0,231,156,0.12);
-}
-
-.tpPage .tpPopDetailLabel{
-  font-size: var(--fs-12);
-  color: rgba(231,238,249,.65);
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.tpPage .tpPopDetailValue{
-  font-size: var(--fs-14);
-  color: rgba(0,231,156,.95);
-  font-weight: 980;
-}
-
-.tpPage .tpPopBar{
-  margin-top: 14px;
-  height: 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(0,231,156,.15);
-  background: rgba(0,0,0,.3);
-  overflow:hidden;
-  box-shadow: 0 0 15px rgba(0,231,156,0.1) inset;
-  position: relative;
-}
-
-.tpPage .tpPopBar::after{
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 50%;
-  background: linear-gradient(180deg, 
-    rgba(255,255,255,0.15), 
-    transparent
-  );
-  border-radius: 999px 999px 0 0;
-}
-
-.tpPage .tpPopBarFill{
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, 
-    rgba(0,231,156,.9), 
-    rgba(0,255,179,.7), 
-    rgba(0,231,156,.9)
-  );
-  background-size: 200% 100%;
-  animation: tpBarShimmer 2s linear infinite;
-  transition: width .25s ease;
-  box-shadow: 
-    0 0 20px rgba(0,231,156,0.5),
-    0 0 10px rgba(0,231,156,0.3) inset;
-  position: relative;
-}
-
-.tpPage .tpPopBarFill::after{
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 20px;
-  height: 100%;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(255,255,255,0.5)
-  );
-  border-radius: 0 999px 999px 0;
-  filter: blur(3px);
-}
-
-/* ==================== Success Modal (GoldCore Style) ==================== */
-
-.tpPage .tpPopCongrats{
-  margin-top: 6px;
-  text-align: center;
-}
-
-.tpPage .tpPopCongratsTitle{
-  font-weight: 1000;
-  font-size: 18px;
-  letter-spacing: .2px;
-  background: linear-gradient(90deg, rgba(255,216,74,.95), rgba(61,220,151,.95), rgba(91,178,255,.9));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: tpCelebrate 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.tpPage .tpPopCongratsMsg{
-  margin-top: 6px;
+.tpIndicatorTopVal {
+  font-size: 11px;
   font-weight: 800;
-  font-size: 13.5px;
-  color: rgba(255,255,255,.80);
-  animation: tpCelebrate 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+  color: #f4f7ff;
 }
 
-.tpPage .tpPopSuccess{
+.tpIndicatorTopClose {
+  border: 0;
+  background: transparent;
+  color: #ff6c6c;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+.tpChartSideTools {
+  position: absolute;
+  left: 14px;
+  bottom: 18px;
+  z-index: 4;
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 8px 12px;
-  animation: tpCelebrate 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.tpPage .tpPopTick{
-  width: 54px;
-  height: 54px;
-  border-radius: 16px;
-  border: 1px solid rgba(0,231,156,.30);
-  background: rgba(0,231,156,.10);
+.tpTool {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015)),
+    rgba(14, 22, 40, 0.84);
+  color: white;
   display: grid;
   place-items: center;
-  box-shadow: 0 16px 40px rgba(0,0,0,.35);
-  flex-shrink: 0;
+  cursor: pointer;
+  transition: 0.2s ease;
+  flex: 0 0 auto;
+  box-shadow:
+    0 8px 18px rgba(0,0,0,0.16),
+    inset 0 1px 0 rgba(255,255,255,0.03);
 }
 
-.tpPage .tpPopTick svg{
+.tpTool:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+.tpTool.tpTf {
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.tpGridLine {
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 1;
+}
+
+.tpGridV {
+  stroke-opacity: 0.42;
+}
+
+.tpAxisText {
+  fill: #d7e1fa;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tpWickUp {
+  stroke: #1bc864;
+  stroke-width: 1.5;
+}
+
+.tpWickDown {
+  stroke: #ff5b4c;
+  stroke-width: 1.5;
+}
+
+.tpBodyUp {
+  fill: #1bc864;
+  filter: drop-shadow(0 0 5px rgba(27, 200, 100, 0.16));
+}
+
+.tpBodyDown {
+  fill: #ff5b4c;
+  filter: drop-shadow(0 0 5px rgba(255, 91, 76, 0.14));
+}
+
+.tpCandleGroup {
+  transform-origin: center;
+}
+
+.tpCandleWick {
+  transition: y1 220ms linear, y2 220ms linear, opacity 180ms ease;
+  will-change: y1, y2;
+}
+
+.tpCandleBody {
+  transition: x 220ms linear, y 220ms linear, width 220ms linear, height 220ms linear, opacity 180ms ease;
+  will-change: x, y, width, height;
+  filter: drop-shadow(0 0 4px rgba(0,0,0,0.18));
+}
+
+.tpAnimLine {
+  transition: opacity 180ms ease, filter 220ms ease;
+  filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.12));
+}
+
+.tpAnimPrice {
+  transition: y 180ms linear, x 180ms linear;
+}
+
+.tpLine {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.12));
+}
+
+.tpEma9 {
+  stroke: var(--gold);
+  stroke-width: 1.8;
+  vector-effect: non-scaling-stroke;
+}
+
+.tpEma21 {
+  stroke: var(--pink);
+  stroke-width: 1.8;
+  vector-effect: non-scaling-stroke;
+}
+
+.tpSma20 {
+  stroke: var(--cyan);
+  stroke-width: 1.8;
+  vector-effect: non-scaling-stroke;
+}
+
+.tpBbLine {
+  stroke: rgba(125, 107, 255, 0.9);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.tpBbMid {
+  stroke: rgba(125, 107, 255, 0.75);
+  stroke-width: 1.35;
+  stroke-dasharray: 5 5;
+  vector-effect: non-scaling-stroke;
+}
+
+.tpBbArea {
+  fill: url(#bbFill);
+  opacity: 0.95;
+}
+
+.tpZigZag {
+  stroke: #8df0ff;
+  stroke-width: 2.4;
+  opacity: 0.95;
+  filter: drop-shadow(0 0 4px rgba(141, 240, 255, 0.22));
+  vector-effect: non-scaling-stroke;
+}
+
+.tpCrossHair {
+  stroke: rgba(255, 255, 255, 0.35);
+  stroke-width: 1;
+  stroke-dasharray: 5 5;
+}
+
+.tpPriceLine {
+  stroke: #70b2ff;
+  stroke-width: 1.25;
+  stroke-dasharray: 6 5;
+  filter: drop-shadow(0 0 5px rgba(112, 178, 255, 0.22));
+}
+
+.tpPriceBox {
+  fill: #2691ff;
+  stroke: rgba(255, 255, 255, 0.22);
+  filter: drop-shadow(0 6px 12px rgba(38, 145, 255, 0.25));
+}
+
+.tpPriceText {
+  fill: white;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+
+.tpTradeLineUp {
+  stroke: rgba(25, 196, 99, 0.7);
+  stroke-width: 1.1;
+  stroke-dasharray: 7 5;
+}
+
+.tpTradeLineDown {
+  stroke: rgba(255, 86, 71, 0.72);
+  stroke-width: 1.1;
+  stroke-dasharray: 7 5;
+}
+
+.tpTradeMarker {
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: white;
+  font-size: 11px;
+  font-weight: 900;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(8px);
+}
+
+.tpTradeMarker.up {
+  background: rgba(25, 196, 99, 0.85);
+}
+
+.tpTradeMarker.down {
+  background: rgba(255, 86, 71, 0.85);
+}
+
+.tpOHLC {
+  position: absolute;
+  left: 58px;
+  right: 140px;
+  bottom: 28px;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  color: #c6d0ea;
+  font-size: 12px;
+  font-weight: 800;
+  pointer-events: none;
+  align-items: center;
+  min-height: 20px;
+  padding-right: 8px;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.28);
+}
+
+.tpRightPanel {
+  border-left: 1px solid var(--line);
+  background: linear-gradient(180deg, #101830, #0d1528);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+.tpOrderHeader {
+  min-height: 52px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, #17203a, #111a31);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  gap: 8px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.tpOrderPair {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tpOrderPair strong {
+  font-size: 15px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tpOrderPair span:last-child {
+  color: #a7b5d3;
+  font-weight: 800;
+}
+
+.tpSwitch {
+  width: 44px;
+  height: 24px;
+  position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+}
+
+.tpSwitch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.tpSlider {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #253453;
+  border: 1px solid var(--line);
+  transition: 0.2s ease;
+}
+
+.tpSlider::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #8593b6;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: 0.2s ease;
+}
+
+.tpSwitch input:checked + .tpSlider {
+  background: rgba(25, 135, 255, 0.28);
+}
+
+.tpSwitch input:checked + .tpSlider::before {
+  transform: translateX(20px);
+  background: #2890ff;
+}
+
+.tpPendingText {
+  color: #58aaff;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 0 2px;
+}
+
+.tpInputBox {
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015));
+  padding: 12px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.tpInputBox label {
+  display: block;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.tpInputControl {
+  height: 56px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
+    rgba(10, 17, 31, 0.88);
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  align-items: center;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.04),
+    0 8px 18px rgba(0,0,0,0.16);
+}
+
+.tpInputControl button {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: white;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.tpInputControl button:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+.tpInputControl > div {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 300;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tpInputBoxInvestment {
+  border-color: rgba(76, 122, 255, 0.14);
+  background:
+    radial-gradient(circle at top right, rgba(32, 140, 255, 0.08), transparent 34%),
+    linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015));
+}
+
+.tpInputControlInvestment {
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+}
+
+.tpInvestmentField {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 100%;
+  padding: 0 12px;
+}
+
+.tpInvestmentPrefix {
+  color: #d9e8ff;
+  font-size: 20px;
+  font-weight: 800;
+  flex: 0 0 auto;
+}
+
+.tpInvestmentInput {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #ffffff;
+  text-align: center;
+  font-size: 30px;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+}
+
+.tpInvestmentInput::placeholder {
+  color: rgba(255,255,255,0.3);
+}
+
+.tpInvestmentInput::-webkit-outer-spin-button,
+.tpInvestmentInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.tpInvestmentInput[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.tpSwitchLink {
+  margin-top: 8px;
+  border: 0;
+  background: transparent;
+  color: #3ea0ff;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  padding: 0;
+}
+
+.tpBtnUp,
+.tpBtnDown {
+  height: 56px;
+  border-radius: 12px;
+  border: 0;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  font-size: 28px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.18s ease, filter 0.18s ease;
+  gap: 10px;
+  box-shadow:
+    0 12px 24px rgba(0,0,0,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.tpBtnUp {
+  background: linear-gradient(180deg, #23c65c, #16a94e);
+}
+
+.tpBtnDown {
+  background: linear-gradient(180deg, #ff5d4e, #ff4534);
+}
+
+.tpBtnUp:hover,
+.tpBtnDown:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+
+.tpPayout {
+  text-align: center;
+  color: #d7deee;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.tpTradesCard {
+  flex: 1;
+  min-height: 220px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, #121b34, #10182f);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.tpTradesHead {
+  min-height: 48px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  gap: 10px;
+}
+
+.tpTradesTitle,
+.tpTradesMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tpCounter {
+  min-width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.tpCounter.dark {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.tpTradesList {
+  flex: 1;
+  overflow: auto;
+  padding: 10px;
+  scrollbar-width: thin;
+}
+
+.tpTradesList::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tpTradesList::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+
+.tpEmptyTrades {
+  min-height: 140px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  text-align: center;
+  padding: 20px;
+}
+
+.tpTradeItem {
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.025);
+  padding: 10px;
+}
+
+.tpTradeItem + .tpTradeItem {
+  margin-top: 10px;
+}
+
+.tpTradeItemTop,
+.tpTradeItemBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tpTradeItemTop strong {
+  font-size: 13px;
+  min-width: 0;
+}
+
+.tpTradeItemTop span {
+  color: #b8c4df;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.tpTradeItemBottom {
+  margin-top: 8px;
+}
+
+.tpTradeSide,
+.tpTradePnl {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.tpTradeSide.up,
+.tpTradePnl.up,
+.positive {
+  color: #75ffb0;
+}
+
+.tpTradeSide.down,
+.tpTradePnl.down,
+.negative {
+  color: #ff8c82;
+}
+
+.tpTradePnl.neutral {
+  color: #a9b6d8;
+}
+
+.tpQuickStats {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.tpQuickStat {
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015));
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.tpQuickStat span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tpQuickStat strong {
+  font-size: 15px;
+}
+
+.tpHistoryWrap {
+  padding: 14px;
+}
+
+.tpHistoryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.tpHistoryTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tpClearBtn {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: white;
+  cursor: pointer;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.tpHistoryGrid {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: 14px;
+}
+
+.tpHistoryList {
+  max-height: 420px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.tpHistoryItem {
+  width: 100%;
+  text-align: left;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 12px;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.tpHistoryItem + .tpHistoryItem {
+  margin-top: 10px;
+}
+
+.tpHistoryItem:hover,
+.tpHistoryItem.active {
+  border-color: rgba(55, 143, 255, 0.45);
+  background: rgba(55, 143, 255, 0.08);
+}
+
+.tpHistoryItemTop,
+.tpHistoryItemMid,
+.tpHistoryItemBot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tpHistoryItemTop strong {
+  font-size: 14px;
+  min-width: 0;
+}
+
+.tpHistoryItemMid {
+  margin-top: 8px;
+  color: #c6d0ea;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.tpHistoryItemBot {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.tpHistoryDetails {
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.025);
+  padding: 14px;
+  min-width: 0;
+}
+
+.tpDetailHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.tpDetailGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.tpDetailBox {
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 12px;
+  min-width: 0;
+}
+
+.tpDetailBox span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.tpDetailBox strong {
+  display: block;
+  font-size: 14px;
+  color: white;
+  word-break: break-word;
+}
+
+.tpDetailBox.wide {
+  grid-column: 1 / -1;
+}
+
+.tpContentCard {
+  padding: 16px;
+}
+
+.tpSectionTitle {
+  font-size: 20px;
+  font-weight: 900;
+  margin-bottom: 14px;
+}
+
+.tpGridInfo,
+.tpStatsGrid {
+  display: grid;
+  gap: 14px;
+}
+
+.tpGridInfo {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.tpStatsGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.tpInfoBox,
+.tpStatCard {
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 14px;
+  min-width: 0;
+}
+
+.tpInfoBox strong,
+.tpStatCard strong {
+  display: block;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.tpInfoBox p {
+  margin: 0;
+  color: var(--muted2);
+  line-height: 1.5;
+}
+
+.tpStatCard span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.tpStatCard.wide {
+  grid-column: span 2;
+}
+
+/* =========================
+   UPDATED PAIR SELECTOR
+========================= */
+
+.tpPairsBarWrap {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.tpPairSelector {
+  width: 100%;
+  min-width: 0;
+  margin-top: 10px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(18, 29, 56, 0.98), rgba(10, 18, 36, 0.98));
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.tpPairSelectorHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tpPairSelectorHead strong {
+  font-size: 15px;
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.tpPairSelectorClose {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: white;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: 0.2s ease;
+}
+
+.tpPairSelectorClose:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.tpPairSearchWrap {
+  position: relative;
+  padding: 10px 14px 8px;
+}
+
+.tpPairSearchIcon {
+  position: absolute;
+  left: 26px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.tpPairSearch {
+  width: 100%;
+  margin: 0;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid var(--line2);
+  background: rgba(255, 255, 255, 0.04);
+  color: white;
+  padding: 0 14px 0 42px;
+  outline: none;
+  font-size: 14px;
+}
+
+.tpPairSearch::placeholder {
+  color: var(--muted);
+}
+
+.tpSelectorSection {
+  padding: 0 14px 12px;
+}
+
+.tpSelectorSectionTitle {
+  font-size: 11px;
+  font-weight: 900;
+  color: #d7e5ff;
+  letter-spacing: 0.04em;
+  margin: 4px 0 8px;
+  text-transform: uppercase;
+}
+
+.tpSelectorTabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tpSelectorTab {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: #c9d6f3;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.tpSelectorTab:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.tpSelectorTab.active {
+  background: linear-gradient(180deg, rgba(32, 140, 255, 0.24), rgba(20, 108, 255, 0.12));
+  border-color: rgba(85, 156, 255, 0.55);
+  color: white;
+  box-shadow: inset 0 0 0 1px rgba(85, 156, 255, 0.12);
+}
+
+.tpSelectorMiniList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tpPairSelectorList {
+  max-height: 50vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding-right: 2px;
+  scrollbar-width: thin;
+}
+
+.tpPairSelectorList::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tpPairSelectorList::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+
+.tpPairSelectorItem,
+.tpPairSelectorLeft,
+.tpPairSelectorMeta,
+.tpPairSelectorRight {
+  min-width: 0;
+}
+
+.tpPairSelectorItem {
+  width: 100%;
+  min-height: 70px;
+  border-radius: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(24, 37, 69, 0.92), rgba(15, 26, 49, 0.92));
+  color: white;
+  padding: 8px 9px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "left right"
+    "meta right";
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 4px;
+  cursor: pointer;
+  text-align: left;
+  transition: 0.2s ease;
+}
+
+.tpPairSelectorItem:hover,
+.tpPairSelectorItem.active {
+  border-color: rgba(55, 143, 255, 0.45);
+  background:
+    linear-gradient(180deg, rgba(28, 53, 100, 0.95), rgba(16, 33, 63, 0.95));
+  box-shadow: inset 0 0 0 1px rgba(55, 143, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+.tpPairSelectorItem.compact {
+  min-height: 64px;
+  padding: 7px 8px;
+}
+
+.tpPairSelectorLeft {
+  grid-area: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tpFavBtn {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: #8fa1c9;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex: 0 0 auto;
+  transition: 0.2s ease;
+}
+
+.tpFavBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.tpFavBtn.active {
+  color: #ffd44d;
+  border-color: rgba(255, 212, 77, 0.28);
+  background: rgba(255, 212, 77, 0.08);
+}
+
+.tpPairSelectorItem .tpPairFlag {
+  width: 24px;
+  height: 24px;
+  font-size: 9px;
+  flex: 0 0 auto;
+}
+
+.tpPairSelectorLeft .tpPairText {
+  min-width: 0;
+}
+
+.tpPairSelectorLeft .tpPairText strong,
+.tpPairSelectorLeft .tpPairText span,
+.tpPairSelectorItem .tpPairText strong,
+.tpPairSelectorItem .tpPairText span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tpPairSelectorItem .tpPairText strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.1;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.tpPairSelectorItem .tpPairText span {
+  display: block;
+  margin-top: 1px;
+  color: #9fb0d6;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.05;
+  white-space: nowrap;
+}
+
+.tpPairSelectorMeta {
+  grid-area: meta;
+  padding-left: 58px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  text-align: left;
+}
+
+.tpPairListPrice {
+  color: #f4f7ff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.05;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tpPairListChange {
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.tpPairSelectorRight {
+  grid-area: right;
+  align-self: center;
+  justify-self: end;
+  flex: 0 0 auto;
+  text-align: right;
+}
+
+.tpPairSelectorRight span {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--orange);
+  white-space: nowrap;
+}
+
+/* =========================
+   COIN LOGO
+========================= */
+
+.tpCoinLogoWrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  position: relative;
+  overflow: hidden;
+  flex: 0 0 auto;
+  background: rgba(255, 255, 255, 0.06);
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tpCoinLogo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.tpCoinLogoFallback {
+  width: 100%;
+  height: 100%;
+  display: none;
+  place-items: center;
+  font-size: 9px;
+  font-weight: 900;
+  color: white;
+  background: linear-gradient(180deg, #233354, #18253f);
+  text-transform: uppercase;
+}
+
+.tpPairTab .tpCoinLogoWrap {
   width: 28px;
   height: 28px;
 }
 
-.tpPage .tpPopTick svg path{
-  fill: none;
-  stroke: rgba(0,231,156,.95);
-  stroke-width: 3.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.tpOrderPair .tpCoinLogoWrap {
+  width: 24px;
+  height: 24px;
 }
 
-.tpPage .tpPopSuccessText{
-  font-weight: 900;
-  color: rgba(255,255,255,.92);
-  font-size: var(--fs-14);
+.tpPairSelectorLeft .tpCoinLogoWrap {
+  width: 24px;
+  height: 24px;
 }
 
-.tpPage .tpPopSuccessSmall{
-  margin-top: 4px;
-  font-size: 12px;
-  font-weight: 700;
-  color: rgba(255,255,255,.62);
-}
-
-.tpPage .tpPopTradeInfo{
-  margin-top: 12px;
-  width: 100%;
-  max-width: 400px;
-  padding: 12px 16px;
-  border-radius: 16px;
-  background: rgba(0,231,156,0.04);
-  border: 1px solid rgba(0,231,156,0.14);
-  animation: tpCelebrate 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
-}
-
-.tpPage .tpPopInfoRow{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-}
-
-.tpPage .tpPopInfoRow:last-child{
-  border-bottom: none;
-}
-
-.tpPage .tpPopInfoRow.highlight{
-  margin-top: 4px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(0,231,156,0.20);
-  border-bottom: none;
-}
-
-.tpPage .tpPopInfoRow span{
-  font-size: 12px;
-  font-weight: 800;
-  color: rgba(255,255,255,.60);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.tpPage .tpPopInfoRow b{
-  font-size: 13px;
-  font-weight: 900;
-  color: rgba(255,255,255,.88);
-}
-
-.tpPage .tpPopInfoRow.highlight b.profit{
-  color: rgba(0,231,156,.95);
-  font-size: 15px;
-  font-weight: 990;
-  text-shadow: 0 0 20px rgba(0,231,156,0.3);
-}
-
-.tpPage .tpPopDone{
-  margin-top: 16px;
-  width: 100%;
-  border: none;
-  border-radius: 16px;
-  padding: 12px 12px;
-  cursor:pointer;
-  font-weight: 980;
-  font-size: var(--fs-13);
-  color:#07110c;
-  background: linear-gradient(180deg, var(--green), rgba(0,231,156,.82));
-  box-shadow: 0 4px 20px rgba(0,231,156,0.3);
-  transition: all 0.3s ease;
-  animation: tpCelebrate 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
-}
-
-.tpPage .tpPopDone:hover{
-  transform: translateY(-2px);
-  box-shadow: 0 6px 30px rgba(0,231,156,0.5);
-  background: linear-gradient(180deg, #00ffb3, var(--green));
-}
-
-
-/* ✅ ADD / REPLACE ONLY these parts in TradingPro.css (no other changes) */
-
-/* 1) Manual Trade border = GOLDEN glow with shadow (replace your current .tpOrderPanel block) */
-.tpPage .tpOrderPanel{
-  background: linear-gradient(180deg, rgba(6,16,26,0.98), rgba(4,12,20,0.98)) !important;
-
-  /* ✅ golden border glow */
-  border: 1px solid rgba(255, 196, 61, 0.28) !important;
-
-  /* ✅ premium golden glow + depth shadow */
-  box-shadow:
-    0 14px 44px rgba(0,0,0,0.55),
-    0 0 0 1px rgba(255, 196, 61, 0.10) inset,
-    0 0 34px rgba(255, 196, 61, 0.14),
-    0 0 64px rgba(255, 196, 61, 0.08);
-  border-radius: 20px !important;
-  flex-shrink: 0;
-  width: 100%;
-  min-width: 0;
-}
-
-/* Keep your head/title style but make title slightly gold-tinted (optional but pro) */
-.tpPage .tpOrderPanel .tpPanelHead{ border-bottom: 1px solid rgba(255, 196, 61, 0.12) !important; }
-.tpPage .tpOrderPanel .tpPanelTitle{
-  color: rgba(255, 217, 115, 0.92) !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.4px;
-}
-
-
-/* 2) Place Order button color:
-      - Buy/Long => Binance yellow
-      - Sell/Short => keep current red
-   (replace ONLY these .tpSubmit rules) */
-.tpPage .tpSubmit{
-  margin: 14px;
-  padding: 13px 12px;
-  border-radius: 16px;
-  font-weight: 980;
-  font-size: var(--fs-14);
-  cursor:pointer;
-  border:none;
-
-  /* ✅ Binance yellow for BUY */
-  color:#1a1403;
-  background: linear-gradient(180deg, #fcd535, #f0b90b);
-  box-shadow:
-    0 10px 28px rgba(0,0,0,0.35),
-    0 0 0 1px rgba(255,255,255,0.06) inset;
-}
-.tpPage .tpSubmit.short{
-  /* ✅ keep your current SELL color */
-  background:linear-gradient(180deg, var(--red), rgba(255,77,79,.82));
-  color:#1a0b0b;
-  box-shadow:
-    0 10px 28px rgba(0,0,0,0.35),
-    0 0 0 1px rgba(255,255,255,0.06) inset;
-}
-.tpPage .tpSubmit.disabled{ opacity:.5; cursor:not-allowed; }
-
-
-/* 3) Time options not fully visible:
-      Make dropdown fit + scroll + better shape
-   (ADD these overrides; don’t remove your existing time CSS) */
-.tpPage .tpTimeMenu{
-  width: 200px;                 /* a bit wider */
-  max-height: 220px;            /* prevents overflow */
-  overflow: auto;               /* scroll if needed */
-  padding: 10px;
-  border-radius: 18px;
-}
-
-/* stack options cleanly with consistent sizing */
-.tpPage .tpTimeOpt{
-  padding: 11px 12px;
-  border-radius: 14px;
-}
-
-/* mobile safety: dropdown should not go outside screen */
-@media (max-width: 980px){
-  .tpPage .tpTimeMenu{
-    right: 0;
-    left: auto;
-    width: min(220px, 90vw);
-  }
-}
 /* =========================
-   ✅ LIGHT Manual Trade (white)
-   Adjusted for better text visibility
+   MOBILE FLOAT TRADE PANEL
 ========================= */
 
-.tpPage .tpOrderPanel.tpOrderPanel--light{
-  background: linear-gradient(180deg, #ffffff, #fbfcff) !important;
-  border: 2px solid rgba(240, 180, 40, 0.75) !important;
-  box-shadow:
-    0 18px 55px rgba(15, 23, 42, 0.12),
-    0 0 0 1px rgba(240, 180, 40, 0.12) inset,
-    0 0 28px rgba(240, 180, 40, 0.18),
-    0 0 60px rgba(240, 180, 40, 0.10);
-  border-radius: 24px !important;
-  flex-shrink: 0;
-  width: 100%;
+.tpMobilePanelHandle,
+.tpMobileTradeBar,
+.tpMobileTradeBackdrop {
+  display: none;
+}
+
+.tpBtnHalf {
+  flex: 1 1 0;
   min-width: 0;
+  height: 54px;
+  font-size: 24px;
 }
 
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpPanelHead{
-  border-bottom: 1px solid rgba(15, 23, 42, 0.10) !important;
+.tpMobilePayout {
+  color: #dce7ff;
+  font-size: 13px;
+  font-weight: 800;
 }
 
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpPanelTitle{
-  color: #0d1117 !important; /* darker for visibility */
-  font-weight: 980 !important;
-}
-
-/* text colors inside block */
-.tpPage .tpOrderPanel.tpOrderPanel--light,
-.tpPage .tpOrderPanel.tpOrderPanel--light *{
-  color: #1a1f29; /* slightly darker neutral */
-}
-
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpCoinPickLabel,
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpFieldLabel,
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpTimeLabel,
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpWarn,
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpFine{
-  color: rgba(17, 24, 39, 0.85) !important; /* increased opacity for readability */
-}
-
-/* inputs look clean on white */
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpInput,
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpCoinPickSearch,
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpCoinPickSelect,
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpTimeBtn,
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpLevBtn{
-  background: #f8fafc !important;
-  border: 1px solid rgba(15, 23, 42, 0.18) !important;
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06) inset;
-}
-
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpInput:focus,
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpCoinPickSearch:focus{
-  border-color: rgba(240, 180, 40, 0.65) !important;
-  box-shadow: 0 0 0 4px rgba(240, 180, 40, 0.22) !important;
-}
-
-/* info + summary blocks */
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpInfo,
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpSummary,
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpTimeRow{
-  background: #f8fafc !important;
-  border: 1px solid rgba(5, 8, 17, 0.12) !important;
-}
-
-/* buy/sell selector buttons */
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpSideBtn{
-  background: #f8fafc !important;
-  border: 1px solid rgba(15, 23, 42, 0.14) !important;
-}
-
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpSideBtn.active.long{
-  background: rgba(0, 150, 110, 0.12) !important;
-  border-color: rgba(0, 150, 110, 0.45) !important;
-  color: rgb(0, 120, 95) !important; /* darker green */
-}
-
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpSideBtn.active.short{
-  background: rgba(255, 77, 79, 0.12) !important;
-  border-color: rgba(255, 77, 79, 0.40) !important;
-  color: rgb(190, 40, 45) !important; /* darker red */
-}
-
-/* ✅ Place Order button refined */
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpSubmit {
-  display: block;
-  width: 100%;              /* full width for consistency */
-  max-width: 240px;         /* matches demo proportions */
-  margin: 20px auto 0;      /* centered with spacing above */
-  padding: 14px 0;          /* balanced vertical padding */
-  font-size: 16px;          /* readable size */
-  font-weight: 700;         /* bold for emphasis */
-  border-radius: 12px;      /* rounded corners like demo */
-  text-align: center;
-  color: #1a1403 !important;
-  background: linear-gradient(180deg, #fcd535, #f0b90b) !important;
-  box-shadow:
-    0 14px 30px rgba(15, 23, 42, 0.18),
-    0 0 0 1px rgba(255,255,255,0.40) inset;
+.tpMobileTradeToggle {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(62, 160, 255, 0.35);
+  background: rgba(32, 140, 255, 0.14);
+  color: #9fd0ff;
+  font-size: 12px;
+  font-weight: 900;
   cursor: pointer;
 }
 
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpSubmit.short {
-  background: linear-gradient(180deg, var(--red), rgba(255,77,79,.85)) !important;
-  color: #1a0b0b !important;
+.tpMobileTradeToggle:hover {
+  background: rgba(32, 140, 255, 0.22);
 }
 
-
-/* ✅ Time dropdown fit + scroll */
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpTimeMenu{
-  width: 210px;
-  max-height: 220px;
-  overflow: auto;
-  border-radius: 18px;
-  background: #ffffff !important;
-  border: 1px solid rgba(15, 23, 42, 0.16) !important;
-  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.18) !important;
+.tpMobileTradeRow {
+  display: flex;
+  gap: 8px;
 }
 
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpTimeOpt{
-  background: #f8fafc !important;
-  border: 1px solid rgba(15, 23, 42, 0.14) !important;
-  color: #1a1f29 !important; /* darker text */
+.tpMobileTradeBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
 }
 
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpTimeOpt.active{
-  border-color: rgba(240, 180, 40, 0.65) !important;
-  background: rgba(240, 180, 40, 0.18) !important;
-  color: #6a4600 !important; /* deeper golden brown */
+.tpMobilePanelHandle {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #d9e6ff;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px 0 10px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 900;
 }
+
+.tpMobilePanelHandleBar {
+  width: 54px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  display: block;
+}
+
 /* =========================
-   ✅ Manual Trade: Set Time POPUP (modal)
-   (ADD ONLY - no other changes)
+   RESPONSIVE
 ========================= */
-.tpPage .tpTimePopWrap{
+
+@media (max-width: 1280px) {
+  .tpContent {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+
+  .tpHistoryGrid {
+    grid-template-columns: 320px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1180px) {
+  .tpContent {
+    grid-template-columns: 1fr;
+  }
+
+  .tpRightPanel {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .tpChart {
+    height: 62vh;
+    min-height: 420px;
+  }
+
+  .tpHistoryGrid,
+  .tpGridInfo,
+  .tpStatsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .tpDetailGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .tpSidebar {
+    position: fixed;
+    top: 0;
+    left: -110px;
+    height: 100vh;
+    transition: left 0.25s ease;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+  }
+
+  .tpSidebar.mobileOpen {
+    left: 0;
+  }
+
+  .tpSidebarBackdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(3, 7, 18, 0.6);
+    backdrop-filter: blur(3px);
+    z-index: 40;
+  }
+
+  .tpMobileMenu {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+  }
+
+  .tpHeader {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px;
+  }
+
+  .tpHeaderRight {
+    justify-content: stretch;
+  }
+
+  .tpBalanceCard {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .tpDepositBtn,
+  .tpWithdrawBtn {
+    flex: 1 1 0;
+  }
+
+  .tpPairTab {
+    min-width: 182px;
+  }
+
+  .tpSelectorMiniList,
+  .tpPairSelectorList {
+    grid-template-columns: 1fr;
+  }
+
+  .tpPairSelectorList {
+    max-height: 44vh;
+  }
+
+  .tpContent {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 116px;
+  }
+
+  .tpMainArea {
+    display: contents;
+  }
+
+  .tpPairsBarWrap {
+    order: 1;
+  }
+
+  .tpIndicatorsBar {
+    order: 2;
+  }
+
+  .tpChartPanel {
+    order: 3;
+  }
+
+  .tpRightPanel {
+    order: 4;
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    transform: none;
+    max-height: none;
+    overflow: visible;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    margin-top: 0;
+    padding: 10px;
+  }
+
+  .tpHistoryWrap {
+    order: 5;
+  }
+
+  .tpMobilePanelHandle {
+    display: none !important;
+  }
+
+  .tpDesktopTradeBtn,
+  .tpDesktopPayout {
+    display: none !important;
+  }
+
+  .tpMobileTradeBar {
+    display: block;
+    position: fixed;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    z-index: 90;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(13, 22, 42, 0.96), rgba(10, 18, 35, 0.96));
+    box-shadow: 0 18px 32px rgba(0, 0, 0, 0.4);
+    padding: 8px;
+    backdrop-filter: blur(10px);
+  }
+
+  .tpMobileTradeBackdrop {
+    display: none !important;
+  }
+
+  .tpChart {
+    height: 56vh;
+    min-height: 400px;
+  }
+
+  .tpChartTopRight {
+    max-width: 48%;
+  }
+
+  .tpInputBox {
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .tpMainArea,
+  .tpRightPanel {
+    padding: 10px;
+  }
+
+  .tpPairsBar,
+  .tpIndicatorsBar {
+    gap: 8px;
+  }
+
+  .tpPairAddBtn {
+    width: 50px;
+    height: 50px;
+    border-radius: 13px;
+  }
+
+  .tpPairTab {
+    min-width: 172px;
+    height: 52px;
+    padding: 0 10px;
+    gap: 8px;
+  }
+
+  .tpPairText strong,
+  .tpPairTabTop strong {
+    font-size: 13px;
+  }
+
+  .tpPairText span,
+  .tpLiveBadge {
+    font-size: 11px;
+  }
+
+  .tpPairTabPayout,
+  .tpPairTabPrice,
+  .tpPairTabChange {
+    font-size: 10px;
+  }
+
+  .tpIndicatorBtn {
+    height: 38px;
+    padding: 0 14px;
+    font-size: 14px;
+  }
+
+  .tpSelectorTabs {
+    gap: 6px;
+  }
+
+  .tpSelectorTab {
+    min-height: 32px;
+    padding: 0 10px;
+    font-size: 11px;
+  }
+
+  .tpPairSelector {
+    margin-top: 8px;
+    border-radius: 14px;
+  }
+
+  .tpPairSelectorHead {
+    padding: 10px 12px 8px;
+  }
+
+  .tpPairSelectorHead strong {
+    font-size: 14px;
+  }
+
+  .tpPairSelectorClose {
+    width: 30px;
+    height: 30px;
+    font-size: 17px;
+  }
+
+  .tpPairSearchWrap {
+    padding: 8px 12px 8px;
+  }
+
+  .tpPairSearchIcon {
+    left: 24px;
+  }
+
+  .tpPairSearch {
+    height: 40px;
+    font-size: 13px;
+    padding-left: 40px;
+    border-radius: 11px;
+  }
+
+  .tpSelectorSection {
+    padding: 0 12px 10px;
+  }
+
+  .tpSelectorSectionTitle {
+    font-size: 10px;
+    margin-bottom: 7px;
+  }
+
+  .tpSelectorMiniList,
+  .tpPairSelectorList {
+    gap: 7px;
+  }
+
+  .tpPairSelectorList {
+    max-height: 42vh;
+  }
+
+  .tpPairSelectorItem,
+  .tpPairSelectorItem.compact {
+    min-height: 62px;
+    padding: 7px 8px;
+    border-radius: 12px;
+    column-gap: 8px;
+    row-gap: 3px;
+  }
+
+  .tpFavBtn {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+  }
+
+  .tpPairSelectorLeft {
+    gap: 7px;
+  }
+
+  .tpPairSelectorItem .tpPairFlag {
+    width: 22px;
+    height: 22px;
+    font-size: 8px;
+  }
+
+  .tpPairSelectorItem .tpPairText strong {
+    font-size: 11px;
+  }
+
+  .tpPairSelectorItem .tpPairText span {
+    font-size: 9px;
+  }
+
+  .tpPairSelectorMeta {
+    padding-left: 53px;
+  }
+
+  .tpPairListPrice {
+    font-size: 10px;
+  }
+
+  .tpPairListChange {
+    font-size: 9px;
+  }
+
+  .tpPairSelectorRight span {
+    font-size: 11px;
+  }
+
+  .tpCoinLogoWrap,
+  .tpPairTab .tpCoinLogoWrap {
+    width: 24px;
+    height: 24px;
+  }
+
+  .tpChart {
+    min-height: 420px;
+    height: 50vh;
+  }
+
+  .tpChartTopRow {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    gap: 6px;
+    align-items: flex-start;
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+
+  .tpChartTopLeft {
+    width: 100%;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .tpChartPercent {
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .tpChartNow {
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
+  .tpChartTopRight {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 6px;
+  }
+
+  .tpMiniStat {
+    min-height: 24px;
+    padding: 0 7px;
+    font-size: 10px;
+    border-radius: 999px;
+    max-width: none;
+    backdrop-filter: blur(6px);
+  }
+
+  .tpChartSubRow {
+    top: 54px;
+    left: 10px;
+    right: 10px;
+    gap: 6px;
+    font-size: 11px;
+    line-height: 1.2;
+    flex-wrap: wrap;
+  }
+
+  .tpPairInfoBadge {
+    top: 78px;
+    left: 10px;
+    max-width: calc(100% - 20px);
+    padding: 5px 10px;
+    font-size: 10px;
+    gap: 6px;
+    transform: none;
+  }
+
+  .tpPairInfoBadgeIcon {
+    width: 14px;
+    height: 14px;
+    font-size: 9px;
+  }
+
+  .tpIndicatorTopBar {
+    top: 108px;
+    left: 10px;
+    right: 10px;
+    gap: 6px;
+    padding-bottom: 2px;
+  }
+
+  .tpIndicatorTopItem {
+    min-height: 24px;
+    padding: 0 7px;
+    gap: 5px;
+  }
+
+  .tpIndicatorTopTitle,
+  .tpIndicatorTopVal {
+    font-size: 9px;
+    line-height: 1;
+  }
+
+  .tpIndicatorTopDot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .tpIndicatorTopClose {
+    font-size: 11px;
+  }
+
+  .tpChartSideTools {
+    left: 10px;
+    bottom: 44px;
+  }
+
+  .tpOHLC {
+    left: 50px;
+    right: 84px;
+    bottom: 26px;
+    gap: 8px;
+    font-size: 10px;
+  }
+
+  .tpInputControl {
+    height: 50px;
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+  }
+
+  .tpInputControl div {
+    font-size: 23px;
+  }
+
+  .tpInvestmentInput {
+    font-size: 24px;
+  }
+
+  .tpInvestmentPrefix {
+    font-size: 17px;
+  }
+
+  .tpBtnUp,
+  .tpBtnDown {
+    font-size: 24px;
+  }
+
+  .tpBtnHalf {
+    height: 52px;
+    font-size: 22px;
+    padding: 0 14px;
+  }
+
+  .tpPayout {
+    font-size: 16px;
+  }
+
+  .tpHistoryWrap,
+  .tpContentCard {
+    padding: 12px;
+  }
+
+  .tpHistoryHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tpMobileTradeBar {
+    left: 6px;
+    right: 6px;
+    bottom: 6px;
+    padding: 7px;
+    border-radius: 14px;
+  }
+
+  .tpMobilePayout {
+    font-size: 12px;
+  }
+
+  .tpMobileTradeToggle {
+    height: 34px;
+    padding: 0 12px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tpHeader {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .tpHeaderLeft {
+    gap: 8px;
+  }
+
+  .tpBrand {
+    gap: 4px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .tpBrand strong {
+    font-size: 14px;
+    line-height: 1.1;
+  }
+
+  .tpBrand span {
+    font-size: 11px;
+    line-height: 1.1;
+  }
+
+  .tpHeaderRight {
+    display: grid;
+    grid-template-columns: 42px 1fr 1fr;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .tpBell {
+    width: 42px;
+    height: 42px;
+  }
+
+  .tpBalanceCard {
+    grid-column: 1 / -1;
+    order: -1;
+    min-width: 0;
+    padding: 8px 12px;
+  }
+
+  .tpBalanceCard strong {
+    font-size: 17px;
+  }
+
+  .tpDepositBtn,
+  .tpWithdrawBtn {
+    width: 100%;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  .tpMainArea,
+  .tpRightPanel {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .tpPairAddBtn {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+
+  .tpPairTab {
+    min-width: 160px;
+    height: 50px;
+    padding: 0 8px;
+    gap: 8px;
+    border-radius: 12px;
+  }
+
+  .tpPairFlag {
+    width: 22px;
+    height: 22px;
+    font-size: 9px;
+  }
+
+  .tpPairText strong,
+  .tpPairTabTop strong {
+    font-size: 12px;
+  }
+
+  .tpPairText span {
+    font-size: 9px;
+  }
+
+  .tpLiveBadge {
+    font-size: 8px;
+    padding: 2px 4px;
+  }
+
+  .tpPairTabBottom {
+    gap: 6px;
+  }
+
+  .tpPairTabPayout,
+  .tpPairTabPrice,
+  .tpPairTabChange {
+    font-size: 9px;
+  }
+
+  .tpIndicatorBtn {
+    height: 36px;
+    padding: 0 12px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+
+  .tpSelectorTab {
+    min-height: 30px;
+    padding: 0 9px;
+    font-size: 10px;
+  }
+
+  .tpPairSelector {
+    margin-top: 6px;
+    border-radius: 13px;
+  }
+
+  .tpPairSelectorHead {
+    padding: 9px 10px 8px;
+  }
+
+  .tpPairSearchWrap {
+    padding: 8px 10px 8px;
+  }
+
+  .tpPairSearch {
+    height: 36px;
+    font-size: 12px;
+    border-radius: 10px;
+  }
+
+  .tpSelectorSection {
+    padding: 0 10px 9px;
+  }
+
+  .tpPairSelectorList {
+    max-height: 40vh;
+  }
+
+  .tpPairSelectorItem,
+  .tpPairSelectorItem.compact {
+    min-height: 58px;
+    padding: 6px 7px;
+    gap: 5px;
+  }
+
+  .tpFavBtn {
+    width: 22px;
+    height: 22px;
+  }
+
+  .tpPairSelectorItem .tpPairFlag {
+    width: 20px;
+    height: 20px;
+    font-size: 8px;
+  }
+
+  .tpPairSelectorItem .tpPairText strong {
+    font-size: 10px;
+  }
+
+  .tpPairSelectorItem .tpPairText span {
+    font-size: 8px;
+  }
+
+  .tpPairSelectorMeta {
+    padding-left: 48px;
+  }
+
+  .tpPairListPrice {
+    font-size: 9px;
+  }
+
+  .tpPairListChange {
+    font-size: 8px;
+  }
+
+  .tpPairSelectorRight span {
+    font-size: 10px;
+  }
+
+  .tpPairSelectorLeft .tpCoinLogoWrap,
+  .tpPairTab .tpCoinLogoWrap {
+    width: 22px;
+    height: 22px;
+  }
+
+  .tpCoinLogoFallback {
+    font-size: 8px;
+  }
+
+  .tpChart {
+    min-height: 400px;
+    height: auto;
+  }
+
+  .tpChartTopRow {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    gap: 5px;
+  }
+
+  .tpChartTopLeft {
+    gap: 5px;
+  }
+
+  .tpChartPercent {
+    font-size: 18px;
+  }
+
+  .tpChartNow {
+    font-size: 10px;
+  }
+
+  .tpChartTopRight {
+    gap: 5px;
+  }
+
+  .tpMiniStat {
+    min-height: 22px;
+    padding: 0 6px;
+    font-size: 9px;
+  }
+
+  .tpChartSubRow {
+    top: 48px;
+    left: 8px;
+    right: 8px;
+    gap: 5px;
+    font-size: 10px;
+  }
+
+  .tpPairInfoBadge {
+    top: 68px;
+    left: 8px;
+    max-width: calc(100% - 16px);
+    padding: 5px 9px;
+    font-size: 9px;
+  }
+
+  .tpPairInfoBadgeIcon {
+    width: 13px;
+    height: 13px;
+    font-size: 8px;
+  }
+
+  .tpIndicatorTopBar {
+    top: 96px;
+    left: 8px;
+    right: 8px;
+    gap: 5px;
+  }
+
+  .tpIndicatorTopItem {
+    min-height: 22px;
+    padding: 0 6px;
+    gap: 4px;
+  }
+
+  .tpIndicatorTopTitle,
+  .tpIndicatorTopVal {
+    font-size: 8px;
+  }
+
+  .tpIndicatorTopDot {
+    width: 5px;
+    height: 5px;
+  }
+
+  .tpIndicatorTopClose {
+    font-size: 10px;
+  }
+
+  .tpChartSideTools {
+    left: 8px;
+    bottom: 42px;
+    gap: 6px;
+  }
+
+  .tpTool {
+    width: 30px;
+    height: 30px;
+  }
+
+  .tpOHLC {
+    left: 44px;
+    right: 70px;
+    bottom: 18px;
+    font-size: 9px;
+    gap: 6px;
+    padding-right: 0;
+  }
+
+  .tpAxisText {
+    font-size: 10px;
+  }
+
+  .tpOrderHeader {
+    min-height: 48px;
+    padding: 0 10px;
+  }
+
+  .tpOrderPair strong {
+    font-size: 14px;
+  }
+
+  .tpInputBox {
+    padding: 10px;
+  }
+
+  .tpInputBox label {
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+
+  .tpInputControl {
+    height: 42px;
+    grid-template-columns: 40px minmax(0, 1fr) 40px;
+  }
+
+  .tpInputControl div {
+    font-size: 18px;
+  }
+
+  .tpInvestmentInput {
+    font-size: 19px;
+  }
+
+  .tpInvestmentPrefix {
+    font-size: 15px;
+  }
+
+  .tpSwitchLink {
+    font-size: 11px;
+  }
+
+  .tpBtnUp,
+  .tpBtnDown {
+    height: 52px;
+    font-size: 20px;
+    padding: 0 14px;
+  }
+
+  .tpBtnHalf {
+    height: 50px;
+    font-size: 20px;
+    padding: 0 12px;
+  }
+
+  .tpPayout {
+    font-size: 15px;
+  }
+
+  .tpTradesCard {
+    min-height: 180px;
+  }
+
+  .tpTradesHead {
+    min-height: 44px;
+    padding: 0 10px;
+  }
+
+  .tpTradeItemTop strong,
+  .tpTradeSide,
+  .tpTradePnl {
+    font-size: 12px;
+  }
+
+  .tpQuickStat {
+    padding: 10px;
+  }
+
+  .tpQuickStat strong {
+    font-size: 14px;
+  }
+
+  .tpHistoryWrap,
+  .tpContentCard {
+    padding: 10px;
+  }
+
+  .tpSectionTitle {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+
+  .tpClearBtn {
+    width: 100%;
+  }
+
+  .tpHistoryItem,
+  .tpHistoryDetails,
+  .tpInfoBox,
+  .tpStatCard,
+  .tpDetailBox {
+    padding: 10px;
+  }
+
+  .tpContent {
+    padding-bottom: 118px;
+    gap: 10px;
+  }
+
+  .tpMobileTradeBar {
+    left: 6px;
+    right: 6px;
+    bottom: 6px;
+    padding: 7px;
+    border-radius: 14px;
+  }
+
+  .tpMobilePayout {
+    font-size: 11px;
+  }
+
+  .tpMobileTradeToggle {
+    height: 32px;
+    padding: 0 10px;
+    font-size: 10px;
+  }
+
+  .tpMobileTradeBottom {
+    gap: 8px;
+  }
+}
+
+/* =========================
+   PREMIUM TRADING REPORT MODAL
+========================= */
+
+.tpStatCardBtn {
+  cursor: pointer;
+  text-align: left;
+  transition: 0.22s ease;
+}
+
+.tpStatCardBtn:hover {
+  transform: translateY(-2px);
+  border-color: rgba(55, 143, 255, 0.35);
+  background: rgba(55, 143, 255, 0.08);
+}
+
+.tpReportOverlay {
   position: fixed;
   inset: 0;
-  z-index: 99999;
-  background: rgba(0,0,0,.55);
+  background:
+    radial-gradient(circle at top, rgba(37, 99, 235, 0.1), transparent 30%),
+    rgba(7, 12, 22, 0.58);
+  backdrop-filter: blur(10px);
+  z-index: 999;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
-  backdrop-filter: blur(4px);
+  padding: 24px;
 }
 
-.tpPage .tpTimePop{
-  width: min(420px, 92vw);
-  border-radius: 18px;
-  overflow: hidden;
-  border: 1px solid rgba(15, 23, 42, 0.14);
-  background: #ffffff;
-  box-shadow: 0 26px 70px rgba(15, 23, 42, 0.28);
-  position: relative;
-  z-index: 100000;
+.tpReportModal {
+  width: min(1040px, 100%);
+  max-height: 92vh;
+  overflow: auto;
+  border-radius: 24px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow:
+    0 32px 90px rgba(15, 23, 42, 0.22),
+    0 10px 30px rgba(15, 23, 42, 0.08);
+  padding: 0;
 }
 
-.tpPage .tpTimePopTop{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 10px;
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.10);
+.tpReportHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 22px 18px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  background:
+    linear-gradient(180deg, rgba(37, 99, 235, 0.05), rgba(37, 99, 235, 0.01)),
+    #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
-.tpPage .tpTimePopTitle{
-  font-weight: 980;
-  font-size: 13px;
-  color: #0f172a;
-}
-
-.tpPage .tpTimePopClose{
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  border: 1px solid rgba(15, 23, 42, 0.14);
-  background: #f8fafc;
-  cursor: pointer;
-  color: #0f172a;
+.tpReportEyebrow {
+  font-size: 11px;
   font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #2563eb;
+  margin-bottom: 7px;
 }
 
-.tpPage .tpTimePopBody{
-  padding: 14px;
+.tpReportHead h3 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.12;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.tpReportClose {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #f8fafc;
+  color: #334155;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  flex: 0 0 auto;
+  transition: 0.2s ease;
+}
+
+.tpReportClose:hover {
+  background: #eef2f7;
+  color: #0f172a;
+}
+
+.tpReportGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 14px;
+  padding: 18px 22px 22px;
 }
 
-.tpPage .tpTimePopOpt{
-  border-radius: 14px;
-  padding: 12px 12px;
-  border: 1px solid rgba(15, 23, 42, 0.14);
-  background: #f8fafc;
-  cursor: pointer;
-  font-weight: 980;
-  color: #0f172a;
+.tpReportCard {
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
+  padding: 16px 16px 15px;
+  min-width: 0;
+  box-shadow:
+    0 2px 10px rgba(15, 23, 42, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: 0.2s ease;
 }
 
-.tpPage .tpTimePopOpt:hover{
-  border-color: rgba(15, 23, 42, 0.22);
+.tpReportCard:hover {
+  border-color: rgba(37, 99, 235, 0.18);
+  box-shadow:
+    0 10px 22px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
   transform: translateY(-1px);
 }
 
-.tpPage .tpTimePopOpt.active{
-  border-color: rgba(240, 180, 40, 0.70);
-  background: rgba(240, 180, 40, 0.18);
-  color: #6a4600;
+.tpReportCard span {
+  display: block;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-/* Mobile: make it single column if needed */
-@media (max-width: 420px){
-  .tpPage .tpTimePopBody{ grid-template-columns: 1fr; }
+.tpReportCard strong {
+  display: block;
+  color: #0f172a;
+  font-size: 17px;
+  font-weight: 900;
+  word-break: break-word;
+  line-height: 1.28;
+}
+
+.tpReportCard.wide {
+  grid-column: 1 / -1;
+}
+
+.tpReportCard strong.positive,
+.tpReportCard .positive {
+  color: #16a34a;
+}
+
+.tpReportCard strong.negative,
+.tpReportCard .negative {
+  color: #dc2626;
+}
+
+.tpReportCard.is-profit {
+  background:
+    linear-gradient(180deg, rgba(22, 163, 74, 0.05), rgba(255, 255, 255, 0.98));
+  border-color: rgba(22, 163, 74, 0.14);
+}
+
+.tpReportCard.is-loss {
+  background:
+    linear-gradient(180deg, rgba(220, 38, 38, 0.04), rgba(255, 255, 255, 0.98));
+  border-color: rgba(220, 38, 38, 0.12);
+}
+
+.tpReportCard.is-primary {
+  background:
+    linear-gradient(180deg, rgba(37, 99, 235, 0.05), rgba(255, 255, 255, 0.98));
+  border-color: rgba(37, 99, 235, 0.14);
+}
+
+.tpReportModal::-webkit-scrollbar {
+  width: 10px;
+}
+
+.tpReportModal::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.28);
+  border-radius: 999px;
+}
+
+.tpReportModal::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 /* =========================
-   ✅ Manual Trade Summary: shorter + readable labels (white panel)
+   MOBILE PREMIUM REPORT
 ========================= */
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpSummary{
-  padding: 8px 12px !important;          /* less padding */
-  border-radius: 14px !important;
+
+@media (max-width: 640px) {
+  .tpReportOverlay {
+    padding: 10px;
+    align-items: flex-end;
+  }
+
+  .tpReportModal {
+    width: 100%;
+    max-height: 94vh;
+    border-radius: 22px 22px 0 0;
+  }
+
+  .tpReportHead {
+    padding: 16px 14px 14px;
+    gap: 12px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  }
+
+  .tpReportEyebrow {
+    font-size: 10px;
+    margin-bottom: 5px;
+  }
+
+  .tpReportHead h3 {
+    font-size: 18px;
+    line-height: 1.18;
+  }
+
+  .tpReportClose {
+    width: 38px;
+    height: 38px;
+    font-size: 22px;
+    border-radius: 10px;
+  }
+
+  .tpReportGrid {
+    display: block;
+    padding: 10px 0 8px;
+  }
+
+  .tpReportCard,
+  .tpReportCard.wide {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px 14px;
+    margin: 0;
+    padding: 14px;
+    border: 0;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0;
+    background: #ffffff;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .tpReportCard:hover {
+    transform: none;
+    border-color: transparent;
+    box-shadow: none;
+  }
+
+  .tpReportCard span {
+    margin: 0;
+    font-size: 10px;
+    line-height: 1.3;
+    color: #64748b;
+    max-width: 100%;
+  }
+
+  .tpReportCard strong {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.35;
+    text-align: right;
+    justify-self: end;
+    max-width: 100%;
+  }
+
+  .tpReportCard.is-profit,
+  .tpReportCard.is-loss,
+  .tpReportCard.is-primary {
+    background: #ffffff;
+  }
 }
 
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpSummary .r{
-  padding: 6px 0 !important;             /* less row height */
-  font-size: 13px !important;
+/* =========================
+   EXTRA SMALL MOBILE
+========================= */
+
+@media (max-width: 420px) {
+  .tpReportHead h3 {
+    font-size: 17px;
+  }
+
+  .tpReportCard {
+    padding: 13px 12px;
+    gap: 8px 10px;
+  }
+
+  .tpReportCard span {
+    font-size: 9px;
+  }
+
+  .tpReportCard strong {
+    font-size: 14px;
+  }
 }
 
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpSummary .r span{
-  color: rgba(15, 23, 42, 0.78) !important;  /* ✅ visible (not too muted) */
-  font-weight: 900 !important;
+/* smooth candle animation */
+.candle,
+.candle-body,
+.candle-wick {
+  transition: all 0.25s linear;
 }
 
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpSummary .r b{
-  color: #0f172a !important;             /* ✅ strong value text */
-  font-weight: 980 !important;
+/* smoother indicator lines */
+svg path {
+  transition: all 0.25s linear;
 }
 
-.tpPage .tpOrderPanel.tpOrderPanel--light .tpSummary .r.total{
-  margin-top: 4px !important;
-  padding-top: 8px !important;
-  border-top: 1px solid rgba(15, 23, 42, 0.10) !important;
+/* better chart container */
+.chart-container {
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.35);
+}
+
+/* price line smooth */
+.price-line {
+  transition: all 0.2s linear;
 }

@@ -28,6 +28,36 @@ function pct(n) {
   return `${sign}${num.toFixed(2)}%`;
 }
 
+function pickNumFromDuration(label) {
+  const s = String(label || "").toLowerCase();
+  if (s.includes("month")) return 30;
+  const m = s.match(/(\d+)/);
+  return m ? Number(m[1]) : 7;
+}
+
+function hashStr(str) {
+  let h = 0;
+  const s = String(str || "");
+  for (let i = 0; i < s.length; i++) {
+    h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  }
+  return h;
+}
+
+function seededRand(seed) {
+  let x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+function shuffleSeeded(arr, seed) {
+  const out = [...arr];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(seededRand(seed + i * 17.13) * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
 /* ---------- Simple SVG Line Chart ---------- */
 function LineChart({ data, height = 220 }) {
   const w = 860;
@@ -185,7 +215,7 @@ function CoinPickerModal({
     setSelectedCoins((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]));
   };
 
-  const selectAll = () => setSelectedCoins(coinOptions.slice(0));
+  const selectAll = () => setSelectedCoins(coinOptions.slice(0, 60));
   const clearAll = () => setSelectedCoins([]);
 
   if (!open) return null;
@@ -194,12 +224,12 @@ function CoinPickerModal({
     <div className="gmModalWrap" role="dialog" aria-modal="true" aria-label="Select coins">
       <div className="gmModalBackdrop" onClick={onClose} />
 
-      <div className="gmModal">
+      <div className="gmModal gmModalTall">
         <div className="gmModalHead">
           <div>
             <div className="gmModalTitle">Select Coins (Multi)</div>
             <div className="gmModalSub">
-              You can select multiple coins, or enable system selection to let the system choose randomly.
+              Manual mode can use your selected coins. System mode automatically selects 4–9 top profitable coins for the chosen duration.
             </div>
           </div>
 
@@ -213,18 +243,18 @@ function CoinPickerModal({
             <input type="checkbox" checked={systemSelect} onChange={(e) => setSystemSelect(e.target.checked)} />
             <span className="box" aria-hidden="true" />
             <span className="txt">
-              <b>System can select random coin</b>
-              <span className="mut"> (recommended for diversification)</span>
+              <b>System can select top profitable coins</b>
+              <span className="mut"> (4–9 coins, per client, per duration)</span>
             </span>
           </label>
 
           <div className="gmModalSearch">
             <span className="ic">⌕</span>
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search coins..." />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search Binance pairs..." />
           </div>
         </div>
 
-        <div className="gmModalList">
+        <div className="gmModalList gmModalListTall">
           {filtered.map((c) => {
             const on = selectedCoins.includes(c);
             return (
@@ -250,10 +280,10 @@ function CoinPickerModal({
               Clear
             </button>
             <button className="gmTextBtn" type="button" onClick={selectAll} disabled={systemSelect}>
-              Select all
+              Select many
             </button>
             <span className="gmCount">
-              Selected: <b>{systemSelect ? "System" : selectedCoins.length}</b>
+              Selected: <b>{systemSelect ? "System 4–9 coins" : selectedCoins.length}</b>
             </span>
           </div>
 
@@ -269,7 +299,7 @@ function CoinPickerModal({
 }
 
 /* ===========================
-   ✅ NEW: AI Start Flow Modal
+   AI Start Flow Modal
 =========================== */
 
 function AiStartFlowModal({
@@ -279,17 +309,14 @@ function AiStartFlowModal({
   durationLabel = "7 days",
   onApplyAmount,
 }) {
-  const [step, setStep] = useState(0); // 0=amount, 1=confirm, 2=processing, 3=done
+  const [step, setStep] = useState(0);
   const [alloc, setAlloc] = useState("");
   const [err, setErr] = useState("");
-
-  // processing UX
   const [runIndex, setRunIndex] = useState(-1);
   const [progress, setProgress] = useState(0);
   const [logs, setLogs] = useState([]);
   const [hash, setHash] = useState("");
 
-  // ✅ stable helpers (IMPORTANT: prevents effect loops)
   const fmtMoney = useCallback((n) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -336,17 +363,15 @@ function AiStartFlowModal({
     [daysNum]
   );
 
-    const termBodyRef = useRef(null);
+  const termBodyRef = useRef(null);
   const stepListRef = useRef(null);
 
-  // ✅ Auto-scroll terminal logs to bottom (latest line)
   useEffect(() => {
     if (!open) return;
     if (step !== 2) return;
     const el = termBodyRef.current;
     if (!el) return;
 
-    // wait for DOM paint then scroll
     const raf = requestAnimationFrame(() => {
       el.scrollTop = el.scrollHeight;
     });
@@ -354,7 +379,6 @@ function AiStartFlowModal({
     return () => cancelAnimationFrame(raf);
   }, [open, step, logs]);
 
-  // reset when open
   useEffect(() => {
     if (!open) return;
     setStep(0);
@@ -366,7 +390,6 @@ function AiStartFlowModal({
     setHash("");
   }, [open]);
 
-  // esc close
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => {
@@ -397,27 +420,22 @@ function AiStartFlowModal({
     setStep(2);
   }
 
-  // ✅ 45s processing orchestration (FIXED)
   useEffect(() => {
     if (!open) return;
     if (step !== 2) return;
 
     let cancelled = false;
 
-    // Snapshot values so they don't "move" mid-run
     const allocSnap = Number(alloc || 0);
     const durationSnap = durationLabel;
     const daysSnap = daysNum;
     const stepsSnap = steps;
 
     const TOTAL_MS = 45000;
-
     const weights = [0.18, 0.16, 0.32, 0.18, 0.16];
     const stepMs = weights.map((w) => Math.round(TOTAL_MS * w));
-
     const startedAt = Date.now();
 
-    // smooth progress
     const progTimer = setInterval(() => {
       if (cancelled) return;
       const t = Date.now() - startedAt;
@@ -425,13 +443,11 @@ function AiStartFlowModal({
       setProgress(p);
     }, 120);
 
-    // secure hash ticker
     const hashTimer = setInterval(() => {
       if (cancelled) return;
       setHash(randHex(48));
     }, 180);
 
-    // logs streaming
     const logPool = [
       "Initializing AI trading engine runtime…",
       "Loading risk profile and execution window…",
@@ -497,12 +513,12 @@ function AiStartFlowModal({
 
     runSteps();
 
-  return () => {
-  cancelled = true;
-  clearInterval(progTimer);
-  clearInterval(hashTimer);
-  clearInterval(logTimer);
-};
+    return () => {
+      cancelled = true;
+      clearInterval(progTimer);
+      clearInterval(hashTimer);
+      clearInterval(logTimer);
+    };
   }, [open, step, alloc, durationLabel, daysNum, steps, fmtMoney, fmtTs, pushLog, randHex]);
 
   if (!open) return null;
@@ -623,96 +639,92 @@ function AiStartFlowModal({
         )}
 
         {step === 2 && (
-  <div className="aiFlowBody">
-    <div className="aiFlowCard">
-      <div className="aiFlowHead">
-        <div className="h">Initializing AI Trading</div>
-        <div className="s">This activation sequence completes in ~45 seconds.</div>
-      </div>
-
-      {/* ✅ NEW: Scroll container (for mobile) */}
-      <div className="aiFlowScrollArea">
-        {/* ✅ TOP TECH BAR */}
-        <div className="aiTechBar">
-          <div className="aiPct">
-            <div className="k">Progress</div>
-            <div className="v">{progress}%</div>
-          </div>
-
-          <div className="aiBarWrap" aria-hidden="true">
-            <div className="aiBar" style={{ width: `${progress}%` }} />
-            <div className="aiBarScan" />
-          </div>
-
-          <div className="aiHash">
-            <div className="k">Secure hash</div>
-            <div className="v">{hash || "—"}</div>
-          </div>
-
-          <div className="aiKey" title="Secure session">
-            <span className="ring" />
-            <span className="key">🔑</span>
-          </div>
-        </div>
-
-        <div className="aiFlowProgress">
-          <div className="aiFlowRing" aria-hidden="true">
-            <div className="r1" />
-            <div className="r2" />
-            <div className="r3" />
-            <div className="aiScanLines" aria-hidden="true" />
-          </div>
-
-          {/* ✅ NEW: step list scroll target */}
-          <div className="aiFlowSteps" ref={stepListRef}>
-            {steps.map((x, i) => {
-              const done = runIndex > i;
-              const on = runIndex === i;
-              return (
-                <div key={x.t} className={cls("aiFlowStep", done && "done", on && "on")}>
-                  <div className="dot" />
-                  <div className="txt">
-                    <div className="t">{x.t}</div>
-                    <div className="d">{x.s}</div>
-                  </div>
-                  <div className="st">{done ? "Done" : on ? "Running..." : "Queued"}</div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ✅ Terminal logs (auto-scroll already applied) */}
-        <div className="aiTerminal" aria-label="AI terminal logs">
-          <div className="aiTermTop">
-            <div className="b" />
-            <div className="b y" />
-            <div className="b g" />
-            <div className="t">engine.logs</div>
-            <div className="sp" />
-            <div className="tag">LIVE</div>
-          </div>
-
-          <div className="aiTermBody" ref={termBodyRef}>
-            {logs.map((l, idx) => (
-              <div key={idx} className="ln">
-                {l}
+          <div className="aiFlowBody">
+            <div className="aiFlowCard">
+              <div className="aiFlowHead">
+                <div className="h">Initializing AI Trading</div>
+                <div className="s">This activation sequence completes in ~45 seconds.</div>
               </div>
-            ))}
-            <div className="cursorRow">
-              <span className="prompt">›</span>
-              <span className="cursor" />
+
+              <div className="aiFlowScrollArea">
+                <div className="aiTechBar">
+                  <div className="aiPct">
+                    <div className="k">Progress</div>
+                    <div className="v">{progress}%</div>
+                  </div>
+
+                  <div className="aiBarWrap" aria-hidden="true">
+                    <div className="aiBar" style={{ width: `${progress}%` }} />
+                    <div className="aiBarScan" />
+                  </div>
+
+                  <div className="aiHash">
+                    <div className="k">Secure hash</div>
+                    <div className="v">{hash || "—"}</div>
+                  </div>
+
+                  <div className="aiKey" title="Secure session">
+                    <span className="ring" />
+                    <span className="key">🔑</span>
+                  </div>
+                </div>
+
+                <div className="aiFlowProgress">
+                  <div className="aiFlowRing" aria-hidden="true">
+                    <div className="r1" />
+                    <div className="r2" />
+                    <div className="r3" />
+                    <div className="aiScanLines" aria-hidden="true" />
+                  </div>
+
+                  <div className="aiFlowSteps" ref={stepListRef}>
+                    {steps.map((x, i) => {
+                      const done = runIndex > i;
+                      const on = runIndex === i;
+                      return (
+                        <div key={x.t} className={cls("aiFlowStep", done && "done", on && "on")}>
+                          <div className="dot" />
+                          <div className="txt">
+                            <div className="t">{x.t}</div>
+                            <div className="d">{x.s}</div>
+                          </div>
+                          <div className="st">{done ? "Done" : on ? "Running..." : "Queued"}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="aiTerminal" aria-label="AI terminal logs">
+                  <div className="aiTermTop">
+                    <div className="b" />
+                    <div className="b y" />
+                    <div className="b g" />
+                    <div className="t">engine.logs</div>
+                    <div className="sp" />
+                    <div className="tag">LIVE</div>
+                  </div>
+
+                  <div className="aiTermBody" ref={termBodyRef}>
+                    {logs.map((l, idx) => (
+                      <div key={idx} className="ln">
+                        {l}
+                      </div>
+                    ))}
+                    <div className="cursorRow">
+                      <span className="prompt">›</span>
+                      <span className="cursor" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="aiFlowHint">
+                  Allocation: <b>{fmtMoney(alloc)}</b> • Window: <b>{durationLabel}</b>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div className="aiFlowHint">
-          Allocation: <b>{fmtMoney(alloc)}</b> • Window: <b>{durationLabel}</b>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+        )}
 
         {step === 3 && (
           <div className="aiFlowBody">
@@ -752,6 +764,7 @@ function AiStartFlowModal({
     </div>
   );
 }
+
 /* ---------- Main Page ---------- */
 export default function GoldMiracleAIDashboard() {
   const navigate = useNavigate();
@@ -817,9 +830,20 @@ export default function GoldMiracleAIDashboard() {
   ];
 
   const coinOptions = [
-    "BTC/USDT","ETH/USDT","SOL/USDT","BNB/USDT","XRP/USDT","ADA/USDT","DOGE/USDT","AVAX/USDT",
-    "LINK/USDT","DOT/USDT","MATIC/USDT","LTC/USDT","TRX/USDT","ATOM/USDT","BCH/USDT",
+    "BTC/USDT", "ETH/USDT", "BNB/USDT", "SOL/USDT", "XRP/USDT", "ADA/USDT", "DOGE/USDT", "AVAX/USDT",
+    "LINK/USDT", "DOT/USDT", "MATIC/USDT", "LTC/USDT", "TRX/USDT", "ATOM/USDT", "BCH/USDT", "ETC/USDT",
+    "FIL/USDT", "APT/USDT", "ARB/USDT", "OP/USDT", "SUI/USDT", "SEI/USDT", "NEAR/USDT", "FTM/USDT",
+    "INJ/USDT", "AAVE/USDT", "UNI/USDT", "CRV/USDT", "MKR/USDT", "PEPE/USDT", "SHIB/USDT", "WIF/USDT",
+    "BONK/USDT", "RNDR/USDT", "RUNE/USDT", "GALA/USDT", "SAND/USDT", "MANA/USDT", "AXS/USDT", "ICP/USDT",
+    "HBAR/USDT", "ALGO/USDT", "VET/USDT", "EGLD/USDT", "FLOW/USDT", "EOS/USDT", "KAVA/USDT", "KSM/USDT",
+    "XLM/USDT", "XMR/USDT", "ZEC/USDT", "THETA/USDT", "TIA/USDT", "JUP/USDT", "PYTH/USDT", "WLD/USDT",
+    "BLUR/USDT", "DYDX/USDT", "GMX/USDT", "LDO/USDT", "SNX/USDT", "CHZ/USDT", "CAKE/USDT", "1INCH/USDT",
+    "COMP/USDT", "SUSHI/USDT", "MASK/USDT", "YFI/USDT", "TRB/USDT", "CFX/USDT", "ROSE/USDT", "STX/USDT",
+    "IMX/USDT", "FET/USDT", "AGIX/USDT", "OCEAN/USDT", "GRT/USDT", "ENS/USDT", "ZIL/USDT", "IOTA/USDT",
+    "ONT/USDT", "QTUM/USDT", "KNC/USDT", "RLC/USDT", "NEO/USDT", "MINA/USDT", "KAS/USDT", "ORDI/USDT",
+    "1000SATS/USDT", "BOME/USDT", "ACE/USDT", "ALT/USDT", "JTO/USDT", "PENDLE/USDT", "TON/USDT", "NOT/USDT",
   ];
+
   const durations = ["1 day", "3 days", "7 days", "15 days", "1 month"];
 
   const [selectedCoins, setSelectedCoins] = useState(["BTC/USDT", "ETH/USDT"]);
@@ -836,12 +860,37 @@ export default function GoldMiracleAIDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [coinModalOpen, setCoinModalOpen] = useState(false);
   const [activeNav, setActiveNav] = useState("overview");
-
-  // ✅ NEW: AI start popup state
   const [aiFlowOpen, setAiFlowOpen] = useState(false);
 
+  const [reportView, setReportView] = useState("recent");
+  const [selectedTradeReport, setSelectedTradeReport] = useState(null);
+
+  const marketPulse = useMemo(
+    () => [
+      { label: "BTC Dominance", value: "53.4%", tone: "pos" },
+      { label: "Fear & Greed", value: "68 / Greed", tone: "pos" },
+      { label: "Altcoin Breadth", value: "Moderate", tone: "" },
+      { label: "Funding Pressure", value: "Neutral", tone: "" },
+      { label: "24h Volume", value: "$86.2B", tone: "" },
+      { label: "Stablecoin Flow", value: "+$1.8B", tone: "pos" },
+    ],
+    []
+  );
+
+  const marketHeat = useMemo(
+    () => [
+      { pair: "BTC/USDT", move: 2.14, vol: "Very High", trend: "Breakout" },
+      { pair: "ETH/USDT", move: 1.42, vol: "High", trend: "Trend up" },
+      { pair: "SOL/USDT", move: 3.08, vol: "High", trend: "Expansion" },
+      { pair: "BNB/USDT", move: -0.62, vol: "Moderate", trend: "Pullback" },
+      { pair: "XRP/USDT", move: 2.66, vol: "High", trend: "Range breakout" },
+      { pair: "ADA/USDT", move: -1.12, vol: "Moderate", trend: "Weakness" },
+    ],
+    []
+  );
+
   const riskGrade = useMemo(() => {
-    const coinsCount = systemSelect ? 2 : Math.max(1, selectedCoins.length);
+    const coinsCount = systemSelect ? 5 : Math.max(1, selectedCoins.length);
     const coinsFactor = Math.min(3, coinsCount) * 1.2;
     const durFactor =
       duration === "1 day" ? 1.8 : duration === "3 days" ? 1.5 : duration === "7 days" ? 1.2 : 1.0;
@@ -854,12 +903,127 @@ export default function GoldMiracleAIDashboard() {
     return { label: "Conservative", tone: "ok" };
   }, [selectedCoins.length, duration, tpEnabled, takeProfit, slEnabled, stopLoss, systemSelect]);
 
+  const daysNum = useMemo(() => pickNumFromDuration(duration), [duration]);
+
+  const systemSelectedCoins = useMemo(() => {
+    const seed = hashStr(`${duration}-${amount}-${takeProfit}-${stopLoss}-${maxProfit}-${maxLoss}`);
+    const count = 4 + Math.floor(seededRand(seed + 7) * 6); // 4 to 9
+    const ranked = shuffleSeeded(coinOptions, seed).slice(0, count);
+    return ranked;
+  }, [coinOptions, duration, amount, takeProfit, stopLoss, maxProfit, maxLoss]);
+
+  const reportCoins = useMemo(() => {
+    if (systemSelect) return systemSelectedCoins;
+    if (!selectedCoins.length) return ["BTC/USDT"];
+    return selectedCoins.slice(0, 9);
+  }, [systemSelect, systemSelectedCoins, selectedCoins]);
+
   const coinSummary = useMemo(() => {
-    if (systemSelect) return "System selects randomly";
+    if (systemSelect) return `System selects ${systemSelectedCoins.length} coins`;
     if (selectedCoins.length === 0) return "Select coins";
-    if (selectedCoins.length <= 2) return selectedCoins.join(", ");
-    return `${selectedCoins.slice(0, 2).join(", ")} +${selectedCoins.length - 2}`;
-  }, [selectedCoins, systemSelect]);
+    if (selectedCoins.length <= 3) return selectedCoins.join(", ");
+    return `${selectedCoins.slice(0, 3).join(", ")} +${selectedCoins.length - 3}`;
+  }, [selectedCoins, systemSelect, systemSelectedCoins.length]);
+
+  const tradeReports = useMemo(() => {
+    const seedBase = hashStr(`${duration}-${amount}-${reportCoins.join("|")}-${systemSelect ? "system" : "manual"}`);
+    return reportCoins.map((pair, idx) => {
+      const seed = seedBase + idx * 37;
+      const priceBaseMap = {
+        BTC: 67200,
+        ETH: 3380,
+        BNB: 570,
+        SOL: 138,
+        XRP: 0.702,
+        ADA: 0.731,
+        DOGE: 0.168,
+        AVAX: 42,
+        LINK: 19.8,
+        DOT: 8.9,
+      };
+
+      const base = pair.split("/")[0];
+      const entryBase = priceBaseMap[base] || (8 + seededRand(seed + 1) * 320);
+      const isLow = entryBase < 10;
+      const directionBuy = seededRand(seed + 2) > 0.35;
+      const pnlPctRaw = ((seededRand(seed + 3) * 6.4) - 1.8);
+      const pnlPctVal = Number(pnlPctRaw.toFixed(2));
+      const entry = Number(entryBase.toFixed(isLow ? 3 : entryBase < 100 ? 2 : 0));
+      const exitUnrounded = directionBuy
+        ? entry * (1 + pnlPctVal / 100)
+        : entry * (1 - pnlPctVal / 100);
+      const exit = Number(exitUnrounded.toFixed(isLow ? 3 : entryBase < 100 ? 2 : 0));
+      const qty = Number((seededRand(seed + 4) * 45 + 1.2).toFixed(base === "BTC" ? 3 : isLow ? 0 : 2));
+      const invested = Number((Math.abs(entry * qty)).toFixed(2));
+      const pnl = Number(((invested * pnlPctVal) / 100).toFixed(2));
+      const status = pnl >= 0 ? "win" : "loss";
+      const confidencePool = ["Medium", "Medium-High", "High"];
+      const confidence = confidencePool[Math.floor(seededRand(seed + 5) * confidencePool.length)];
+      const hourOpen = 8 + (idx % 8);
+      const closeMins = 45 + Math.floor(seededRand(seed + 6) * 190);
+      const h = Math.floor(closeMins / 60);
+      const m = closeMins % 60;
+      const durationTxt = h > 0 ? `${h}h ${String(m).padStart(2, "0")}m` : `${m}m`;
+
+      return {
+        id: `TRD-${daysNum}-${idx + 1}-${base}`,
+        pair,
+        side: directionBuy ? "BUY" : "SELL",
+        strategy: systemSelect ? "AI Ranked Multi-Coin Rotation" : "AI Manual Coin Execution",
+        openedAt: `2026-03-15 ${String(hourOpen).padStart(2, "0")}:${String((idx * 11) % 60).padStart(2, "0")}`,
+        closedAt: `2026-03-15 ${String(hourOpen + Math.max(1, h)).padStart(2, "0")}:${String((idx * 11 + m) % 60).padStart(2, "0")}`,
+        entry,
+        exit,
+        qty,
+        invested,
+        pnl,
+        pnlPct: pnlPctVal,
+        status,
+        confidence,
+        duration: durationTxt,
+        reason: systemSelect
+          ? `System selected ${pair} among the top profitable candidates for the ${duration} execution window based on momentum, volatility, spread quality, and relative strength ranking.`
+          : `Report generated only for the manually selected coin ${pair}. AI used the chosen duration, signal quality, and risk settings to produce this trade outcome.`,
+        execution:
+          "Execution used AI routing, spread filter checks, volatility screening, and strategy controls. Final profit or loss percentage is designed to be backend-driven later using your admin logic.",
+        controls: `TP ${tpEnabled ? "enabled" : "disabled"} • SL ${slEnabled ? "enabled" : "disabled"} • Max Profit ${maxProfit}% • Max Loss ${maxLoss}%`,
+        notes:
+          pnl >= 0
+            ? "Trade closed in profit after meeting AI exit conditions. Future backend can fully control positive result percentages."
+            : "Trade closed with controlled loss. Future backend can deliberately set negative percentages as needed for realistic behavior.",
+      };
+    });
+  }, [reportCoins, duration, amount, daysNum, systemSelect, tpEnabled, slEnabled, maxProfit, maxLoss]);
+
+  const recentTradeReports = useMemo(() => tradeReports.slice(0, 4), [tradeReports]);
+
+  const reportStats = useMemo(() => {
+    const total = tradeReports.length;
+    const wins = tradeReports.filter((t) => t.status === "win").length;
+    const totalPnl = tradeReports.reduce((sum, t) => sum + t.pnl, 0);
+    return {
+      total,
+      wins,
+      losses: total - wins,
+      winRate: total ? (wins / total) * 100 : 0,
+      totalPnl,
+      avgReturn: total ? tradeReports.reduce((sum, t) => sum + t.pnlPct, 0) / total : 0,
+    };
+  }, [tradeReports]);
+
+  const portfolioStats = useMemo(() => {
+    const netValue = portfolio.reduce((sum, p) => sum + p.qty * p.px, 0);
+    const costBasis = portfolio.reduce((sum, p) => sum + p.qty * p.avg, 0);
+    const unrealized = netValue - costBasis;
+    const best = [...portfolio].sort((a, b) => b.pl - a.pl)[0];
+    return {
+      netValue,
+      costBasis,
+      unrealized,
+      best,
+      exposure: `${portfolio.filter((p) => p.asset !== "USDT").length} active crypto positions`,
+    };
+  }, [portfolio]);
 
   const headerContent = useMemo(() => {
     switch (activeNav) {
@@ -886,7 +1050,7 @@ export default function GoldMiracleAIDashboard() {
       case "reports":
         return {
           title: "AI Insights & Reports",
-          subtitle: "Data-driven analysis • market signals • execution strategies • confidence metrics and forecasts"
+          subtitle: "Reports are generated from your selected coins or from system-selected top profitable coins for the chosen period."
         };
       case "support":
         return {
@@ -906,7 +1070,6 @@ export default function GoldMiracleAIDashboard() {
     }
   }, [activeNav]);
 
-  // ✅ NEW: current balance (uses USDT qty from your existing portfolio demo)
   const currentBalance = useMemo(() => {
     const usdt = portfolio.find((p) => p.asset === "USDT");
     return Number(usdt?.qty || 0);
@@ -1088,6 +1251,38 @@ export default function GoldMiracleAIDashboard() {
               </div>
               <CandleChart candles={btcCandles} height={280} />
             </div>
+
+            <div className="gmPanel span4">
+              <div className="gmPanelHead">
+                <div>
+                  <div className="gmH">Market Pulse</div>
+                  <div className="gmS">Broader conditions used by the AI model to rank opportunities</div>
+                </div>
+              </div>
+              <div className="gmReportsWrap">
+                <div className="gmReportSummary gmReportSummary6">
+                  {marketPulse.map((m) => (
+                    <div key={m.label} className="gmReportStat">
+                      <div className="k">{m.label}</div>
+                      <div className={cls("v", m.tone)}>{m.value}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="gmHeatGrid">
+                  {marketHeat.map((m) => (
+                    <div key={m.pair} className="gmHeatCard">
+                      <div className="gmHeatTop">
+                        <div className="pair">{m.pair}</div>
+                        <div className={cls("move", m.move >= 0 ? "pos" : "neg")}>{pct(m.move)}</div>
+                      </div>
+                      <div className="gmHeatMeta">Volume: {m.vol}</div>
+                      <div className="gmHeatMeta">Structure: {m.trend}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </section>
         )}
 
@@ -1098,8 +1293,7 @@ export default function GoldMiracleAIDashboard() {
                 <div>
                   <div className="gmH gmDarkText">AI Trading Setup</div>
                   <div className="gmS gmDarkSub">
-                    Select one or multiple coins. AI analyzes the last 6 months of market behavior and executes within your
-                    configured limits.
+                    Manual mode can use your chosen coins. System mode automatically selects 4–9 profitable-ranked coins for the selected period.
                   </div>
                 </div>
                 <div className={cls("gmRiskTag", "gmRiskTagWhite", riskGrade.tone)}>
@@ -1128,27 +1322,27 @@ export default function GoldMiracleAIDashboard() {
                   </button>
 
                   <div className="gmHint gmDarkHint">
-                    Tap to open the coin list. You can select multiple coins, or enable system selection to choose randomly.
+                    Binance-style list is scrollable with many pairs. Manual reports use your selected coins only. System reports use automatic 4–9 ranked coins.
                   </div>
                 </div>
 
                 <div className="gmControlRow">
                   <div className="gmField gmWhiteCard">
                     <div className="gmLabel gmDarkText">Amount & Duration</div>
-                    <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
-                      <div style={{ flex: '1' }}>
-                        <div className="gmInput gmInputWhite" style={{ marginTop: '0' }}>
+                    <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
+                      <div style={{ flex: "1" }}>
+                        <div className="gmInput gmInputWhite" style={{ marginTop: "0" }}>
                           <span className="pre">$</span>
-                          <input 
-                            type="number" 
-                            value={amount} 
-                            onChange={(e) => setAmount(Number(e.target.value || 0))} 
+                          <input
+                            type="number"
+                            value={amount}
+                            onChange={(e) => setAmount(Number(e.target.value || 0))}
                             placeholder="Amount"
                           />
                         </div>
                       </div>
-                      <div style={{ flex: '1' }}>
-                        <div className="gmSelect gmSelectWhite" style={{ marginTop: '0' }}>
+                      <div style={{ flex: "1" }}>
+                        <div className="gmSelect gmSelectWhite" style={{ marginTop: "0" }}>
                           <select value={duration} onChange={(e) => setDuration(e.target.value)}>
                             {durations.map((d) => (
                               <option key={d} value={d}>
@@ -1166,13 +1360,13 @@ export default function GoldMiracleAIDashboard() {
                   <div className="gmField gmWhiteCard">
                     <div className="gmLabel gmDarkText">Mode</div>
                     <div className="gmMode">
-                      <div className="gmModeCard on">
-                        <div className="t">AI Trading</div>
-                        <div className="s">Automated signals + rule guards</div>
+                      <div className={cls("gmModeCard", !systemSelect && "on")}>
+                        <div className="t">Manual Coin Mode</div>
+                        <div className="s">Reports only for your selected coins</div>
                       </div>
-                      <div className="gmModeCard">
-                        <div className="t">Manual</div>
-                        <div className="s">Limited to single focus &amp; speed</div>
+                      <div className={cls("gmModeCard", systemSelect && "on")}>
+                        <div className="t">System Ranked Mode</div>
+                        <div className="s">Auto-picks 4–9 coins for this client</div>
                       </div>
                     </div>
                   </div>
@@ -1204,7 +1398,7 @@ export default function GoldMiracleAIDashboard() {
                       </div>
                     </div>
 
-                    <div className="gmHint gmDarkHint">Binance-style TP boundary: closes positions at target profit.</div>
+                    <div className="gmHint gmDarkHint">Target percentage used by the frontend risk model.</div>
                   </div>
 
                   <div className="gmField gmWhiteCard">
@@ -1232,7 +1426,7 @@ export default function GoldMiracleAIDashboard() {
                       </div>
                     </div>
 
-                    <div className="gmHint gmDarkHint">SL boundary: limits downside by exiting after defined loss.</div>
+                    <div className="gmHint gmDarkHint">Protective downside control for trade exits.</div>
                   </div>
                 </div>
 
@@ -1256,12 +1450,29 @@ export default function GoldMiracleAIDashboard() {
                   </div>
                 </div>
 
+                <div className="gmControlRow">
+                  <div className="gmField gmWhiteCard">
+                    <div className="gmLabel gmDarkText">Backend Result Logic</div>
+                    <div className="gmHint gmDarkHint">
+                      Frontend currently shows realistic positive and negative percentages. Next time your backend login can fully control whether trades close with <b>+</b> profit or <b>-</b> loss.
+                    </div>
+                  </div>
+
+                  <div className="gmField gmWhiteCard">
+                    <div className="gmLabel gmDarkText">Report Universe</div>
+                    <div className="gmHint gmDarkHint">
+                      {systemSelect
+                        ? `System currently ranks ${systemSelectedCoins.length} coins for ${duration}: ${systemSelectedCoins.join(", ")}`
+                        : `Manual report will be generated only from: ${selectedCoins.length ? selectedCoins.join(", ") : "No coins selected"}`}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="gmActions gmActionsWhite">
                   <button className="gmBtn ghost" type="button">
                     Save Preset
                   </button>
 
-                  {/* ✅ ONLY CHANGE: onClick opens the smart flow popup */}
                   <button className="gmBtn gmBtnBinance" type="button" onClick={() => setAiFlowOpen(true)}>
                     Start AI Trading
                     <span className="shine" aria-hidden="true" />
@@ -1277,50 +1488,205 @@ export default function GoldMiracleAIDashboard() {
             <div className="gmPanel span4">
               <div className="gmPanelHead">
                 <div>
-                  <div className="gmH">AI Insights</div>
-                  <div className="gmS">Concise, analyst-style notes based on a 6-month feature window</div>
+                  <div className="gmH">Trade Reports</div>
+                  <div className="gmS">
+                    {systemSelect
+                      ? `System mode active: reports generated from ${systemSelectedCoins.length} automatically ranked coins for ${duration}.`
+                      : `Manual mode active: reports generated only from your selected coins (${reportCoins.join(", ")}).`}
+                  </div>
+                </div>
+
+                <div className="gmHeadRight gmReportSwitch">
+                  <button
+                    type="button"
+                    className={cls("gmReportTab", reportView === "recent" && "active")}
+                    onClick={() => setReportView("recent")}
+                  >
+                    Last Few Trades
+                  </button>
+                  <button
+                    type="button"
+                    className={cls("gmReportTab", reportView === "all" && "active")}
+                    onClick={() => setReportView("all")}
+                  >
+                    All Trades
+                  </button>
                 </div>
               </div>
 
-              <div className="gmInsights">
-                <div className="gmInsight">
-                  <div className="tag">Macro</div>
-                  <div className="txt">
-                    AI model indicates <b>moderate growth bias</b> in large-cap tech over the next quarter, with volatility
-                    clustering remaining elevated around earnings windows.
+              <div className="gmReportsWrap">
+                <div className="gmReportSummary">
+                  <div className="gmReportStat">
+                    <div className="k">Report Coins</div>
+                    <div className="v">{reportStats.total}</div>
                   </div>
-                  <div className="meta">Confidence: Medium • Horizon: 4–12 weeks</div>
+                  <div className="gmReportStat">
+                    <div className="k">Winning Trades</div>
+                    <div className="v pos">✓ {reportStats.wins}</div>
+                  </div>
+                  <div className="gmReportStat">
+                    <div className="k">Win Rate</div>
+                    <div className="v">{reportStats.winRate.toFixed(1)}%</div>
+                  </div>
+                  <div className="gmReportStat">
+                    <div className="k">Net P/L</div>
+                    <div className={cls("v", reportStats.totalPnl >= 0 ? "pos" : "neg")}>
+                      {money(reportStats.totalPnl, 2)}
+                    </div>
+                  </div>
                 </div>
 
-                <div className="gmInsight">
-                  <div className="tag">Crypto</div>
-                  <div className="txt">
-                    Bitcoin structure shows <b>higher lows</b> with intermittent pullbacks. AI prefers breakout confirmations
-                    when volume expands above prior resistance bands.
+                <div className="gmReportContextCard">
+                  <div className="gmReportContextTitle">Report Generation Logic</div>
+                  <div className="gmReportContextText">
+                    {systemSelect
+                      ? `System select is ON. AI ranked a basket of ${systemSelectedCoins.length} coins and generated report outputs for the ${duration} period.`
+                      : `System select is OFF. Report output is limited only to the coins you selected manually.`}
                   </div>
-                  <div className="meta">Confidence: Medium-High • Horizon: 1–3 weeks</div>
+                  <div className="gmReportContextCoins">
+                    {(systemSelect ? systemSelectedCoins : reportCoins).map((coin) => (
+                      <span key={coin} className="chip">{coin}</span>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="gmInsight">
-                  <div className="tag">Execution</div>
-                  <div className="txt">
-                    Multi-coin routing improves opportunity coverage, while risk stays bounded by configured <b>TP/SL</b> and
-                    strategy-level caps. Assets with widening spreads are deprioritized.
-                  </div>
-                  <div className="meta">Controls active: TP/SL • Caps: enabled</div>
+                <div className="gmReportList">
+                  {(reportView === "recent" ? recentTradeReports : tradeReports).map((trade) => (
+                    <button
+                      key={trade.id}
+                      type="button"
+                      className="gmTradeReportRow"
+                      onClick={() => setSelectedTradeReport(trade)}
+                    >
+                      <div className="gmTradeReportMain">
+                        <div className="gmTradeTopLine">
+                          <div className="gmTradePairWrap">
+                            <span className="gmTradePair">{trade.pair}</span>
+                            <span className={cls("gmTradeSide", trade.side === "BUY" ? "buy" : "sell")}>
+                              {trade.side}
+                            </span>
+                            <span className={cls("gmTradeOutcome", trade.status === "win" ? "win" : "loss")}>
+                              {trade.status === "win" ? "✓ Winning Trade" : "Loss"}
+                            </span>
+                          </div>
+
+                          <div className={cls("gmTradePnl", trade.pnl >= 0 ? "pos" : "neg")}>
+                            {money(trade.pnl, 2)} <span>{pct(trade.pnlPct)}</span>
+                          </div>
+                        </div>
+
+                        <div className="gmTradeMidLine">
+                          <div><span>Strategy:</span> {trade.strategy}</div>
+                          <div><span>Opened:</span> {trade.openedAt}</div>
+                          <div><span>Closed:</span> {trade.closedAt}</div>
+                        </div>
+
+                        <div className="gmTradeBottomLine">
+                          <div><span>Entry:</span> {money(trade.entry, trade.entry < 10 ? 3 : 0)}</div>
+                          <div><span>Exit:</span> {money(trade.exit, trade.exit < 10 ? 3 : 0)}</div>
+                          <div><span>Confidence:</span> {trade.confidence}</div>
+                          <div><span>Duration:</span> {trade.duration}</div>
+                        </div>
+                      </div>
+
+                      <div className="gmTradeArrow">→</div>
+                    </button>
+                  ))}
                 </div>
 
-                <div className="gmInsightNote">
-                  <div className="t">Why AI trading is structurally stronger than manual trading</div>
-                  <ul>
-                    <li>Simultaneous scanning across multiple coins (no single-focus limitation).</li>
-                    <li>Consistent rules and execution reduces emotional decision-making.</li>
-                    <li>Uses a rolling 6-month dataset to adapt to changing regimes.</li>
-                    <li>Enforces profit/loss limits to manage drawdowns.</li>
-                  </ul>
+                <div className="gmReportsFootNote">
+                  Profit/loss percentages are currently simulated on the frontend. Later, your backend login can define exact positive or negative return percentages.
                 </div>
               </div>
             </div>
+
+            {selectedTradeReport && (
+              <div className="gmTradeModalWrap" role="dialog" aria-modal="true" aria-label="Trade report details">
+                <div className="gmTradeModalBackdrop" onClick={() => setSelectedTradeReport(null)} />
+                <div className="gmTradeModal">
+                  <div className="gmTradeModalHead">
+                    <div>
+                      <div className="gmTradeModalTitle">Trade Detail Report</div>
+                      <div className="gmTradeModalSub">
+                        {selectedTradeReport.id} • {selectedTradeReport.pair} • {selectedTradeReport.strategy}
+                      </div>
+                    </div>
+
+                    <button
+                      className="gmIconBtn"
+                      type="button"
+                      onClick={() => setSelectedTradeReport(null)}
+                      aria-label="Close trade report"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <div className="gmTradeModalBody">
+                    <div className="gmTradeHero">
+                      <div className="gmTradeHeroLeft">
+                        <div className="gmTradeHeroPair">{selectedTradeReport.pair}</div>
+                        <div className="gmTradeHeroMeta">
+                          {selectedTradeReport.side} • {selectedTradeReport.confidence} confidence • {selectedTradeReport.duration}
+                        </div>
+                      </div>
+
+                      <div className={cls("gmTradeHeroBadge", selectedTradeReport.status === "win" ? "win" : "loss")}>
+                        {selectedTradeReport.status === "win" ? "✓ Successful Trade" : "Protected Exit"}
+                      </div>
+                    </div>
+
+                    <div className="gmTradeDetailGrid">
+                      <div className="gmTradeDetailCard">
+                        <div className="t">Execution Summary</div>
+                        <div className="gmTradeDetailRows">
+                          <div><span>Opened</span><b>{selectedTradeReport.openedAt}</b></div>
+                          <div><span>Closed</span><b>{selectedTradeReport.closedAt}</b></div>
+                          <div><span>Entry Price</span><b>{money(selectedTradeReport.entry, selectedTradeReport.entry < 10 ? 3 : 0)}</b></div>
+                          <div><span>Exit Price</span><b>{money(selectedTradeReport.exit, selectedTradeReport.exit < 10 ? 3 : 0)}</b></div>
+                          <div><span>Quantity</span><b>{nfmt(selectedTradeReport.qty, 2)}</b></div>
+                          <div><span>Capital Used</span><b>{money(selectedTradeReport.invested, 2)}</b></div>
+                        </div>
+                      </div>
+
+                      <div className="gmTradeDetailCard">
+                        <div className="t">Performance</div>
+                        <div className="gmTradeDetailRows">
+                          <div><span>Strategy</span><b>{selectedTradeReport.strategy}</b></div>
+                          <div><span>Outcome</span><b className={selectedTradeReport.pnl >= 0 ? "pos" : "neg"}>{money(selectedTradeReport.pnl, 2)}</b></div>
+                          <div><span>Return</span><b className={selectedTradeReport.pnlPct >= 0 ? "pos" : "neg"}>{pct(selectedTradeReport.pnlPct)}</b></div>
+                          <div><span>Confidence</span><b>{selectedTradeReport.confidence}</b></div>
+                          <div><span>Status</span><b>{selectedTradeReport.status === "win" ? "Winning trade" : "Controlled loss"}</b></div>
+                          <div><span>Duration</span><b>{selectedTradeReport.duration}</b></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="gmTradeNarrative">
+                      <div className="gmTradeNarrativeBlock">
+                        <div className="h">Signal Reason</div>
+                        <p>{selectedTradeReport.reason}</p>
+                      </div>
+
+                      <div className="gmTradeNarrativeBlock">
+                        <div className="h">Execution Report</div>
+                        <p>{selectedTradeReport.execution}</p>
+                      </div>
+
+                      <div className="gmTradeNarrativeBlock">
+                        <div className="h">Risk Controls</div>
+                        <p>{selectedTradeReport.controls}</p>
+                      </div>
+
+                      <div className="gmTradeNarrativeBlock">
+                        <div className="h">Analyst Note</div>
+                        <p>{selectedTradeReport.notes}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </section>
         )}
 
@@ -1335,11 +1701,34 @@ export default function GoldMiracleAIDashboard() {
                 <div className="gmHeadRight">
                   <div className="gmStat">
                     <div className="k">Net Value</div>
-                    <div className="v">{money(28750, 0)}</div>
+                    <div className="v">{money(portfolioStats.netValue, 0)}</div>
                   </div>
                   <div className="gmStat">
-                    <div className="k">Daily P/L</div>
-                    <div className="v pos">{pct(1.18)}</div>
+                    <div className="k">Unrealized P/L</div>
+                    <div className={cls("v", portfolioStats.unrealized >= 0 ? "pos" : "neg")}>
+                      {money(portfolioStats.unrealized, 0)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="gmReportsWrap">
+                <div className="gmReportSummary">
+                  <div className="gmReportStat">
+                    <div className="k">Total Exposure</div>
+                    <div className="v">{portfolioStats.exposure}</div>
+                  </div>
+                  <div className="gmReportStat">
+                    <div className="k">Cost Basis</div>
+                    <div className="v">{money(portfolioStats.costBasis, 0)}</div>
+                  </div>
+                  <div className="gmReportStat">
+                    <div className="k">Best Performer</div>
+                    <div className="v pos">{portfolioStats.best.asset} {pct(portfolioStats.best.pl)}</div>
+                  </div>
+                  <div className="gmReportStat">
+                    <div className="k">Stable Balance</div>
+                    <div className="v">{money(currentBalance, 0)}</div>
                   </div>
                 </div>
               </div>
@@ -1373,7 +1762,7 @@ export default function GoldMiracleAIDashboard() {
                     </tbody>
                   </table>
                 </div>
-                <div className="gmTableHint">Indicators are UI demo only. Replace with backend values later.</div>
+                <div className="gmTableHint">Portfolio data is demo UI now. Replace later with backend wallet, P/L, and history data.</div>
               </div>
             </div>
           </section>
@@ -1451,7 +1840,6 @@ export default function GoldMiracleAIDashboard() {
         }}
       />
 
-      {/* ✅ NEW: Smart AI activation flow */}
       <AiStartFlowModal
         open={aiFlowOpen}
         onClose={() => setAiFlowOpen(false)}

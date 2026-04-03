@@ -1,0 +1,20 @@
+# node
+node_modules/
+backend/node_modules/
+
+# uploads (important)
+backend/uploads/
+
+# env
+.env
+frontend/.env
+
+# mac
+.DS_Store
+
+# logs
+*.log
+
+# build
+dist/
+build/

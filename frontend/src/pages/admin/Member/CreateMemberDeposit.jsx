@@ -4,30 +4,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../services/api";
 import AppLayout from "../../../components/AppLayout";
 import { getUser } from "../../../auth";
-import "./Members.css";
 
-// Keep same asset list style you used in member deposit page
 const ASSETS = [
-  {
-    symbol: "USDT",
-    name: "Tether",
-    networks: ["TRC20", "BEP20", "ERC20"],
-  },
-  {
-    symbol: "BTC",
-    name: "Bitcoin",
-    networks: ["BTC"],
-  },
-  {
-    symbol: "ETH",
-    name: "Ethereum",
-    networks: ["ERC20"],
-  },
-  {
-    symbol: "BNB",
-    name: "BNB",
-    networks: ["BEP20"],
-  },
+  { symbol: "USDT", name: "Tether", networks: ["TRC20", "BEP20", "ERC20"] },
+  { symbol: "BTC", name: "Bitcoin", networks: ["BTC"] },
+  { symbol: "ETH", name: "Ethereum", networks: ["ERC20"] },
+  { symbol: "BNB", name: "BNB", networks: ["BEP20"] },
 ];
 
 export default function CreateMemberDeposit() {
@@ -37,7 +19,7 @@ export default function CreateMemberDeposit() {
   const { memberId } = useParams();
 
   const [amount, setAmount] = useState("");
-  const [method, setMethod] = useState("bank"); // "crypto" | "bank"
+  const [method, setMethod] = useState("bank");
   const [asset, setAsset] = useState("USDT");
   const [network, setNetwork] = useState("TRC20");
   const [txRef, setTxRef] = useState("");
@@ -53,54 +35,44 @@ export default function CreateMemberDeposit() {
     setErr("");
     if (v === "crypto") {
       const a = ASSETS.find((x) => x.symbol === asset) || ASSETS[0];
-      const defNet = a.networks[0] || "";
-      setNetwork(defNet);
+      setNetwork(a.networks[0] || "");
     }
   };
 
   const onChangeAsset = (sym) => {
     setAsset(sym);
     const a = ASSETS.find((x) => x.symbol === sym) || ASSETS[0];
-    const defNet = a.networks[0] || "";
-    setNetwork(defNet);
+    setNetwork(a.networks[0] || "");
   };
 
   const submit = async () => {
     if (!canCreate) return setErr("Only owner or agent can create deposits");
-
     setErr("");
+
     const n = Number(amount || 0);
     if (!n || n <= 0) return setErr("Deposit amount must be > 0");
 
-    const txRefClean = String(txRef || "").trim();
-    const proofUrlClean = String(proofUrl || "").trim();
-
-    // Validate crypto requirements (matches backend)
     if (method === "crypto") {
       if (!asset) return setErr("Asset is required for crypto deposit");
       if (!network) return setErr("Network is required for crypto deposit");
     }
 
-    // Prepare payload exactly as backend expects
     const payload = {
       member_id: Number(memberId),
       amount: n,
       method: method === "crypto" ? "crypto" : "bank",
       ...(method === "crypto" ? { asset, network } : {}),
-      ...(txRefClean ? { tx_ref: txRefClean } : {}),
-      ...(proofUrlClean ? { proof_url: proofUrlClean } : {}),
+      ...(txRef.trim() ? { tx_ref: txRef.trim() } : {}),
+      ...(proofUrl.trim() ? { proof_url: proofUrl.trim() } : {}),
     };
 
     setBusy(true);
     try {
-      const response = await api.post("/deposits", payload);
-      // Success → redirect to wallet with deposits tab active
+      await api.post("/deposits", payload);
       nav(`/members/${memberId}/wallet?tab=deposits`);
     } catch (e) {
-      // Show exact backend error message if available
       const backendMsg = e?.response?.data?.message;
       setErr(backendMsg || "Failed to create deposit. Please try again.");
-      console.error("Deposit creation error:", e);
     } finally {
       setBusy(false);
     }
@@ -108,28 +80,34 @@ export default function CreateMemberDeposit() {
 
   return (
     <AppLayout>
-      <div className="container">
-        <div className="topbar">
+      <div className="members-container">
+
+        {/* Top Bar - Consistent with Members page */}
+        <div className="members-topbar">
           <div>
             <h2>💰 Create Deposit</h2>
             <div className="small">
               Member ID: <span className="badge">{memberId}</span>
             </div>
           </div>
-          <button className="btn btn-secondary" onClick={() => nav(-1)} disabled={busy} type="button">
+          <button
+            className="members-btn members-btn-secondary"
+            onClick={() => nav(-1)}
+            disabled={busy}
+            type="button"
+          >
             ← Back
           </button>
         </div>
-        {err && <div className="error">{err}</div>}
-        {/* Amount Section */}
-        <div className="form-section">
-          <div className="form-section-header">
-            <div className="form-section-icon">💵</div>
-            <h3>Amount</h3>
-          </div>
-         
-          <div className="form-group">
-            <label>Amount *</label>
+
+        {err && <div className="members-error">{err}</div>}
+
+        {/* Main Form Card */}
+        <div className="members-table-card">   {/* Reusing members table card style */}
+
+          {/* Amount Section */}
+          <div className="members-form-group">
+            <label>Amount <span className="required">*</span></label>
             <input
               type="number"
               value={amount}
@@ -140,83 +118,93 @@ export default function CreateMemberDeposit() {
               step="any"
             />
           </div>
-        </div>
-        {/* Method Selection */}
-        <div className="form-section">
-          <div className="form-section-header">
-            <div className="form-section-icon">🔀</div>
-            <h3>Method</h3>
-          </div>
-          <div className="method-switcher">
-            <div
-              className={`method-option ${method === "crypto" ? "active" : ""}`}
-              onClick={() => !busy && onChangeMethod("crypto")}
-            >
-              🪙 Cryptocurrency
-            </div>
-            <div
-              className={`method-option ${method === "bank" ? "active" : ""}`}
-              onClick={() => !busy && onChangeMethod("bank")}
-            >
-              🏦 Bank Transfer
-            </div>
-          </div>
-          {/* Crypto-specific fields */}
-          {method === "crypto" && (
-            <div>
-              <div className="form-group">
-                <label>Asset *</label>
-                <select value={asset} onChange={(e) => onChangeAsset(e.target.value)} disabled={busy}>
-                  {ASSETS.map((a) => (
-                    <option key={a.symbol} value={a.symbol}>
-                      {a.symbol} — {a.name}
-                    </option>
-                  ))}
-                </select>
+
+          {/* Method Section */}
+          <div className="members-form-group">
+            <label>Method</label>
+            <div className="method-switcher">   {/* We'll style this below */}
+              <div
+                className={`method-option ${method === "crypto" ? "active" : ""}`}
+                onClick={() => !busy && onChangeMethod("crypto")}
+              >
+                🪙 Cryptocurrency
               </div>
-              <div className="form-group">
-                <label>Network *</label>
-                <select value={network} onChange={(e) => setNetwork(e.target.value)} disabled={busy}>
-                  {networks.map((n) => (
-                    <option key={n} value={n}>
-                      {n}
-                    </option>
-                  ))}
-                </select>
+              <div
+                className={`method-option ${method === "bank" ? "active" : ""}`}
+                onClick={() => !busy && onChangeMethod("bank")}
+              >
+                🏦 Bank Transfer
               </div>
             </div>
-          )}
-        </div>
-        {/* Transaction Details */}
-        <div className="form-section">
-          <div className="form-section-header">
-            <div className="form-section-icon">📋</div>
-            <h3>Transaction</h3>
+
+            {method === "crypto" && (
+              <>
+                <div className="members-form-group">
+                  <label>Asset <span className="required">*</span></label>
+                  <select 
+                    value={asset} 
+                    onChange={(e) => onChangeAsset(e.target.value)} 
+                    disabled={busy}
+                  >
+                    {ASSETS.map((a) => (
+                      <option key={a.symbol} value={a.symbol}>
+                        {a.symbol} — {a.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="members-form-group">
+                  <label>Network <span className="required">*</span></label>
+                  <select 
+                    value={network} 
+                    onChange={(e) => setNetwork(e.target.value)} 
+                    disabled={busy}
+                  >
+                    {networks.map((n) => (
+                      <option key={n} value={n}>
+                        {n}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            )}
           </div>
-          <div className="form-group">
+
+          {/* Transaction Details */}
+          <div className="members-form-group">
             <label>Reference</label>
             <input
               value={txRef}
               onChange={(e) => setTxRef(e.target.value)}
-              placeholder="Optional"
+              placeholder="Optional (e.g. Transaction ID)"
               disabled={busy}
             />
           </div>
-          <div className="form-group">
+
+          <div className="members-form-group">
             <label>Proof URL</label>
             <input
               value={proofUrl}
               onChange={(e) => setProofUrl(e.target.value)}
-              placeholder="Optional"
+              placeholder="Optional (screenshot or receipt link)"
               disabled={busy}
             />
           </div>
-        </div>
-        {/* Submit Actions */}
-        <div className="action-buttons">
-          <button className="btn btn-success" type="button" onClick={submit} disabled={busy}>
-            {busy ? "⏳ Creating..." : "✅ Create Deposit"}
-          </button>
+
+          {/* Submit Button */}
+          <div className="members-form-actions">
+            <button
+              className="members-btn members-btn-primary members-btn-large"
+              type="button"
+              onClick={submit}
+              disabled={busy}
+            >
+              {busy ? "⏳ Creating Deposit..." : "✅ Create Deposit"}
+            </button>
+          </div>
+
         </div>
       </div>
     </AppLayout>

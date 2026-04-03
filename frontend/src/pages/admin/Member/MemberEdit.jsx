@@ -4,7 +4,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../services/api";
 import AppLayout from "../../../components/AppLayout";
 import { getUser } from "../../../auth";
-import "./Members.css";
 
 const RANKS = ["Trial", "V1", "V2", "V3"];
 const STATUSES = ["pending", "approved", "rejected"];
@@ -16,7 +15,6 @@ function rankLabel(v) {
   if (x === "V2") return "VIP 2";
   if (x === "V3") return "VIP 3";
   if (x === "TRIAL") return "Trial";
-  // optional: V4 -> VIP 4 etc
   if (/^V\d+$/.test(x)) return `VIP ${x.slice(1)}`;
   return x || "-";
 }
@@ -26,31 +24,19 @@ function norm(v) {
 }
 
 function buildPatch(original, form) {
-  // only send changed fields
   const patch = {};
-
-  const fields = [
-    "nickname",
-    "phone",
-    "email",
-    "country",
-    "ranking",
-    "gender",
-    "approval_status",
-  ];
+  const fields = ["nickname", "phone", "email", "country", "ranking", "gender", "approval_status"];
 
   for (const k of fields) {
     const a = norm(original?.[k]);
     const b = norm(form?.[k]);
-    if (a !== b) patch[k] = b; // backend handles "" -> null for email/country if you want
+    if (a !== b) patch[k] = b;
   }
 
-  // boolean
   if (Boolean(original?.withdraw_privilege) !== Boolean(form?.withdraw_privilege)) {
     patch.withdraw_privilege = !!form.withdraw_privilege;
   }
 
-  // password
   if (norm(form?.new_password)) {
     patch.new_password = norm(form.new_password);
   }
@@ -62,12 +48,10 @@ export default function MemberEdit() {
   const me = getUser();
   const nav = useNavigate();
   const { memberId } = useParams();
-  const id = memberId; // keep rest of your code unchanged
-
+  const id = memberId;
 
   const [loading, setLoading] = useState(true);
   const [orig, setOrig] = useState(null);
-
   const [form, setForm] = useState({
     nickname: "",
     phone: "",
@@ -83,45 +67,41 @@ export default function MemberEdit() {
 
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
-
   const canEdit = me?.role === "owner" || me?.role === "agent";
 
-useEffect(() => {
-  if (!canEdit) return; // UI guard
-  if (!id) {
-    setErr("Invalid member id in URL");
-    setLoading(false);
-    return;
-  }
-
-  (async () => {
-    setErr("");
-    setOk("");
-    setLoading(true);
-    try {
-      const { data } = await api.get(`/members/${id}`);
-      setOrig(data || null);
-      setForm((f) => ({
-        ...f,
-        nickname: data?.nickname || "",
-        phone: data?.phone || "",
-        email: data?.email || "",
-        country: data?.country || "",
-        ranking: data?.ranking || "Trial",
-        gender: data?.gender || "other",
-        approval_status: data?.approval_status || "pending",
-        withdraw_privilege: !!data?.withdraw_privilege,
-        sponsor_short_id: data?.sponsor_short_id || "",
-        new_password: "",
-        confirm_password: "",
-      }));
-    } catch (e) {
-      setErr(e?.response?.data?.message || "Failed to load member");
-    } finally {
+  useEffect(() => {
+    if (!canEdit || !id) {
       setLoading(false);
+      return;
     }
-  })();
-}, [id, canEdit]);
+
+    (async () => {
+      setErr("");
+      setOk("");
+      setLoading(true);
+      try {
+        const { data } = await api.get(`/members/${id}`);
+        setOrig(data || null);
+        setForm((f) => ({
+          ...f,
+          nickname: data?.nickname || "",
+          phone: data?.phone || "",
+          email: data?.email || "",
+          country: data?.country || "",
+          ranking: data?.ranking || "Trial",
+          gender: data?.gender || "other",
+          approval_status: data?.approval_status || "pending",
+          withdraw_privilege: !!data?.withdraw_privilege,
+          new_password: "",
+          confirm_password: "",
+        }));
+      } catch (e) {
+        setErr(e?.response?.data?.message || "Failed to load member");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [id, canEdit]);
 
   const dirty = useMemo(() => {
     if (!orig) return false;
@@ -143,207 +123,219 @@ useEffect(() => {
 
     if (norm(form.new_password)) {
       if (form.new_password.length < 4) return "Password too short";
-      if (form.new_password !== form.confirm_password) return "Password confirm does not match";
+      if (form.new_password !== form.confirm_password) return "Passwords do not match";
     }
     return "";
   };
 
-const save = async () => {
-  setErr("");
-  setOk("");
+  const save = async () => {
+    setErr("");
+    setOk("");
+    const v = validate();
+    if (v) return setErr(v);
+    if (!orig) return;
 
-  const v = validate();
-  if (v) return setErr(v);
-  if (!orig) return;
+    const patch = buildPatch(orig, form);
+    if (!Object.keys(patch).length) return setErr("No changes to save");
 
-  const patch = buildPatch(orig, form);
-  if (!Object.keys(patch).length) return setErr("No changes to save");
+    if (!window.confirm("Save these changes to this member?")) return;
 
-  // ✅ confirmation
-  const yes = window.confirm("Save these changes to this member?");
-  if (!yes) return;
+    try {
+      await api.patch(`/members/${id}`, patch);
+      const { data } = await api.get(`/members/${id}`);
+      setOrig(data || null);
+      setForm((f) => ({ ...f, new_password: "", confirm_password: "" }));
+      setOk("Changes saved successfully");
+      setTimeout(() => setOk(""), 1500);
+    } catch (e) {
+      setErr(e?.response?.data?.message || "Save failed");
+    }
+  };
 
-  try {
-    await api.patch(`/members/${id}`, patch);
-
-    const { data } = await api.get(`/members/${id}`);
-    setOrig(data || null);
-    setForm((f) => ({ ...f, new_password: "", confirm_password: "" }));
-
-    setOk("Saved");
-    setTimeout(() => setOk(""), 1200);
-  } catch (e) {
-    setErr(e?.response?.data?.message || "Save failed");
-  }
-};
-
-if (!canEdit) {
-  return (
-    <AppLayout>
-      <div className="container">
-        <div className="card">
-          <h3>Not allowed</h3>
-          <div className="small">Only owner/agent can edit members.</div>
+  if (!canEdit) {
+    return (
+      <AppLayout>
+        <div className="members-container">
+          <div className="members-table-card">
+            <h3>Not Allowed</h3>
+            <p className="small">Only owner or agent can edit members.</p>
+          </div>
         </div>
-      </div>
-    </AppLayout>
-  );
-}
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
-      <div className="container">
-        <div className="topbar">
+      <div className="members-container">
+
+        {/* Top Bar */}
+        <div className="members-topbar">
           <div>
-            <h2>Edit Member</h2>
+            <h2>✏️ Edit Member</h2>
             <div className="small">
               Member ID: <span className="badge">{id}</span>
-              {orig?.short_id ? (
-                <>
-                  {" "} • Short ID: <span className="badge">{orig.short_id}</span>
-                </>
-              ) : null}
+              {orig?.short_id && <> • Short ID: <span className="badge">{orig.short_id}</span></>}
             </div>
           </div>
-
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <button className="btn" type="button" onClick={() => nav(-1)}>
-              ← Back
-            </button>
-          </div>
+          <button
+            className="members-btn members-btn-secondary"
+            onClick={() => nav(-1)}
+            type="button"
+          >
+            ← Back
+          </button>
         </div>
 
         {loading ? (
-          <div className="card">
-            <div className="small">Loading…</div>
+          <div className="members-table-card">
+            <div className="small">Loading member data...</div>
           </div>
         ) : (
           <>
-            {err && <div className="error">{err}</div>}
-            {ok && <div className="ok">{ok}</div>}
+            {err && <div className="members-error">{err}</div>}
+            {ok && <div className="members-success">{ok}</div>}
 
-            {/* Basic Information Section */}
-            <div className="form-section">
-              <div className="form-section-header">
-                <div className="form-section-icon">👤</div>
-                <h3>Basic Information</h3>
-              </div>
-              
-              <div className="form-group">
-                <label>Nickname *</label>
-                <input value={form.nickname} onChange={onChange("nickname")} placeholder="Enter nickname" />
-              </div>
+            <div className="members-table-card">
 
-              <div className="form-group">
-                <label>Phone Number *</label>
-                <input value={form.phone} onChange={onChange("phone")} placeholder="Enter phone" />
+              {/* Basic Information */}
+              <div className="members-form-group">
+                <label>Nickname <span className="required">*</span></label>
+                <input
+                  value={form.nickname}
+                  onChange={onChange("nickname")}
+                  placeholder="Enter nickname"
+                />
               </div>
 
-              <div className="form-group">
+              <div className="members-form-group">
+                <label>Phone Number <span className="required">*</span></label>
+                <input
+                  value={form.phone}
+                  onChange={onChange("phone")}
+                  placeholder="Enter phone number"
+                />
+              </div>
+
+              <div className="members-form-group">
                 <label>Email Address</label>
-                <input value={form.email} onChange={onChange("email")} placeholder="Optional" />
+                <input
+                  value={form.email}
+                  onChange={onChange("email")}
+                  placeholder="Optional"
+                />
               </div>
 
-              <div className="form-group">
+              <div className="members-form-group">
                 <label>Country</label>
-                <input value={form.country} onChange={onChange("country")} placeholder="Optional" />
+                <input
+                  value={form.country}
+                  onChange={onChange("country")}
+                  placeholder="Optional"
+                />
               </div>
 
-              <div className="form-group">
+              <div className="members-form-group">
                 <label>Gender</label>
                 <select value={form.gender} onChange={onChange("gender")}>
                   {GENDERS.map((x) => (
-                    <option key={x} value={x}>{x}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>Sponsor Code</label>
-                <div className="read-only-field">
-                  🔗 {orig?.sponsor_short_id || "None"}
-                </div>
-                <span className="help-text">Cannot be changed</span>
-              </div>
-            </div>
-
-            {/* Account Status Section */}
-            <div className="form-section">
-              <div className="form-section-header">
-                <div className="form-section-icon">⚙️</div>
-                <h3>Account Status</h3>
-              </div>
-              
-              <div className="form-group">
-                <label>Ranking</label>
-                <select value={form.ranking} onChange={onChange("ranking")}>
-                  {RANKS.map((x) => (
                     <option key={x} value={x}>
-                      {rankLabel(x)}
+                      {x.charAt(0).toUpperCase() + x.slice(1)}
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className="form-group">
-                <label>Status</label>
-                <select value={form.approval_status} onChange={onChange("approval_status")}>
-                  {STATUSES.map((x) => (
-                    <option key={x} value={x}>{x}</option>
-                  ))}
-                </select>
+              <div className="members-form-group">
+                <label>Sponsor Code</label>
+                <div className="read-only-field" style={{ padding: "12px 16px", background: "#f9fafb", borderRadius: "8px", border: "1px solid #e5e7eb", color: "black" }}>
+                  🔗 {orig?.sponsor_short_id || "None"}
+                </div>
+                <span className="small" style={{ color: "#6b7280", marginTop: "4px", display: "block" }}>
+                  Cannot be changed
+                </span>
               </div>
 
-              <div className="form-group">
-                <label>Withdraw Allowed</label>
-                <div className="checkbox-group">
-                  <input
-                    type="checkbox"
-                    id="withdraw-priv"
-                    checked={!!form.withdraw_privilege}
-                    onChange={onChange("withdraw_privilege")}
-                  />
-                  <label htmlFor="withdraw-priv">Allow withdrawals</label>
+              {/* Account Status */}
+              <div style={{ marginTop: "32px" }}>
+                <h3 style={{ marginBottom: "16px", color: "#111827" }}>Account Status</h3>
+
+                <div className="members-form-group">
+                  <label>Ranking</label>
+                  <select value={form.ranking} onChange={onChange("ranking")}>
+                    {RANKS.map((x) => (
+                      <option key={x} value={x}>
+                        {rankLabel(x)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="members-form-group">
+                  <label>Approval Status</label>
+                  <select value={form.approval_status} onChange={onChange("approval_status")}>
+                    {STATUSES.map((x) => (
+                      <option key={x} value={x}>
+                        {x}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="members-form-group">
+                  <label>Withdraw Privilege</label>
+                  <div className="checkbox-group" style={{ marginTop: "8px" }}>
+                    <input
+                      type="checkbox"
+                      id="withdraw-priv"
+                      checked={!!form.withdraw_privilege}
+                      onChange={onChange("withdraw_privilege")}
+                    />
+                    <label htmlFor="withdraw-priv" style={{ cursor: "pointer" }}>
+                      Allow this member to make withdrawals
+                    </label>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Password Section */}
-            <div className="form-section">
-              <div className="form-section-header">
-                <div className="form-section-icon">🔒</div>
-                <h3>Password</h3>
+              {/* Password Reset */}
+              <div style={{ marginTop: "32px" }}>
+                <h3 style={{ marginBottom: "16px", color: "#111827" }}>Password Reset</h3>
+
+                <div className="members-form-group">
+                  <label>New Password</label>
+                  <input
+                    type="password"
+                    value={form.new_password}
+                    onChange={onChange("new_password")}
+                    placeholder="Leave blank to keep current password"
+                  />
+                </div>
+
+                <div className="members-form-group">
+                  <label>Confirm New Password</label>
+                  <input
+                    type="password"
+                    value={form.confirm_password}
+                    onChange={onChange("confirm_password")}
+                    placeholder="Re-enter new password"
+                  />
+                </div>
               </div>
 
-              <div className="form-group">
-                <label>New Password</label>
-                <input
-                  type="password"
-                  value={form.new_password}
-                  onChange={onChange("new_password")}
-                  placeholder="Leave blank to keep current"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Confirm</label>
-                <input
-                  type="password"
-                  value={form.confirm_password}
-                  onChange={onChange("confirm_password")}
-                  placeholder="Re-enter password"
-                />
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="action-buttons">
-                <button className="btn btn-success" type="button" onClick={save} disabled={!dirty}>
+              {/* Action Buttons */}
+              <div className="members-form-actions">
+                <button
+                  className="members-btn members-btn-primary members-btn-large"
+                  type="button"
+                  onClick={save}
+                  disabled={!dirty}
+                >
                   💾 Save Changes
                 </button>
 
                 <button
-                  className="btn btn-secondary"
+                  className="members-btn members-btn-secondary"
                   type="button"
                   onClick={() => {
                     if (!orig) return;
@@ -359,7 +351,6 @@ if (!canEdit) {
                       gender: orig.gender || "other",
                       approval_status: orig.approval_status || "pending",
                       withdraw_privilege: !!orig.withdraw_privilege,
-                      sponsor_short_id: orig.sponsor_short_id || "",
                       new_password: "",
                       confirm_password: "",
                     }));
@@ -368,10 +359,11 @@ if (!canEdit) {
                   🔄 Reset to Original
                 </button>
 
-                {!dirty && <span className="small" style={{ alignSelf: "center" }}>✓ No unsaved changes</span>}
+                {!dirty && <span className="small" style={{ alignSelf: "center", color: "#10b981" }}>✓ No unsaved changes</span>}
               </div>
-            </>
-          )}
+            </div>
+          </>
+        )}
       </div>
     </AppLayout>
   );
