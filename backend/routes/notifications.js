@@ -1,14 +1,25 @@
 import express from "express";
 import { pool } from "../db.js";
-import { adminAuth } from "../middleware/adminAuth.js";
+import { auth } from "../middleware/auth.js"; // ✅ Use existing auth middleware
 
 const router = express.Router();
+
+/**
+ * Helper: Inline admin role check
+ * Replaces the missing adminAuth middleware
+ */
+const requireAdmin = (req, res, next) => {
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({ message: "Admin access required" });
+  }
+  next();
+};
 
 /**
  * GET /admin/notifications/count
  * Returns unread count for badge
  */
-router.get("/count", adminAuth, async (req, res) => {
+router.get("/count", auth, requireAdmin, async (req, res) => {
   try {
     const r = await pool.query(
       `SELECT COUNT(*)::int as unread FROM admin_notifications WHERE is_read = false`
@@ -25,7 +36,7 @@ router.get("/count", adminAuth, async (req, res) => {
  * Returns list of notifications (unread first), with request details
  * Query params: ?filter=unread|all&limit=50
  */
-router.get("/", adminAuth, async (req, res) => {
+router.get("/", auth, requireAdmin, async (req, res) => {
   try {
     const filter = req.query.filter === 'unread' ? 'AND n.is_read = false' : '';
     const limit = Math.min(parseInt(req.query.limit) || 50, 200);
@@ -109,7 +120,7 @@ router.get("/", adminAuth, async (req, res) => {
  * POST /admin/notifications/:id/read
  * Mark a notification as read
  */
-router.post("/:id/read", adminAuth, async (req, res) => {
+router.post("/:id/read", auth, requireAdmin, async (req, res) => {
   try {
     const notifId = parseInt(req.params.id);
     
@@ -138,7 +149,7 @@ router.post("/:id/read", adminAuth, async (req, res) => {
  * POST /admin/notifications/read-all
  * Mark all notifications as read (optional convenience)
  */
-router.post("/read-all", adminAuth, async (req, res) => {
+router.post("/read-all", auth, requireAdmin, async (req, res) => {
   try {
     await pool.query(
       `UPDATE admin_notifications SET is_read = true, read_at = now() WHERE is_read = false`
