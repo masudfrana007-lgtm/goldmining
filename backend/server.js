@@ -11,6 +11,7 @@ import membersRoutes from "./routes/members.js";
 import depositsRoutes from "./routes/deposits.js";
 import withdrawalsRoutes from "./routes/withdrawals.js";
 import adminNotifications from "./routes/notifications.js";
+import vipDepositAddressesRoutes from "./routes/vipDepositAddresses.js";
 
 dotenv.config();
 
@@ -49,6 +50,7 @@ app.use("/members", membersRoutes);
 app.use("/deposits", depositsRoutes);
 app.use("/withdrawals", withdrawalsRoutes);
 app.use("/notifications", adminNotifications);
+app.use("/vip-deposit-addresses", vipDepositAddressesRoutes);
 
 // Start server
 const PORT = process.env.PORT || 5040;
