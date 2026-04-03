@@ -74,8 +74,8 @@ router.get("/dashboard/summary", auth, async (req, res) => {
     const [
       usersTotal,
       usersByRole,
-      tasksTotal,
-      setsTotal,
+      // tasksTotal,
+      // setsTotal,
       membersTotal,
 
       depositsAgg,
@@ -86,8 +86,8 @@ router.get("/dashboard/summary", auth, async (req, res) => {
     ] = await Promise.all([
       pool.query(`SELECT COUNT(*)::int AS c FROM users`),
       pool.query(`SELECT role, COUNT(*)::int AS c FROM users GROUP BY role ORDER BY role`),
-      pool.query(`SELECT COUNT(*)::int AS c FROM tasks`),
-      pool.query(`SELECT COUNT(*)::int AS c FROM sets WHERE is_archived = false`),
+      // pool.query(`SELECT COUNT(*)::int AS c FROM tasks`),
+      // pool.query(`SELECT COUNT(*)::int AS c FROM sets WHERE is_archived = false`),
       pool.query(`SELECT COUNT(*)::int AS c FROM members`),
 
       // deposits aggregation (lifetime + today + month)
@@ -140,16 +140,17 @@ router.get("/dashboard/summary", auth, async (req, res) => {
         FROM support_conversations
       `),
 
-      pool.query(`
-        SELECT COUNT(*)::int AS c
-        FROM (
-          SELECT st.set_id
-          FROM set_tasks st
-          JOIN tasks t ON t.id = st.task_id
-          WHERE t.task_type='combo'
-          GROUP BY st.set_id
-        ) x
-      `),
+      // pool.query(`
+      //   SELECT COUNT(*)::int AS c
+      //   FROM (
+      //     SELECT st.set_id
+      //     FROM set_tasks st
+      //     JOIN tasks t ON t.id = st.task_id
+      //     WHERE t.task_type='combo'
+      //     GROUP BY st.set_id
+      //   ) x
+      // `),
+      
     ]);
 
     const byRole = {};
@@ -157,8 +158,8 @@ router.get("/dashboard/summary", auth, async (req, res) => {
 
     res.json({
       users: { total: usersTotal.rows[0].c, byRole },
-      tasks: { total: tasksTotal.rows[0].c },
-      sets: { total: setsTotal.rows[0].c, combo_sets: comboSetsAgg.rows[0].c },
+      // tasks: { total: tasksTotal.rows[0].c },
+      // sets: { total: setsTotal.rows[0].c, combo_sets: comboSetsAgg.rows[0].c },
       members: { total: membersTotal.rows[0].c },
       deposits: depositsAgg.rows[0],
       withdrawals: withdrawalsAgg.rows[0],
