@@ -12,7 +12,7 @@ import depositsRoutes from "./routes/deposits.js";
 import withdrawalsRoutes from "./routes/withdrawals.js";
 import adminNotifications from "./routes/notifications.js";
 import vipDepositAddressesRoutes from "./routes/vipDepositAddresses.js";
-import memberAuthRoutes from "./routes/member-auth.js"; // ✅ ADD THIS LINE
+import memberAuthRoutes from "./routes/memberAuth.js"; 
 
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
