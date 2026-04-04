@@ -13,10 +13,12 @@ const VIPS = [
 const SLOT = { asset: "USDT", network: "TRC20", label: "USDT (TRC20)" };
 
 // Convert relative URLs to absolute (backend)
+const BASE_URL = "https://goldmiracle.bond"; // your backend
+
 const toAbsUrl = (p) => {
   if (!p) return "";
   if (/^(https?:)?\/\//i.test(p)) return p;
-  return p.startsWith("/") ? p : `/${p}`;
+  return `${BASE_URL}${p.startsWith("/") ? p : `/${p}`}`;
 };
 
 function slotKey(vip_rank, asset, network) {

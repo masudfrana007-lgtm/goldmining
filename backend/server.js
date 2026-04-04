@@ -12,6 +12,7 @@ import depositsRoutes from "./routes/deposits.js";
 import withdrawalsRoutes from "./routes/withdrawals.js";
 import adminNotifications from "./routes/notifications.js";
 import vipDepositAddressesRoutes from "./routes/vipDepositAddresses.js";
+import memberAuthRoutes from "./routes/member-auth.js"; // ✅ ADD THIS LINE
 
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -57,6 +58,7 @@ app.use("/deposits", depositsRoutes);
 app.use("/withdrawals", withdrawalsRoutes);
 app.use("/notifications", adminNotifications);
 app.use("/vip-deposit-addresses", vipDepositAddressesRoutes);
+app.use("/member-auth", memberAuthRoutes); // ✅ ADD THIS LINE
 app.use('/uploads', express.static(join(__dirname, 'uploads')));
 
 // Start server

@@ -1,19 +1,100 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import api from "../services/api"; // Axios instance
 import "./Signup.css";
 
 function cls(...a) {
   return a.filter(Boolean).join(" ");
 }
 
+// ✅ Same COUNTRIES array as CreateMember.jsx
+const COUNTRIES = [
+  { name: "United States of America", dial: "+1" },
+  { name: "Canada", dial: "+1" },
+  { name: "United Kingdom", dial: "+44" },
+  { name: "Germany", dial: "+49" },
+  { name: "France", dial: "+33" },
+  { name: "Netherlands", dial: "+31" },
+  { name: "Switzerland", dial: "+41" },
+  { name: "Sweden", dial: "+46" },
+  { name: "Norway", dial: "+47" },
+  { name: "Denmark", dial: "+45" },
+  { name: "Australia", dial: "+61" },
+  { name: "New Zealand", dial: "+64" },
+  { name: "Singapore", dial: "+65" },
+  { name: "United Arab Emirates", dial: "+971" },
+  { name: "Japan", dial: "+81" },
+  { name: "South Korea", dial: "+82" },
+  { name: "Ireland", dial: "+353" },
+  { name: "India", dial: "+91" },
+  { name: "Indonesia", dial: "+62" },
+  { name: "Philippines", dial: "+63" },
+  { name: "Vietnam", dial: "+84" },
+  { name: "Thailand", dial: "+66" },
+  { name: "Malaysia", dial: "+60" },
+  { name: "Pakistan", dial: "+92" },
+  { name: "Bangladesh", dial: "+880" },
+  { name: "Sri Lanka", dial: "+94" },
+  { name: "Nigeria", dial: "+234" },
+  { name: "Kenya", dial: "+254" },
+  { name: "South Africa", dial: "+27" },
+  { name: "Ghana", dial: "+233" },
+  { name: "Brazil", dial: "+55" },
+  { name: "Mexico", dial: "+52" },
+  { name: "Argentina", dial: "+54" },
+  { name: "Colombia", dial: "+57" },
+  { name: "Chile", dial: "+56" },
+  { name: "Peru", dial: "+51" },
+  { name: "Egypt", dial: "+20" },
+  { name: "Morocco", dial: "+212" },
+  { name: "Saudi Arabia", dial: "+966" },
+  { name: "Qatar", dial: "+974" },
+  { name: "Kuwait", dial: "+965" },
+  { name: "Israel", dial: "+972" },
+  { name: "Turkey", dial: "+90" },
+  { name: "Poland", dial: "+48" },
+  { name: "Czech Republic", dial: "+420" },
+  { name: "Romania", dial: "+40" },
+  { name: "Hungary", dial: "+36" },
+  { name: "Ukraine", dial: "+380" },
+  { name: "Russia", dial: "+7" },
+  { name: "China", dial: "+86" }
+];
+
+// ✅ Phone formatting helpers (same as CreateMember.jsx)
+function extractDialCode(countryLabel) {
+  const m = String(countryLabel || "").match(/\(\s*(\+\d+)\s*\)/);
+  return m ? m[1] : "";
+}
+function digitsOnly(v) {
+  return String(v || "").replace(/[^\d]/g, "");
+}
+function buildFullPhone(countryLabel, phoneInput) {
+  const dial = extractDialCode(countryLabel);
+  const num = digitsOnly(phoneInput);
+  if (!dial || !num) return "";
+  const dialDigits = digitsOnly(dial);
+  return `+${dialDigits}${num}`;
+}
+
 export default function Signup() {
   const nav = useNavigate();
 
-  const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [country, setCountry] = useState("United States of America (+1)");
+  const [gender, setGender] = useState("male");
+  const [referral, setReferral] = useState("");
+
   const [pass, setPass] = useState("");
+  const [withdrawPass, setWithdrawPass] = useState("");
   const [pass2, setPass2] = useState("");
+  
+  // ✅ Show/hide toggles for both password fields
   const [show, setShow] = useState(false);
+  const [showWithdraw, setShowWithdraw] = useState(false); // ✅ New toggle for withdraw password
+  
   const [agree, setAgree] = useState(true);
 
   const [busy, setBusy] = useState(false);
@@ -21,34 +102,79 @@ export default function Signup() {
 
   const match = pass && pass2 && pass === pass2;
 
+  // ✅ Username validation: no spaces, case-insensitive normalized
+  const normalizedUsername = useMemo(() => {
+    return username.trim().toLowerCase();
+  }, [username]);
+
+  const usernameHasSpaces = useMemo(() => {
+    return /\s/.test(username);
+  }, [username]);
+
   const canSubmit = useMemo(() => {
-    if (!fullName.trim()) return false;
-    if (!email.trim()) return false;
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return false;
+    if (!normalizedUsername) return false;
+    if (usernameHasSpaces) return false;
+    if (!phone.trim()) return false;
+    if (!country.trim()) return false;
+    if (!gender) return false;
+    if (!referral.trim()) return false;
     if (!pass.trim() || pass.length < 6) return false;
+    if (!withdrawPass.trim() || withdrawPass.length < 4) return false;
     if (!match) return false;
     if (!agree) return false;
     return true;
-  }, [fullName, email, pass, match, agree]);
+  }, [normalizedUsername, usernameHasSpaces, phone, country, gender, referral, pass, withdrawPass, match, agree]);
 
-  function onSubmit(e) {
+  async function onSubmit(e) {
     e.preventDefault();
     if (!canSubmit || busy) return;
 
-    setBusy(true);
-    setErr("");
+    try {
+      setBusy(true);
+      setErr("");
 
-    // ✅ Demo signup (replace with your API)
-    setTimeout(() => {
-      setBusy(false);
-      localStorage.setItem("gm_demo_auth", "1");
+      const fullPhone = buildFullPhone(country, phone);
+      if (!fullPhone) {
+        const dial = extractDialCode(country);
+        const phoneDigits = digitsOnly(phone);
+        console.warn("Phone build failed:", { country, phone, dial, phoneDigits });
+        throw new Error("Invalid phone/country combination. Please check country and phone number.");
+      }
+
+      await api.post("/members", {
+        nickname: normalizedUsername,
+        phone: fullPhone,
+        country,
+        password: pass,
+        withdraw_password: withdrawPass,
+        gender,
+        ranking: "Trial",
+        withdraw_privilege: "Enabled",
+        referral_code: referral.trim(),
+      });
+
       nav("/login");
-    }, 900);
+    } catch (e) {
+      console.error("=== SIGNUP ERROR DEBUG ===");
+      console.error("Error object:", e);
+      console.error("Response ", e?.response?.data);
+      console.error("Response status:", e?.response?.status);
+      console.error("Message:", e?.response?.data?.message || e?.message);
+      console.error("Full error:", JSON.stringify(e, Object.getOwnPropertyNames(e), 2));
+      console.error("==========================");
+
+      const errorMsg = e?.response?.data?.message || e?.message || "Signup failed";
+      setErr(errorMsg);
+    } finally {
+      setBusy(false);
+    }
   }
+
+  const currentDial = extractDialCode(country) || "+XX";
 
   return (
     <div className="gm-signup">
-      {/* LEFT PANEL */}
+      {/* LEFT PANEL (unchanged) */}
       <aside className="gmS-left">
         <div className="gmS-brand">
           <div className="gmS-mark" aria-hidden="true">
@@ -119,32 +245,77 @@ export default function Signup() {
             <p className="gmS-mini">Fill the form to create your account.</p>
           </header>
 
-          {err ? <div className="gmS-alert">{err}</div> : null}
-
           <form className="gmS-form" onSubmit={onSubmit}>
+            {/* Username */}
             <div className="gmS-field">
-              <label>Full Name</label>
+              <label>Username</label>
+              <input
+                className={cls("gmS-input", usernameHasSpaces && "err")}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="e.g. john123"
+                autoComplete="username"
+              />
+              {username && (
+                <div className={cls("gmS-msg", !usernameHasSpaces ? "ok" : "err")} style={{ marginTop: 4 }}>
+                  {!usernameHasSpaces ? "✓ Valid username" : "✗ No spaces allowed"}
+                </div>
+              )}
+            </div>
+
+            {/* Country */}
+            <div className="gmS-field">
+              <label>Country</label>
+              <select
+                className="gmS-input"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+              >
+                {COUNTRIES.map((c) => (
+                  <option key={c.name + c.dial} value={`${c.name} (${c.dial})`}>
+                    {c.name} ({c.dial})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Phone */}
+            <div className="gmS-field">
+              <label>Phone Number</label>
               <input
                 className="gmS-input"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Your name"
-                autoComplete="name"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder={`${currentDial} XXX XXXXXXX`}
+                type="tel"
+              />
+              <div className="small" style={{ color: "#64748b", marginTop: 4 }}>
+                Enter your local number. The country code ({currentDial}) will be added automatically.
+              </div>
+            </div>
+
+            {/* Gender */}
+            <div className="gmS-field">
+              <label>Gender</label>
+              <select className="gmS-input" value={gender} onChange={(e) => setGender(e.target.value)}>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            {/* Referral Code */}
+            <div className="gmS-field">
+              <label>Referral Code</label>
+              <input
+                className="gmS-input"
+                value={referral}
+                onChange={(e) => setReferral(e.target.value)}
+                placeholder="Enter sponsor code"
               />
             </div>
 
-            <div className="gmS-field">
-              <label>Email</label>
-              <input
-                className="gmS-input"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@email.com"
-                inputMode="email"
-                autoComplete="email"
-              />
-            </div>
-
+            {/* Password with Show/Hide */}
             <div className="gmS-field">
               <label>Password</label>
               <div className="gmS-pass">
@@ -153,20 +324,36 @@ export default function Signup() {
                   type={show ? "text" : "password"}
                   value={pass}
                   onChange={(e) => setPass(e.target.value)}
-                  placeholder="Create password (min 6)"
-                  autoComplete="new-password"
+                  placeholder="Create password"
                 />
-                <button
-                  type="button"
-                  className={cls("gmS-eye", show && "on")}
-                  onClick={() => setShow((s) => !s)}
-                  aria-label="Toggle password visibility"
-                >
+                <button type="button" className={cls("gmS-eye", show && "on")} onClick={() => setShow((s) => !s)}>
                   {show ? "Hide" : "Show"}
                 </button>
               </div>
             </div>
 
+            {/* ✅ Withdraw Password with Show/Hide (NEW) */}
+            <div className="gmS-field">
+              <label>Withdraw Password</label>
+              <div className="gmS-pass">
+                <input
+                  className="gmS-input gmS-inputPass"
+                  type={showWithdraw ? "text" : "password"}
+                  value={withdrawPass}
+                  onChange={(e) => setWithdrawPass(e.target.value)}
+                  placeholder="Withdrawal password"
+                />
+                <button 
+                  type="button" 
+                  className={cls("gmS-eye", showWithdraw && "on")} 
+                  onClick={() => setShowWithdraw((s) => !s)}
+                >
+                  {showWithdraw ? "Hide" : "Show"}
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm Password */}
             <div className="gmS-field">
               <label>Confirm Password</label>
               <input
@@ -174,33 +361,39 @@ export default function Signup() {
                 type={show ? "text" : "password"}
                 value={pass2}
                 onChange={(e) => setPass2(e.target.value)}
-                placeholder="Repeat password"
-                autoComplete="new-password"
               />
-              {pass2 ? (
-                <div className={cls("gmS-msg", match ? "ok" : "err")}>
-                  {match ? "Passwords match" : "Passwords do not match"}
-                </div>
-              ) : null}
+              {pass2 && <div className={cls("gmS-msg", match ? "ok" : "err")}>{match ? "Passwords match" : "Passwords do not match"}</div>}
             </div>
 
+            {/* Terms Checkbox */}
             <label className="gmS-check">
               <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
               <span>
-                I agree to the <a href="#" onClick={(e) => e.preventDefault()}>Terms</a> and{" "}
-                <a href="#" onClick={(e) => e.preventDefault()}>Privacy</a>
+                I agree to <a href="#">Terms</a> and <a href="#">Privacy</a>
               </span>
             </label>
 
+            {/* Error Message */}
+            {err && (
+              <div style={{
+                color: "#dc2626",
+                textAlign: "center",
+                fontWeight: 500,
+                marginBottom: 12,
+                fontSize: 14
+              }}>
+                {err}
+              </div>
+            )}
+
+            {/* Submit Button */}
             <button className={cls("gmS-btn", !canSubmit && "disabled")} disabled={!canSubmit || busy} type="submit">
               {busy ? "Creating…" : "Create Account"}
             </button>
 
+            {/* Login Link */}
             <div className="gmS-bottom">
-              Already have an account?{" "}
-              <Link className="gmS-link" to="/login">
-                Login
-              </Link>
+              Already have an account? <Link className="gmS-link" to="/login">Login</Link>
             </div>
           </form>
         </section>

@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const memberApi = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000",
+  // ✅ Match your backend port (5040, not 5000)
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5040",
 });
 
 memberApi.interceptors.request.use((config) => {

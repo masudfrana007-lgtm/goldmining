@@ -9,7 +9,7 @@ export default function Settings() {
   const user = getUser();
 
   const goToForgotPassword = () => {
-    nav("/forgot-password");
+    nav("/admin/forgot-password");
   };
 
   const handleLogout = () => {
